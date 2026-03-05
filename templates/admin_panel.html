@@ -190,19 +190,27 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div>
-                <h1>👑 Админ-панель</h1>
-                <small>Управление пользователями и правами</small>
-            </div>
-            <div class="user-info">
-                <span class="username">👤 {{ session.username }} <span class="admin-badge">Admin</span></span>
-                <a href="{{ url_for('logout') }}" style="text-decoration: none;">
-                    <button class="logout-btn">Выйти</button>
-                </a>
-            </div>
+   <div class="header">
+    <div>
+        <h1>👑 Админ-панель</h1>
+        <small>Управление пользователями и правами</small>
+    </div>
+    <div class="user-info">
+        <span class="username">👤 {{ session.username }} <span class="admin-badge">Admin</span></span>
+        <div style="display: flex; gap: 10px;">
+            <!-- ТОЛЬКО КНОПКА "Мои тренировки" -->
+            <a href="{{ url_for('my_workouts') }}" style="text-decoration: none;">
+                <button style="background-color: #28a745; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer;">
+                    🏋️ Мои тренировки
+                </button>
+            </a>
+            <a href="{{ url_for('logout') }}" style="text-decoration: none;">
+                <button class="logout-btn">Выйти</button>
+            </a>
         </div>
+    </div>
+</div>
+</div>
 
         <!-- Статистика -->
         <h2>📊 Общая статистика</h2>

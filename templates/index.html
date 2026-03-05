@@ -153,15 +153,25 @@
 <body>
     <div class="container">
         <!-- Шапка с именем пользователя и кнопкой выхода -->
-        <div class="header">
-            <h1>🏋️ Трекер тренировок</h1>
-            <div class="user-info">
-                <span class="username">👤 {{ username }}</span>
-                <a href="{{ url_for('logout') }}" style="text-decoration: none;">
-                    <button class="logout-btn">Выйти</button>
-                </a>
-            </div>
+       <div class="header">
+    <h1>🏋️ Трекер тренировок</h1>
+    <div class="user-info">
+        <span class="username">👤 {{ username }}</span>
+        <div style="display: flex; gap: 10px;">
+            <!-- Кнопка "Админ-панель" появляется только если пользователь админ -->
+            {% if is_admin %}
+            <a href="{{ url_for('admin_panel') }}" style="text-decoration: none;">
+                <button style="background-color: #dc3545; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer;">
+                    👑 Админ-панель
+                </button>
+            </a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}" style="text-decoration: none;">
+                <button class="logout-btn">Выйти</button>
+            </a>
         </div>
+    </div>
+</div>
         
         <!-- Форма добавления тренировки -->
         <form action="/add" method="post">

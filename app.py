@@ -79,6 +79,20 @@ def admin_user_workouts(user_id):
     return render_template('admin_user_workouts.html', user=user, workouts=workouts)
 
 
+# Страница тренировок для админа
+@app.route('/my_workouts')
+def my_workouts():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    workouts = database.get_user_workouts(session['user_id'])
+    return render_template('index.html', workouts=workouts, username=session['username'], is_admin=session.get('is_admin', 0))
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    # Показываем тренировки текущего пользователя (даже если он админ)
+    workouts = database.get_user_workouts(session['user_id'])
+    return render_template('index.html', workouts=workouts, username=session['username'])
 
 # Главная страница (для обычных пользователей)
 @app.route('/')
@@ -86,10 +100,12 @@ def index():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
-    # Админа отправляем в админку
-    if session.get('is_admin'):
-        return redirect(url_for('admin_panel'))
+    workouts = database.get_user_workouts(session['user_id'])
+    return render_template('index.html', workouts=workouts, username=session['username'], is_admin=session.get('is_admin', 0))
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
     
+    # Если админ - показываем его тренировки, а не админку
     workouts = database.get_user_workouts(session['user_id'])
     return render_template('index.html', workouts=workouts, username=session['username'])
 
@@ -167,6 +183,7 @@ def toggle_admin(user_id):
 @app.route('/admin/delete_user/<int:user_id>', methods=['POST'])
 
 def admin_delete_user(user_id):
+
     if 'user_id' not in session or not session.get('is_admin'):
         return redirect(url_for('login'))
     
@@ -176,6 +193,7 @@ def admin_delete_user(user_id):
     
     database.delete_user_admin(user_id)
     return redirect(url_for('admin_panel'))
+
 def open_browser():
     time.sleep(1)
     webbrowser.open('http://127.0.0.1:5000')
