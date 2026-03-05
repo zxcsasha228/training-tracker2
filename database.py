@@ -7,7 +7,7 @@ DB_NAME = 'train.db'
 @contextmanager
 def get_db():
     """Контекстный менеджер для безопасной работы с БД"""
-    conn = sqlite3.connect(DB_NAME, timeout=10)  # таймаут 10 секунд
+    conn = sqlite3.connect(DB_NAME, timeout=10)
     conn.row_factory = sqlite3.Row
     try:
         yield conn
@@ -31,6 +31,7 @@ def init_db():
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT UNIQUE NOT NULL,
                     password TEXT NOT NULL,
+                    is_admin INTEGER DEFAULT 0,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
@@ -45,44 +46,65 @@ def init_db():
                     sets INTEGER,
                     reps INTEGER,
                     weight REAL,
-                    FOREIGN KEY (user_id) REFERENCES users (id)
+                    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
                 )
             ''')
             
+            # Создаем админа
+            cursor.execute('''
+                INSERT INTO users (username, password, is_admin)
+                VALUES (?, ?, ?)
+            ''', ('admin', 'admin123', 1))
+            
             # Создаем тестового пользователя
             cursor.execute('''
-                INSERT INTO users (username, password)
-                VALUES (?, ?)
-            ''', ('admin', 'admin123'))
+                INSERT INTO users (username, password, is_admin)
+                VALUES (?, ?, ?)
+            ''', ('user1', 'user123', 0))
             
-            # Получаем ID созданного пользователя
-            user_id = cursor.lastrowid
+            # Получаем ID пользователей
+            cursor.execute('SELECT id FROM users WHERE username = ?', ('admin',))
+            admin_id = cursor.fetchone()[0]
             
-            # Добавляем демо-тренировки
-            workouts_data = [
-                (user_id, '2026-03-01', 'Жим лежа', 3, 10, 50.5),
-                (user_id, '2026-03-03', 'Приседания', 4, 8, 80.0),
-                (user_id, '2026-03-05', 'Тяга штанги', 3, 12, 60.0)
+            cursor.execute('SELECT id FROM users WHERE username = ?', ('user1',))
+            user1_id = cursor.fetchone()[0]
+            
+            # Добавляем демо-тренировки для админа
+            admin_workouts = [
+                (admin_id, '2026-03-01', 'Жим лежа', 3, 10, 50.5),
+                (admin_id, '2026-03-03', 'Приседания', 4, 8, 80.0)
             ]
             cursor.executemany('''
                 INSERT INTO workouts (user_id, date, exercise, sets, reps, weight)
                 VALUES (?, ?, ?, ?, ?, ?)
-            ''', workouts_data)
+            ''', admin_workouts)
             
-        print("База данных инициализирована. Тестовый пользователь: admin / admin123")
+            # Добавляем демо-тренировки для обычного пользователя
+            user_workouts = [
+                (user1_id, '2026-03-02', 'Тяга штанги', 3, 12, 60.0),
+                (user1_id, '2026-03-04', 'Жим гантелей', 3, 10, 20.5)
+            ]
+            cursor.executemany('''
+                INSERT INTO workouts (user_id, date, exercise, sets, reps, weight)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', user_workouts)
+            
+        print("База данных инициализирована.")
+        print("Админ: admin / admin123")
+        print("Пользователь: user1 / user123")
     else:
         print("База данных найдена.")
 
 # Функции для работы с пользователями
-def create_user(username, password):
+def create_user(username, password, is_admin=0):
     """Создать нового пользователя"""
     try:
         with get_db() as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                INSERT INTO users (username, password)
-                VALUES (?, ?)
-            ''', (username, password))
+                INSERT INTO users (username, password, is_admin)
+                VALUES (?, ?, ?)
+            ''', (username, password, is_admin))
             return cursor.lastrowid
     except sqlite3.IntegrityError:
         return None
@@ -104,7 +126,74 @@ def get_user_by_id(user_id):
         cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
         return cursor.fetchone()
 
-# Функции для работы с тренировками
+# АДМИН-ФУНКЦИИ
+def get_all_users():
+    """Получить всех пользователей (для админа)"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT 
+                u.*, 
+                COUNT(w.id) as workouts_count 
+            FROM users u
+            LEFT JOIN workouts w ON u.id = w.user_id
+            GROUP BY u.id
+            ORDER BY u.created_at DESC
+        ''')
+        return cursor.fetchall()
+
+def get_user_workouts_admin(user_id):
+    """Получить тренировки любого пользователя (для админа)"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT * FROM workouts 
+            WHERE user_id = ? 
+            ORDER BY date DESC
+        ''', (user_id,))
+        return cursor.fetchall()
+
+def delete_user_admin(user_id):
+    """Удалить пользователя и все его тренировки"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM users WHERE id = ?', (user_id,))
+
+def get_user_stats():
+    """Получить общую статистику (для админа)"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        
+        # Общее количество пользователей
+        cursor.execute('SELECT COUNT(*) as count FROM users')
+        total_users = cursor.fetchone()['count']
+        
+        # Общее количество тренировок
+        cursor.execute('SELECT COUNT(*) as count FROM workouts')
+        total_workouts = cursor.fetchone()['count']
+        
+        # Количество админов
+        cursor.execute('SELECT COUNT(*) as count FROM users WHERE is_admin = 1')
+        total_admins = cursor.fetchone()['count']
+        
+        # Последние 5 тренировок
+        cursor.execute('''
+            SELECT w.*, u.username 
+            FROM workouts w
+            JOIN users u ON w.user_id = u.id
+            ORDER BY w.date DESC
+            LIMIT 5
+        ''')
+        recent_workouts = cursor.fetchall()
+        
+        return {
+            'total_users': total_users,
+            'total_workouts': total_workouts,
+            'total_admins': total_admins,
+            'recent_workouts': recent_workouts
+        }
+
+# Функции для работы с тренировками (обычные пользователи)
 def add_workout(user_id, date, exercise, sets, reps, weight):
     with get_db() as conn:
         cursor = conn.cursor()
@@ -114,7 +203,6 @@ def add_workout(user_id, date, exercise, sets, reps, weight):
         ''', (user_id, date, exercise, sets, reps, weight))
 
 def get_user_workouts(user_id):
-    """Получить тренировки конкретного пользователя"""
     with get_db() as conn:
         cursor = conn.cursor()
         cursor.execute('''
@@ -125,7 +213,6 @@ def get_user_workouts(user_id):
         return cursor.fetchall()
 
 def get_workout(workout_id, user_id):
-    """Получить одну тренировку по ID"""
     with get_db() as conn:
         cursor = conn.cursor()
         cursor.execute('''
@@ -135,7 +222,6 @@ def get_workout(workout_id, user_id):
         return cursor.fetchone()
 
 def update_workout(workout_id, user_id, date, exercise, sets, reps, weight):
-    """Обновить тренировку"""
     with get_db() as conn:
         cursor = conn.cursor()
         cursor.execute('''
@@ -145,7 +231,6 @@ def update_workout(workout_id, user_id, date, exercise, sets, reps, weight):
         ''', (date, exercise, sets, reps, weight, workout_id, user_id))
 
 def delete_workout(workout_id, user_id):
-    """Удалить тренировку"""
     with get_db() as conn:
         cursor = conn.cursor()
         cursor.execute('''

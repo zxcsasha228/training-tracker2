@@ -5,7 +5,7 @@ import webbrowser
 import time
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-here'  # Нужно для сессий (входа в систему)
+app.secret_key = 'your-secret-key-here-change-this'
 
 # Страница входа
 @app.route('/login', methods=['GET', 'POST'])
@@ -18,13 +18,19 @@ def login():
         if user:
             session['user_id'] = user['id']
             session['username'] = user['username']
-            return redirect(url_for('index'))
+            session['is_admin'] = user['is_admin']
+            
+            # Админа отправляем в админку, обычных пользователей на главную
+            if user['is_admin']:
+                return redirect(url_for('admin_panel'))
+            else:
+                return redirect(url_for('index'))
         else:
             return render_template('login.html', error='Неверное имя пользователя или пароль')
     
     return render_template('login.html')
 
-# Страница регистрации
+# Страница регистрации (обычные пользователи)
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -35,10 +41,11 @@ def register():
         if password != confirm:
             return render_template('register.html', error='Пароли не совпадают')
         
-        user_id = database.create_user(username, password)
+        user_id = database.create_user(username, password, is_admin=0)  # Обычный пользователь
         if user_id:
             session['user_id'] = user_id
             session['username'] = username
+            session['is_admin'] = 0
             return redirect(url_for('index'))
         else:
             return render_template('register.html', error='Пользователь с таким именем уже существует')
@@ -51,18 +58,55 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-# Главная страница (теперь только для авторизованных)
+# АДМИН-ПАНЕЛЬ
+@app.route('/admin')
+def admin_panel():
+    if 'user_id' not in session or not session.get('is_admin'):
+        return redirect(url_for('login'))
+    
+    stats = database.get_user_stats()
+    users = database.get_all_users()
+    return render_template('admin_panel.html', stats=stats, users=users)
+
+# Просмотр тренировок пользователя (для админа)
+@app.route('/admin/user/<int:user_id>')
+def admin_user_workouts(user_id):
+    if 'user_id' not in session or not session.get('is_admin'):
+        return redirect(url_for('login'))
+    
+    user = database.get_user_by_id(user_id)
+    workouts = database.get_user_workouts_admin(user_id)
+    return render_template('admin_user_workouts.html', user=user, workouts=workouts)
+
+# Удаление пользователя (для админа)
+@app.route('/admin/delete_user/<int:user_id>', methods=['POST'])
+def admin_delete_user(user_id):
+    if 'user_id' not in session or not session.get('is_admin'):
+        return redirect(url_for('login'))
+    
+    # Не даем админу удалить самого себя
+    if user_id == session['user_id']:
+        return redirect(url_for('admin_panel'))
+    
+    database.delete_user_admin(user_id)
+    return redirect(url_for('admin_panel'))
+
+# Главная страница (для обычных пользователей)
 @app.route('/')
 def index():
     if 'user_id' not in session:
         return redirect(url_for('login'))
+    
+    # Админа отправляем в админку
+    if session.get('is_admin'):
+        return redirect(url_for('admin_panel'))
     
     workouts = database.get_user_workouts(session['user_id'])
     return render_template('index.html', workouts=workouts, username=session['username'])
 
 @app.route('/add', methods=['POST'])
 def add():
-    if 'user_id' not in session:
+    if 'user_id' not in session or session.get('is_admin'):
         return redirect(url_for('login'))
     
     date = request.form['date']
@@ -76,18 +120,18 @@ def add():
 
 @app.route('/edit/<int:workout_id>')
 def edit(workout_id):
-    if 'user_id' not in session:
+    if 'user_id' not in session or session.get('is_admin'):
         return redirect(url_for('login'))
     
     workout = database.get_workout(workout_id, session['user_id'])
     if not workout:
-        return redirect(url_for('index'))  # Не его тренировка или не существует
+        return redirect(url_for('index'))
     
     return render_template('edit.html', workout=workout)
 
 @app.route('/update/<int:workout_id>', methods=['POST'])
 def update(workout_id):
-    if 'user_id' not in session:
+    if 'user_id' not in session or session.get('is_admin'):
         return redirect(url_for('login'))
     
     date = request.form['date']
@@ -101,7 +145,7 @@ def update(workout_id):
 
 @app.route('/delete/<int:workout_id>', methods=['POST'])
 def delete(workout_id):
-    if 'user_id' not in session:
+    if 'user_id' not in session or session.get('is_admin'):
         return redirect(url_for('login'))
     
     database.delete_workout(workout_id, session['user_id'])

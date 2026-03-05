@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Тренировки пользователя</title>
+    <meta charset="utf-8">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 40px; 
+            background-color: #f4f4f4;
+        }
+        .container { 
+            background-color: white; 
+            padding: 20px; 
+            border-radius: 5px; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.1); 
+        }
+        .header {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 30px;
+        }
+        h1 { 
+            color: #333; 
+            margin: 0;
+        }
+        .back-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .user-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+        }
+        th, td { 
+            padding: 12px; 
+            text-align: left; 
+            border-bottom: 1px solid #ddd; 
+        }
+        th { 
+            background-color: #007bff; 
+            color: white; 
+        }
+        tr:hover { 
+            background-color: #f5f5f5; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏋️ Тренировки пользователя {{ user.username }}</h1>
+            <a href="{{ url_for('admin_panel') }}" style="text-decoration: none;">
+                <button class="back-btn">← Назад в админку</button>
+            </a>
+        </div>
+
+        <div class="user-info">
+            <p><strong>ID пользователя:</strong> {{ user.id }}</p>
+            <p><strong>Имя:</strong> {{ user.username }}</p>
+            <p><strong>Дата регистрации:</strong> {{ user.created_at }}</p>
+            <p><strong>Всего тренировок:</strong> {{ workouts|length }}</p>
+        </div>
+
+        {% if workouts %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Упражнение</th>
+                    <th>Подходы</th>
+                    <th>Повторения</th>
+                    <th>Вес (кг)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for workout in workouts %}
+                <tr>
+                    <td>{{ workout.date }}</td>
+                    <td>{{ workout.exercise }}</td>
+                    <td>{{ workout.sets }}</td>
+                    <td>{{ workout.reps }}</td>
+                    <td>{{ workout.weight }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="text-align: center; padding: 40px; color: #666;">
+            У этого пользователя пока нет тренировок
+        </p>
+        {% endif %}
+    </div>
+</body>
+</html>
