@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.spec
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# Database
+*.db
+*.db-journal
+
+# Build folders
+build/
+dist/
+*.exe
+
+# IDE
+.vscode/
+.idea/
+
+# Windows
+Thumbs.db
+desktop.ini
