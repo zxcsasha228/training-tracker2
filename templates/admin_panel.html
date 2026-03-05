@@ -79,6 +79,33 @@
             font-size: 32px;
             font-weight: bold;
         }
+        
+        /* Поиск */
+        .search-container {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+        }
+        .search-input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .search-clear {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
         table { 
             width: 100%; 
             border-collapse: collapse; 
@@ -99,6 +126,8 @@
         .user-row-admin {
             background-color: #fff3f3;
         }
+        
+        /* Кнопки */
         .btn {
             padding: 5px 10px;
             border: none;
@@ -107,6 +136,7 @@
             text-decoration: none;
             font-size: 12px;
             margin: 2px;
+            display: inline-block;
         }
         .btn-view {
             background-color: #007bff;
@@ -116,20 +146,46 @@
             background-color: #dc3545;
             color: white;
         }
-        .btn-warning {
+        .btn-admin {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-admin-remove {
             background-color: #ffc107;
             color: black;
         }
-        .recent-list {
-            list-style: none;
-            padding: 0;
+        
+        /* Кнопка "Показать всех" */
+        .show-all-container {
+            text-align: center;
+            margin: 20px 0;
         }
-        .recent-item {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
+        .show-all-btn {
+            background-color: #17a2b8;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
         }
-        .recent-item:last-child {
-            border-bottom: none;
+        .show-all-btn:hover {
+            background-color: #138496;
+        }
+        
+        /* Скрытые строки */
+        .hidden-row {
+            display: none;
+        }
+        
+        /* Анимация */
+        .fade-in {
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
     </style>
 </head>
@@ -138,7 +194,7 @@
         <div class="header">
             <div>
                 <h1>👑 Админ-панель</h1>
-                <small>Управление пользователями и тренировками</small>
+                <small>Управление пользователями и правами</small>
             </div>
             <div class="user-info">
                 <span class="username">👤 {{ session.username }} <span class="admin-badge">Admin</span></span>
@@ -165,9 +221,16 @@
             </div>
         </div>
 
+        <!-- Поиск пользователей -->
+        <div class="search-container">
+            <input type="text" class="search-input" id="searchInput" placeholder="🔍 Поиск по имени пользователя..." onkeyup="searchUsers()">
+            <button class="search-clear" onclick="clearSearch()">Очистить</button>
+        </div>
+
         <!-- Список пользователей -->
-        <h2>👥 Пользователи</h2>
-        <table>
+        <h2>👥 Пользователи <span id="userCount" style="font-size: 14px; color: #666;">(всего: {{ users|length }})</span></h2>
+        
+        <table id="usersTable">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -180,7 +243,7 @@
             </thead>
             <tbody>
                 {% for user in users %}
-                <tr {% if user.is_admin %}class="user-row-admin"{% endif %}>
+                <tr class="user-row {% if user.is_admin %}user-row-admin{% endif %} {% if loop.index > 5 %}hidden-row{% endif %}" data-username="{{ user.username|lower }}">
                     <td>{{ user.id }}</td>
                     <td>
                         {{ user.username }}
@@ -193,12 +256,25 @@
                     <td>{{ user.workouts_count or 0 }}</td>
                     <td>
                         <a href="{{ url_for('admin_user_workouts', user_id=user.id) }}" style="text-decoration: none;">
-                            <button class="btn btn-view">👁️ Смотреть тренировки</button>
+                            <button class="btn btn-view" title="Смотреть тренировки">👁️</button>
                         </a>
-                        {% if not user.is_admin or user.id != session.user_id %}
+                        
+                        {% if user.id != session.user_id %}
+                            {% if user.is_admin %}
+                                <a href="{{ url_for('toggle_admin', user_id=user.id) }}" style="text-decoration: none;">
+                                    <button class="btn btn-admin-remove" title="Забрать права администратора">👑❌</button>
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('toggle_admin', user_id=user.id) }}" style="text-decoration: none;">
+                                    <button class="btn btn-admin" title="Сделать администратором">👑</button>
+                                </a>
+                            {% endif %}
+                            
                             <form action="{{ url_for('admin_delete_user', user_id=user.id) }}" method="post" style="display: inline;" onsubmit="return confirm('Вы уверены? Все тренировки пользователя будут удалены.')">
-                                <button type="submit" class="btn btn-delete">🗑️ Удалить</button>
+                                <button type="submit" class="btn btn-delete" title="Удалить пользователя">🗑️</button>
                             </form>
+                        {% else %}
+                            <span style="color: #999; font-size: 12px;">(это вы)</span>
                         {% endif %}
                     </td>
                 </tr>
@@ -206,32 +282,117 @@
             </tbody>
         </table>
 
-        <!-- Последние тренировки -->
-        <h2>🕒 Последние тренировки</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Пользователь</th>
-                    <th>Дата</th>
-                    <th>Упражнение</th>
-                    <th>Подходы</th>
-                    <th>Повторения</th>
-                    <th>Вес</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for workout in stats.recent_workouts %}
-                <tr>
-                    <td>{{ workout.username }}</td>
-                    <td>{{ workout.date }}</td>
-                    <td>{{ workout.exercise }}</td>
-                    <td>{{ workout.sets }}</td>
-                    <td>{{ workout.reps }}</td>
-                    <td>{{ workout.weight }} кг</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <!-- Кнопка "Показать всех" (если пользователей больше 5) -->
+        {% if users|length > 5 %}
+        <div class="show-all-container" id="showAllContainer">
+            <button class="show-all-btn" onclick="toggleAllUsers()" id="showAllBtn">📋 Показать всех пользователей ({{ users|length - 5 }} скрыто)</button>
+        </div>
+        {% endif %}
+
+        <!-- Сообщение "Ничего не найдено" (для поиска) -->
+        <div id="noResults" style="display: none; text-align: center; padding: 40px; color: #666;">
+            🔍 Пользователей с таким именем не найдено
+        </div>
     </div>
+
+    <script>
+        let showingAll = false;
+        
+        // Функция поиска
+        function searchUsers() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const rows = document.querySelectorAll('#usersTable tbody tr');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                const username = row.getAttribute('data-username');
+                if (username.includes(filter)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Показываем/скрываем сообщение "ничего не найдено"
+            const noResults = document.getElementById('noResults');
+            if (visibleCount === 0) {
+                noResults.style.display = 'block';
+            } else {
+                noResults.style.display = 'none';
+            }
+            
+            // Обновляем счетчик
+            document.getElementById('userCount').innerHTML = `(найдено: ${visibleCount} из {{ users|length }})`;
+            
+            // Если мы в режиме поиска, скрываем кнопку "Показать всех"
+            if (filter !== '') {
+                document.getElementById('showAllContainer').style.display = 'none';
+            } else {
+                document.getElementById('showAllContainer').style.display = 'block';
+                resetUserDisplay();
+            }
+        }
+        
+        // Очистка поиска
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            searchUsers();
+            if (!showingAll) {
+                hideExtraUsers();
+            }
+            document.getElementById('userCount').innerHTML = `(всего: {{ users|length }})`;
+        }
+        
+        // Показать/скрыть всех пользователей
+        function toggleAllUsers() {
+            const rows = document.querySelectorAll('#usersTable tbody tr');
+            const btn = document.getElementById('showAllBtn');
+            
+            showingAll = !showingAll;
+            
+            rows.forEach((row, index) => {
+                if (index >= 5) {
+                    if (showingAll) {
+                        row.classList.remove('hidden-row');
+                        row.classList.add('fade-in');
+                    } else {
+                        row.classList.add('hidden-row');
+                    }
+                }
+            });
+            
+            if (showingAll) {
+                btn.textContent = '📌 Показать только первые 5';
+            } else {
+                btn.textContent = '📋 Показать всех пользователей (' + ({{ users|length }} - 5) + ' скрыто)';
+            }
+        }
+        
+        // Сброс отображения (после поиска)
+        function resetUserDisplay() {
+            if (!showingAll) {
+                hideExtraUsers();
+            }
+        }
+        
+        // Скрыть пользователей после 5-го
+        function hideExtraUsers() {
+            const rows = document.querySelectorAll('#usersTable tbody tr');
+            rows.forEach((row, index) => {
+                if (index >= 5) {
+                    row.classList.add('hidden-row');
+                } else {
+                    row.classList.remove('hidden-row');
+                }
+            });
+        }
+        
+        // Подтверждение изменения прав администратора
+        function confirmToggleAdmin(action) {
+            return confirm(`Вы уверены, что хотите ${action} этого пользователя?`);
+        }
+    </script>
 </body>
 </html>

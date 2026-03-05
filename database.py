@@ -18,6 +18,14 @@ def get_db():
     finally:
         conn.close()
 
+
+def get_user(user_id):
+    """Получить данные пользователя по ID"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+        return cursor.fetchone()
+
 def init_db():
     """Создает таблицы, если их нет."""
     if not os.path.exists(DB_NAME):

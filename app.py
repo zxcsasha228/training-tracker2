@@ -78,18 +78,7 @@ def admin_user_workouts(user_id):
     workouts = database.get_user_workouts_admin(user_id)
     return render_template('admin_user_workouts.html', user=user, workouts=workouts)
 
-# Удаление пользователя (для админа)
-@app.route('/admin/delete_user/<int:user_id>', methods=['POST'])
-def admin_delete_user(user_id):
-    if 'user_id' not in session or not session.get('is_admin'):
-        return redirect(url_for('login'))
-    
-    # Не даем админу удалить самого себя
-    if user_id == session['user_id']:
-        return redirect(url_for('admin_panel'))
-    
-    database.delete_user_admin(user_id)
-    return redirect(url_for('admin_panel'))
+
 
 # Главная страница (для обычных пользователей)
 @app.route('/')
@@ -151,6 +140,42 @@ def delete(workout_id):
     database.delete_workout(workout_id, session['user_id'])
     return redirect(url_for('index'))
 
+# Переключение прав администратора
+@app.route('/admin/toggle_admin/<int:user_id>')
+def toggle_admin(user_id):
+    if 'user_id' not in session or not session.get('is_admin'):
+        return redirect(url_for('login'))
+    
+    # Не даем админу изменить права самого себя
+    if user_id == session['user_id']:
+        return redirect(url_for('admin_panel'))
+    
+    with database.get_db() as conn:
+        cursor = conn.cursor()
+        # Получаем текущие права
+        cursor.execute('SELECT is_admin FROM users WHERE id = ?', (user_id,))
+        user = cursor.fetchone()
+        
+        if user:
+            new_admin_status = 0 if user['is_admin'] else 1
+            cursor.execute('UPDATE users SET is_admin = ? WHERE id = ?', 
+                         (new_admin_status, user_id))
+    
+    return redirect(url_for('admin_panel'))
+
+# Удаление пользователя (обновленная версия)
+@app.route('/admin/delete_user/<int:user_id>', methods=['POST'])
+
+def admin_delete_user(user_id):
+    if 'user_id' not in session or not session.get('is_admin'):
+        return redirect(url_for('login'))
+    
+    # Не даем админу удалить самого себя
+    if user_id == session['user_id']:
+        return redirect(url_for('admin_panel'))
+    
+    database.delete_user_admin(user_id)
+    return redirect(url_for('admin_panel'))
 def open_browser():
     time.sleep(1)
     webbrowser.open('http://127.0.0.1:5000')
