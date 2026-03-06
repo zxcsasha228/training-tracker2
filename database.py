@@ -221,21 +221,18 @@ def get_user_with_password(user_id):
         return cursor.fetchone()
 
 def get_all_users_with_passwords():
-    """Получить всех пользователей с паролями (только для админа)"""
+    """Получить всех пользователей с паролями (только для админа) - БЕЗ подсчета тренировок"""
     with get_db() as conn:
         cursor = conn.cursor()
         cursor.execute('''
             SELECT 
-                u.id, 
-                u.username, 
-                u.password, 
-                u.is_admin, 
-                u.created_at,
-                COUNT(w.id) as workouts_count 
-            FROM users u
-            LEFT JOIN workouts w ON u.id = w.user_id
-            GROUP BY u.id
-            ORDER BY u.created_at DESC
+                id, 
+                username, 
+                password, 
+                is_admin, 
+                created_at
+            FROM users
+            ORDER BY created_at DESC
         ''')
         return cursor.fetchall()
 
