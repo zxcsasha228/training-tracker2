@@ -4,119 +4,554 @@
     <title>Регистрация</title>
     <meta charset="utf-8">
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 0; 
+        /* Современные переменные цветов */
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #9ca3af;
+        }
+
+        * {
+            margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
         }
-        .register-container {
-            background-color: white;
+
+        /* Анимированный фон с кругами */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Карточка регистрации */
+        .register-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
+            position: relative;
+            z-index: 1;
+            animation: slideUp 0.6s ease-out;
         }
-        h1 {
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Заголовок */
+        .header {
             text-align: center;
-            color: #333;
             margin-bottom: 30px;
         }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: var(--gray);
+            font-size: 0.95em;
+        }
+
+        .header p a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .header p a:hover {
+            color: var(--secondary);
+        }
+
+        /* Форма */
         .form-group {
             margin-bottom: 20px;
+            position: relative;
         }
-        label {
+
+        .form-group label {
             display: block;
-            margin-bottom: 5px;
-            color: #555;
-            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 500;
+            font-size: 0.95em;
         }
-        input {
+
+        /* Поле ввода с кнопкой показа пароля */
+        .password-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-input-wrapper input {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            box-sizing: border-box;
+            padding: 14px 45px 14px 45px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1em;
+            transition: all 0.3s;
+            background: white;
         }
-        input:focus {
+
+        .password-input-wrapper input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        button:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
             transform: translateY(-2px);
         }
-        .error {
-            background-color: #ffebee;
-            color: #c62828;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            text-align: center;
+
+        .password-input-wrapper input:hover {
+            border-color: var(--primary-dark);
         }
-        .login-link {
-            text-align: center;
-            margin-top: 20px;
-            color: #666;
+
+        /* Иконки */
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            transition: all 0.3s;
+            font-size: 1.1em;
+            z-index: 1;
         }
-        .login-link a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: bold;
+
+        .toggle-password {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.1em;
+            z-index: 1;
+            background: none;
+            border: none;
+            padding: 5px;
         }
-        .login-link a:hover {
-            text-decoration: underline;
+
+        .toggle-password:hover {
+            color: var(--primary);
+        }
+
+        .toggle-password.active {
+            color: var(--primary);
+        }
+
+        /* Иконка слева активна */
+        .input-icon.active {
+            color: var(--primary);
+        }
+
+        /* Кнопка копирования */
+        .copy-password {
+            position: absolute;
+            right: 45px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1em;
+            background: none;
+            border: none;
+            padding: 5px;
+            z-index: 1;
+        }
+
+        .copy-password:hover {
+            color: var(--primary);
+        }
+
+        .copy-password.copied {
+            color: var(--success);
+        }
+
+        /* Сообщение о совпадении паролей */
+        .password-match {
+            font-size: 0.85em;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding-left: 5px;
+        }
+
+        .match-success {
+            color: var(--success);
+        }
+
+        .match-error {
+            color: var(--danger);
+        }
+
+        /* Кнопка регистрации */
+        .register-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .register-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .register-btn:hover::before {
+            width: 500px;
+            height: 500px;
+        }
+
+        .register-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .register-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Сообщение об ошибке */
+        .error-message {
+            background: #fee2e2;
+            color: var(--danger);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            font-size: 0.95em;
+            border-left: 4px solid var(--danger);
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        /* Анимация загрузки */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.9);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Уведомление о копировании */
+        .copy-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 0.9em;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            z-index: 10000;
+            animation: slideUp 0.3s ease-out;
         }
     </style>
+    <!-- Font Awesome для иконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="register-container">
-        <h1>📝 Регистрация</h1>
+    <div class="register-card">
+        <div class="header">
+            <h1> Регистрация</h1>
+            <p>Уже есть аккаунт? <a href="{{ url_for('login') }}">Войти</a></p>
+        </div>
         
         {% if error %}
-        <div class="error">{{ error }}</div>
+        <div class="error-message">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ error }}
+        </div>
         {% endif %}
         
-        <form method="post">
+        <form method="post" id="registerForm">
+            <!-- Имя пользователя -->
             <div class="form-group">
-                <label>Имя пользователя:</label>
-                <input type="text" name="username" required autofocus>
+                <div style="position: relative;">
+                    <i class="fas fa-user input-icon" id="userIcon"></i>
+                    <input type="text" name="username" id="username" placeholder="Имя пользователя" required autofocus
+                           style="width: 100%; padding: 14px 16px 14px 45px; border: 2px solid #e5e7eb; border-radius: 12px;">
+                </div>
             </div>
             
+            <!-- Пароль -->
             <div class="form-group">
-                <label>Пароль:</label>
-                <input type="password" name="password" required>
+                <div class="password-input-wrapper">
+                    <i class="fas fa-lock input-icon" id="passwordIcon"></i>
+                    <input type="password" name="password" id="password" placeholder="Пароль" required>
+                    <button type="button" class="copy-password" id="copyPasswordBtn" onclick="copyPassword()" title="Копировать пароль">
+                        <i class="far fa-copy"></i>
+                    </button>
+                    <button type="button" class="toggle-password" id="togglePassword" onclick="togglePassword('password', this)" title="Показать/скрыть пароль">
+                        <i class="far fa-eye"></i>
+                    </button>
+                </div>
             </div>
             
+            <!-- Подтверждение пароля -->
             <div class="form-group">
-                <label>Подтвердите пароль:</label>
-                <input type="password" name="confirm_password" required>
+                <div class="password-input-wrapper">
+                    <i class="fas fa-lock input-icon" id="confirmIcon"></i>
+                    <input type="password" name="confirm_password" id="confirm_password" placeholder="Подтвердите пароль" required>
+                    <button type="button" class="toggle-password" onclick="togglePassword('confirm_password', this)" title="Показать/скрыть пароль">
+                        <i class="far fa-eye"></i>
+                    </button>
+                </div>
             </div>
             
-            <button type="submit">Зарегистрироваться</button>
+            <!-- Индикатор совпадения паролей -->
+            <div class="password-match" id="passwordMatch">
+                <i class="fas fa-info-circle"></i>
+                <span>Повторите пароль</span>
+            </div>
+            
+            <button type="submit" class="register-btn" id="submitBtn">
+                <i class="fas fa-user-plus"></i> Зарегистрироваться
+            </button>
         </form>
-        
-        <div class="login-link">
-            Уже есть аккаунт? <a href="{{ url_for('login') }}">Войти</a>
-        </div>
     </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <script>
+        // Функция показа/скрытия пароля
+        function togglePassword(inputId, button) {
+            const input = document.getElementById(inputId);
+            const icon = button.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+                button.classList.add('active');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+                button.classList.remove('active');
+            }
+        }
+
+        // Функция копирования пароля
+        function copyPassword() {
+            const passwordInput = document.getElementById('password');
+            const copyBtn = document.getElementById('copyPasswordBtn');
+            const icon = copyBtn.querySelector('i');
+            
+            // Копируем в буфер обмена
+            navigator.clipboard.writeText(passwordInput.value).then(function() {
+                // Меняем иконку на успех
+                icon.classList.remove('fa-copy');
+                icon.classList.add('fa-check');
+                copyBtn.classList.add('copied');
+                
+                // Показываем уведомление
+                showNotification('Пароль скопирован!');
+                
+                // Возвращаем иконку обратно через 2 секунды
+                setTimeout(function() {
+                    icon.classList.remove('fa-check');
+                    icon.classList.add('fa-copy');
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            }).catch(function(err) {
+                showNotification('Ошибка при копировании', true);
+            });
+        }
+
+        // Функция вставки пароля (для удобства)
+        function pastePassword() {
+            const passwordInput = document.getElementById('password');
+            const confirmInput = document.getElementById('confirm_password');
+            
+            navigator.clipboard.readText().then(function(text) {
+                confirmInput.value = text;
+                checkPasswordMatch();
+                showNotification('Пароль вставлен!');
+            }).catch(function(err) {
+                showNotification('Не удалось вставить', true);
+            });
+        }
+
+        // Показ уведомления
+        function showNotification(message, isError = false) {
+            const notification = document.createElement('div');
+            notification.className = 'copy-notification';
+            notification.style.background = isError ? 'var(--danger)' : 'var(--dark)';
+            notification.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(function() {
+                notification.remove();
+            }, 2000);
+        }
+
+        // Проверка совпадения паролей
+        function checkPasswordMatch() {
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm_password').value;
+            const matchDiv = document.getElementById('passwordMatch');
+            
+            if (confirm.length === 0) {
+                matchDiv.innerHTML = '<i class="fas fa-info-circle"></i> <span>Повторите пароль</span>';
+            } else if (password === confirm) {
+                matchDiv.innerHTML = '<i class="fas fa-check-circle match-success"></i> <span class="match-success">Пароли совпадают ✓</span>';
+            } else {
+                matchDiv.innerHTML = '<i class="fas fa-exclamation-circle match-error"></i> <span class="match-error">Пароли не совпадают ✗</span>';
+            }
+        }
+
+        // Слушаем изменения в полях пароля
+        document.getElementById('password').addEventListener('input', function() {
+            checkPasswordMatch();
+            // Активируем иконку замка
+            document.getElementById('passwordIcon').style.color = this.value ? 'var(--primary)' : 'var(--gray)';
+        });
+
+        document.getElementById('confirm_password').addEventListener('input', function() {
+            checkPasswordMatch();
+            document.getElementById('confirmIcon').style.color = this.value ? 'var(--primary)' : 'var(--gray)';
+        });
+
+        // Активация иконки пользователя
+        document.getElementById('username').addEventListener('input', function() {
+            document.getElementById('userIcon').style.color = this.value ? 'var(--primary)' : 'var(--gray)';
+        });
+
+        // Валидация перед отправкой
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm_password').value;
+            
+            if (password !== confirm) {
+                e.preventDefault();
+                showNotification('Пароли не совпадают!', true);
+                return false;
+            }
+        });
+
+        // Показ загрузки при отправке формы
+        document.getElementById('registerForm').addEventListener('submit', function() {
+            document.getElementById('loading').classList.add('active');
+        });
+
+        // Скрываем загрузку если страница загрузилась
+        window.addEventListener('load', function() {
+            document.getElementById('loading').classList.remove('active');
+        });
+
+        // Добавляем возможность вставить пароль по клику на поле подтверждения
+        document.getElementById('confirm_password').addEventListener('dblclick', function(e) {
+            e.preventDefault();
+            pastePassword();
+        });
+
+        // Подсказка о двойном клике
+        const confirmField = document.getElementById('confirm_password');
+        const hint = document.createElement('small');
+        hint.style.display = 'block';
+        hint.style.fontSize = '0.7em';
+        hint.style.color = 'var(--gray)';
+        hint.style.marginTop = '2px';
+        hint.style.marginLeft = '5px';
+        hint.innerHTML = '👆 Двойной клик для вставки скопированного пароля';
+        confirmField.parentElement.parentElement.appendChild(hint);
+    </script>
 </body>
 </html>
