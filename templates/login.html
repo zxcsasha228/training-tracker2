@@ -4,122 +4,400 @@
     <title>Вход в систему</title>
     <meta charset="utf-8">
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 0; 
+        /* Современные переменные цветов */
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #9ca3af;
+        }
+
+        * {
+            margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
         }
-        .login-container {
-            background-color: white;
+
+        /* Анимированный фон с кругами */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Карточка входа */
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
+            position: relative;
+            z-index: 1;
+            transform: translateY(0);
+            animation: slideUp 0.6s ease-out;
         }
-        h1 {
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Заголовок с иконкой */
+        .header {
             text-align: center;
-            color: #333;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: var(--dark);
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: var(--gray);
+            font-size: 0.95em;
+        }
+
+        /* Форма */
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            position: relative;
         }
-        label {
+
+        .form-group label {
             display: block;
-            margin-bottom: 5px;
-            color: #555;
-            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 500;
+            font-size: 0.95em;
+            transition: all 0.3s;
         }
-        input {
+
+        .form-group input {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            box-sizing: border-box;
+            padding: 14px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1em;
+            transition: all 0.3s;
+            background: white;
         }
-        input:focus {
+
+        .form-group input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        button:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
             transform: translateY(-2px);
         }
-        .error {
-            background-color: #ffebee;
-            color: #c62828;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            text-align: center;
+
+        .form-group input:hover {
+            border-color: var(--primary-dark);
         }
+
+        /* Иконки внутри полей */
+        .input-icon {
+            position: relative;
+        }
+
+        .input-icon i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+
+        .input-icon input {
+            padding-left: 45px;
+        }
+
+        /* Кнопка входа */
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .login-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Ссылка на регистрацию */
         .register-link {
             text-align: center;
-            margin-top: 20px;
-            color: #666;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 2px solid #e5e7eb;
         }
+
         .register-link a {
-            color: #667eea;
+            color: var(--primary);
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 600;
+            transition: all 0.3s;
+            position: relative;
         }
-        .register-link a:hover {
-            text-decoration: underline;
+
+        .register-link a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            transition: width 0.3s;
+        }
+
+        .register-link a:hover::after {
+            width: 100%;
+        }
+
+        /* Сообщение об ошибке */
+        .error-message {
+            background: #fee2e2;
+            color: var(--danger);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            font-size: 0.95em;
+            border-left: 4px solid var(--danger);
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        /* Тестовые аккаунты */
+        .test-accounts {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f3f4f6;
+            border-radius: 16px;
+            animation: fadeIn 1s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .test-accounts h3 {
+            color: var(--dark);
+            font-size: 1em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .test-accounts .account-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .test-accounts .account-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .test-accounts .account-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .test-accounts .account-role {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .test-accounts .account-creds {
+            color: var(--gray);
+            font-family: monospace;
+        }
+
+        /* Анимация загрузки */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.9);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
+    <!-- Font Awesome для иконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="login-container">
-        <h1>🏋️ Трекер тренировок</h1>
+    <div class="login-card">
+        <div class="header">
+            <h1> FitTrack</h1>
+            <p>Войди в свой тренировочный дневник</p>
+        </div>
         
         {% if error %}
-        <div class="error">{{ error }}</div>
+        <div class="error-message">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ error }}
+        </div>
         {% endif %}
         
-        <form method="post">
-            <div class="form-group">
-                <label>Имя пользователя:</label>
-                <input type="text" name="username" required autofocus>
+        <form method="post" id="loginForm">
+            <div class="form-group input-icon">
+                <i class="fas fa-user"></i>
+                <input type="text" name="username" placeholder="Имя пользователя" required autofocus>
             </div>
             
-            <div class="form-group">
-                <label>Пароль:</label>
-                <input type="password" name="password" required>
+            <div class="form-group input-icon">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" placeholder="Пароль" required>
             </div>
             
-            <button type="submit">Войти</button>
+            <button type="submit" class="login-btn" onclick="showLoading()">
+                <i class="fas fa-sign-in-alt"></i> Войти
+            </button>
         </form>
         
         <div class="register-link">
-            Нет аккаунта? <a href="{{ url_for('register') }}">Зарегистрироваться</a>
+            Нет аккаунта? <a href="{{ url_for('register') }}">Создать аккаунт</a>
         </div>
 
-        <!-- 👇 ВОТ СЮДА ДОБАВЛЯЕМ ЭТОТ БЛОК -->
-        <div style="margin-top: 30px; padding: 15px; background-color: #e9ecef; border-radius: 5px;">
-            <h3 style="margin-top: 0;">📝 Тестовые аккаунты:</h3>
-            <p><strong>Админ:</strong> admin / admin123</p>
-            <p><strong>Пользователь:</strong> user1 / user123</p>
+        <div class="test-accounts">
+            <h3><i class="fas fa-flask"></i> Тестовые аккаунты</h3>
+            <div class="account-item" onclick="fillLogin('admin', 'admin123')">
+                <span class="account-role"><i class="fas fa-crown"></i> Админ</span>
+                <span class="account-creds">admin / admin123</span>
+            </div>
+            <div class="account-item" onclick="fillLogin('user1', 'user123')">
+                <span class="account-role"><i class="fas fa-user"></i> Пользователь</span>
+                <span class="account-creds">user1 / user123</span>
+            </div>
         </div>
-        <!-- 👆 КОНЕЦ БЛОКА -->
     </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <script>
+        function showLoading() {
+            document.getElementById('loading').classList.add('active');
+        }
+
+        function fillLogin(username, password) {
+            document.querySelector('input[name="username"]').value = username;
+            document.querySelector('input[name="password"]').value = password;
+            document.querySelector('input[name="password"]').style.borderColor = '#10b981';
+            setTimeout(() => {
+                document.getElementById('loginForm').submit();
+            }, 500);
+        }
+
+        // Скрываем загрузку если страница загрузилась
+        window.addEventListener('load', function() {
+            document.getElementById('loading').classList.remove('active');
+        });
+    </script>
 </body>
 </html>
