@@ -4,318 +4,600 @@
     <title>Админ-панель</title>
     <meta charset="utf-8">
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 40px; 
-            background-color: #f4f4f4;
+        /* Современные переменные цветов */
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #9ca3af;
         }
-        .container { 
-            background-color: white; 
-            padding: 20px; 
-            border-radius: 5px; 
-            box-shadow: 0 0 10px rgba(0,0,0,0.1); 
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Шапка */
         .header {
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 2px solid #f0f0f0;
+            border-bottom: 2px solid rgba(0,0,0,0.05);
         }
-        h1 { 
-            color: #333; 
-            margin: 0;
+
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        h2 {
-            color: #444;
-            margin-top: 30px;
-        }
-        .admin-badge {
-            background-color: #dc3545;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 3px;
-            font-size: 12px;
-            margin-left: 10px;
-        }
+
         .user-info {
             display: flex;
             align-items: center;
             gap: 15px;
         }
+
         .username {
             font-weight: bold;
-            color: #dc3545;
+            color: var(--dark);
             font-size: 1.1em;
         }
-        .logout-btn {
-            background-color: #6c757d;
+
+        .admin-badge {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 5px;
-            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
         }
+
+        /* Кнопки */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-gray {
+            background: var(--gray);
+            color: white;
+        }
+
+        /* Статистика */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
+
         .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: white;
             padding: 20px;
-            border-radius: 10px;
-            text-align: center;
+            border-radius: 16px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            border: 1px solid rgba(0,0,0,0.05);
         }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.2);
+        }
+
         .stat-card h3 {
-            margin: 0 0 10px 0;
-            font-size: 16px;
-            opacity: 0.9;
+            color: var(--gray);
+            font-size: 0.9em;
+            margin-bottom: 10px;
         }
-        .stat-card .number {
-            font-size: 32px;
+
+        .stat-number {
+            font-size: 2.5em;
             font-weight: bold;
+            color: var(--primary);
         }
-        
+
         /* Поиск */
-        .search-container {
-            margin: 20px 0;
+        .search-section {
+            margin-bottom: 20px;
+        }
+
+        .search-wrapper {
             display: flex;
             gap: 10px;
+            align-items: center;
         }
+
         .search-input {
             flex: 1;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
+            padding: 15px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1em;
+            transition: all 0.3s;
         }
+
         .search-input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
         }
-        .search-clear {
-            background-color: #6c757d;
+
+        /* Таблица */
+        .table-container {
+            overflow-x: auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
         }
-        
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
+
+        th:first-child {
+            border-radius: 16px 0 0 0;
+        }
+
+        th:last-child {
+            border-radius: 0 16px 0 0;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+            color: var(--dark);
+        }
+
+        tr:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Пароль (скрыт по умолчанию) */
+        .password-cell {
+            position: relative;
+        }
+
+        .password-hidden {
+            font-family: monospace;
+            letter-spacing: 2px;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        .password-visible {
+            font-family: monospace;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .password-toggle {
+            margin-left: 10px;
+            color: var(--gray);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary);
+        }
+
+        /* Бейдж админа */
+        .role-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .role-badge.admin {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .role-badge.user {
+            background: var(--gray);
+            color: white;
+        }
+
+        /* Кнопки действий */
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: all 0.3s;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .action-btn.view {
+            background: var(--primary);
+        }
+
+        .action-btn.admin {
+            background: var(--success);
+        }
+
+        .action-btn.admin-remove {
+            background: var(--warning);
+        }
+
+        .action-btn.delete {
+            background: var(--danger);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        /* Пагинация */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
             margin-top: 20px;
         }
-        th, td { 
-            padding: 12px; 
-            text-align: left; 
-            border-bottom: 1px solid #ddd; 
-        }
-        th { 
-            background-color: #343a40; 
-            color: white; 
-        }
-        tr:hover { 
-            background-color: #f5f5f5; 
-        }
-        .user-row-admin {
-            background-color: #fff3f3;
-        }
-        
-        /* Кнопки */
-        .btn {
-            padding: 5px 10px;
-            border: none;
-            border-radius: 3px;
+
+        .page-btn {
+            padding: 8px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
             cursor: pointer;
-            text-decoration: none;
-            font-size: 12px;
-            margin: 2px;
-            display: inline-block;
+            transition: all 0.3s;
         }
-        .btn-view {
-            background-color: #007bff;
+
+        .page-btn.active {
+            background: var(--primary);
             color: white;
+            border-color: var(--primary);
         }
-        .btn-delete {
-            background-color: #dc3545;
-            color: white;
+
+        .page-btn:hover {
+            border-color: var(--primary);
         }
-        .btn-admin {
-            background-color: #28a745;
-            color: white;
-        }
-        .btn-admin-remove {
-            background-color: #ffc107;
-            color: black;
-        }
-        
-        /* Кнопка "Показать всех" */
-        .show-all-container {
-            text-align: center;
-            margin: 20px 0;
-        }
-        .show-all-btn {
-            background-color: #17a2b8;
-            color: white;
-            border: none;
-            padding: 10px 30px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        .show-all-btn:hover {
-            background-color: #138496;
-        }
-        
-        /* Скрытые строки */
-        .hidden-row {
-            display: none;
-        }
-        
-        /* Анимация */
+
+        /* Анимации */
         .fade-in {
             animation: fadeIn 0.5s;
         }
+
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
+
+        .hidden-row {
+            display: none;
+        }
+
+        /* Кнопка показать всех */
+        .show-all-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--light);
+            border: 2px dashed var(--gray);
+            border-radius: 12px;
+            color: var(--dark);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .show-all-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        /* Подсказка */
+        .hint-text {
+            font-size: 0.8em;
+            color: var(--gray);
+            margin-top: 5px;
+        }
     </style>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-   <div class="header">
-    <div>
-        <h1>👑 Админ-панель</h1>
-        <small>Управление пользователями и правами</small>
-    </div>
-    <div class="user-info">
-        <span class="username">👤 {{ session.username }} <span class="admin-badge">Admin</span></span>
-        <div style="display: flex; gap: 10px;">
-            <!-- ТОЛЬКО КНОПКА "Мои тренировки" -->
-            <a href="{{ url_for('my_workouts') }}" style="text-decoration: none;">
-                <button style="background-color: #28a745; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer;">
-                    🏋️ Мои тренировки
-                </button>
-            </a>
-            <a href="{{ url_for('logout') }}" style="text-decoration: none;">
-                <button class="logout-btn">Выйти</button>
-            </a>
+    <div class="container">
+        <!-- Шапка -->
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-crown"></i> Админ-панель</h1>
+                <p style="color: var(--gray);">Управление пользователями и тренировками</p>
+            </div>
+            <div class="user-info">
+                <span class="username">
+                    <i class="fas fa-user-circle"></i> {{ session.username }}
+                </span>
+                <span class="admin-badge">Admin</span>
+                <a href="{{ url_for('my_workouts') }}" class="btn btn-primary">
+                    <i class="fas fa-dumbbell"></i> Мои тренировки
+                </a>
+                <a href="{{ url_for('logout') }}" class="btn btn-gray">
+                    <i class="fas fa-sign-out-alt"></i> Выйти
+                </a>
+            </div>
         </div>
-    </div>
-</div>
-</div>
 
         <!-- Статистика -->
-        <h2>📊 Общая статистика</h2>
         <div class="stats-grid">
             <div class="stat-card">
-                <h3>Всего пользователей</h3>
-                <div class="number">{{ stats.total_users }}</div>
+                <h3><i class="fas fa-users"></i> Всего пользователей</h3>
+                <div class="stat-number">{{ stats.total_users }}</div>
             </div>
             <div class="stat-card">
-                <h3>Всего тренировок</h3>
-                <div class="number">{{ stats.total_workouts }}</div>
+                <h3><i class="fas fa-dumbbell"></i> Всего тренировок</h3>
+                <div class="stat-number">{{ stats.total_workouts }}</div>
             </div>
             <div class="stat-card">
-                <h3>Администраторов</h3>
-                <div class="number">{{ stats.total_admins }}</div>
+                <h3><i class="fas fa-crown"></i> Администраторов</h3>
+                <div class="stat-number">{{ stats.total_admins }}</div>
             </div>
         </div>
 
-        <!-- Поиск пользователей -->
-        <div class="search-container">
-            <input type="text" class="search-input" id="searchInput" placeholder="🔍 Поиск по имени пользователя..." onkeyup="searchUsers()">
-            <button class="search-clear" onclick="clearSearch()">Очистить</button>
+        <!-- Поиск -->
+        <div class="search-section">
+            <div class="search-wrapper">
+                <input type="text" class="search-input" id="searchInput" 
+                       placeholder="🔍 Поиск по имени пользователя или ID..." 
+                       onkeyup="searchUsers()">
+                <button class="btn btn-gray" onclick="clearSearch()">
+                    <i class="fas fa-times"></i> Очистить
+                </button>
+            </div>
+            <div class="hint-text">
+                <i class="fas fa-info-circle"></i> 
+                Нажмите на 👁️ рядом с паролем, чтобы увидеть его
+            </div>
         </div>
 
-        <!-- Список пользователей -->
-        <h2>👥 Пользователи <span id="userCount" style="font-size: 14px; color: #666;">(всего: {{ users|length }})</span></h2>
-        
-        <table id="usersTable">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Имя пользователя</th>
-                    <th>Роль</th>
-                    <th>Дата регистрации</th>
-                    <th>Тренировок</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for user in users %}
-                <tr class="user-row {% if user.is_admin %}user-row-admin{% endif %} {% if loop.index > 5 %}hidden-row{% endif %}" data-username="{{ user.username|lower }}">
-                    <td>{{ user.id }}</td>
-                    <td>
-                        {{ user.username }}
-                        {% if user.is_admin %}
-                            <span class="admin-badge">Admin</span>
-                        {% endif %}
-                    </td>
-                    <td>{% if user.is_admin %}Администратор{% else %}Пользователь{% endif %}</td>
-                    <td>{{ user.created_at }}</td>
-                    <td>{{ user.workouts_count or 0 }}</td>
-                    <td>
-                        <a href="{{ url_for('admin_user_workouts', user_id=user.id) }}" style="text-decoration: none;">
-                            <button class="btn btn-view" title="Смотреть тренировки">👁️</button>
-                        </a>
-                        
-                        {% if user.id != session.user_id %}
+        <!-- Таблица пользователей -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Имя пользователя</th>
+                        <th>Пароль</th>
+                        <th>Роль</th>
+                        <th>Дата регистрации</th>
+                        <th>Тренировок</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    {% for user in users %}
+                    <tr class="user-row {% if loop.index > 5 %}hidden-row{% endif %}" 
+                        data-username="{{ user.username|lower }}"
+                        data-id="{{ user.id }}">
+                        <td><strong>#{{ user.id }}</strong></td>
+                        <td>
+                            <i class="fas fa-user-circle" style="color: var(--primary);"></i>
+                            {{ user.username }}
+                        </td>
+                        <td class="password-cell">
+                            <span class="password-hidden" id="password-{{ user.id }}">
+                                ••••••••
+                            </span>
+                            <span class="password-visible" id="password-visible-{{ user.id }}" 
+                                  style="display: none;">
+                                {{ user.password }}
+                            </span>
+                            <i class="fas fa-eye password-toggle" 
+                               onclick="togglePassword({{ user.id }})"
+                               id="toggle-{{ user.id }}"></i>
+                        </td>
+                        <td>
                             {% if user.is_admin %}
-                                <a href="{{ url_for('toggle_admin', user_id=user.id) }}" style="text-decoration: none;">
-                                    <button class="btn btn-admin-remove" title="Забрать права администратора">👑❌</button>
-                                </a>
+                                <span class="role-badge admin">
+                                    <i class="fas fa-crown"></i> Админ
+                                </span>
                             {% else %}
-                                <a href="{{ url_for('toggle_admin', user_id=user.id) }}" style="text-decoration: none;">
-                                    <button class="btn btn-admin" title="Сделать администратором">👑</button>
-                                </a>
+                                <span class="role-badge user">
+                                    <i class="fas fa-user"></i> Пользователь
+                                </span>
                             {% endif %}
-                            
-                            <form action="{{ url_for('admin_delete_user', user_id=user.id) }}" method="post" style="display: inline;" onsubmit="return confirm('Вы уверены? Все тренировки пользователя будут удалены.')">
-                                <button type="submit" class="btn btn-delete" title="Удалить пользователя">🗑️</button>
-                            </form>
-                        {% else %}
-                            <span style="color: #999; font-size: 12px;">(это вы)</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <!-- Кнопка "Показать всех" (если пользователей больше 5) -->
-        {% if users|length > 5 %}
-        <div class="show-all-container" id="showAllContainer">
-            <button class="show-all-btn" onclick="toggleAllUsers()" id="showAllBtn">📋 Показать всех пользователей ({{ users|length - 5 }} скрыто)</button>
+                        </td>
+                        <td>{{ user.created_at }}</td>
+                        <td>
+                            <span class="stat-number" style="font-size: 1.2em;">
+                                {{ user.workouts_count or 0 }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{{ url_for('admin_user_details', user_id=user.id) }}" 
+                                   class="action-btn view" title="Смотреть тренировки">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                
+                                {% if user.id != session.user_id %}
+                                    {% if user.is_admin %}
+                                        <a href="{{ url_for('toggle_admin', user_id=user.id) }}" 
+                                           class="action-btn admin-remove" 
+                                           title="Забрать права администратора"
+                                           onclick="return confirm('Забрать права администратора у {{ user.username }}?')">
+                                            <i class="fas fa-crown"></i>
+                                        </a>
+                                    {% else %}
+                                        <a href="{{ url_for('toggle_admin', user_id=user.id) }}" 
+                                           class="action-btn admin" 
+                                           title="Сделать администратором"
+                                           onclick="return confirm('Сделать {{ user.username }} администратором?')">
+                                            <i class="fas fa-crown"></i>
+                                        </a>
+                                    {% endif %}
+                                    
+                                    <form action="{{ url_for('admin_delete_user', user_id=user.id) }}" 
+                                          method="post" style="display: inline;" 
+                                          onsubmit="return confirm('Удалить пользователя {{ user.username }}? Все его тренировки будут потеряны.')">
+                                        <button type="submit" class="action-btn delete" title="Удалить пользователя">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <span style="color: var(--gray); font-size: 0.8em;">
+                                        <i class="fas fa-check"></i> Это вы
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
+
+        <!-- Кнопка "Показать всех" -->
+        {% if users|length > 5 %}
+        <button class="show-all-btn" onclick="toggleAllUsers()" id="showAllBtn">
+            <i class="fas fa-chevron-down"></i> 
+            Показать всех пользователей ({{ users|length - 5 }} скрыто)
+        </button>
         {% endif %}
 
-        <!-- Сообщение "Ничего не найдено" (для поиска) -->
-        <div id="noResults" style="display: none; text-align: center; padding: 40px; color: #666;">
-            🔍 Пользователей с таким именем не найдено
+        <!-- Сообщение "Ничего не найдено" -->
+        <div id="noResults" style="display: none; text-align: center; padding: 40px;">
+            <i class="fas fa-search" style="font-size: 3em; color: var(--gray);"></i>
+            <h3 style="color: var(--gray); margin-top: 20px;">Ничего не найдено</h3>
+            <p>Попробуйте изменить поисковый запрос</p>
         </div>
     </div>
 
     <script>
         let showingAll = false;
-        
-        // Функция поиска
+
+        // Функция показа/скрытия пароля
+        function togglePassword(userId) {
+            const hiddenSpan = document.getElementById(`password-${userId}`);
+            const visibleSpan = document.getElementById(`password-visible-${userId}`);
+            const toggleIcon = document.getElementById(`toggle-${userId}`);
+            
+            if (hiddenSpan.style.display === 'none') {
+                hiddenSpan.style.display = 'inline';
+                visibleSpan.style.display = 'none';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            } else {
+                hiddenSpan.style.display = 'none';
+                visibleSpan.style.display = 'inline';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            }
+        }
+
+        // Поиск пользователей
         function searchUsers() {
             const input = document.getElementById('searchInput');
             const filter = input.value.toLowerCase();
-            const rows = document.querySelectorAll('#usersTable tbody tr');
+            const rows = document.querySelectorAll('.user-row');
             let visibleCount = 0;
             
             rows.forEach(row => {
                 const username = row.getAttribute('data-username');
-                if (username.includes(filter)) {
+                const id = row.getAttribute('data-id');
+                
+                if (username.includes(filter) || id.includes(filter)) {
                     row.style.display = '';
                     visibleCount++;
                 } else {
@@ -323,7 +605,7 @@
                 }
             });
             
-            // Показываем/скрываем сообщение "ничего не найдено"
+            // Показываем/скрываем сообщение
             const noResults = document.getElementById('noResults');
             if (visibleCount === 0) {
                 noResults.style.display = 'block';
@@ -331,18 +613,15 @@
                 noResults.style.display = 'none';
             }
             
-            // Обновляем счетчик
-            document.getElementById('userCount').innerHTML = `(найдено: ${visibleCount} из {{ users|length }})`;
-            
-            // Если мы в режиме поиска, скрываем кнопку "Показать всех"
+            // Если поиск активен, скрываем кнопку "Показать всех"
             if (filter !== '') {
-                document.getElementById('showAllContainer').style.display = 'none';
+                document.getElementById('showAllBtn').style.display = 'none';
             } else {
-                document.getElementById('showAllContainer').style.display = 'block';
+                document.getElementById('showAllBtn').style.display = 'block';
                 resetUserDisplay();
             }
         }
-        
+
         // Очистка поиска
         function clearSearch() {
             document.getElementById('searchInput').value = '';
@@ -350,12 +629,11 @@
             if (!showingAll) {
                 hideExtraUsers();
             }
-            document.getElementById('userCount').innerHTML = `(всего: {{ users|length }})`;
         }
-        
+
         // Показать/скрыть всех пользователей
         function toggleAllUsers() {
-            const rows = document.querySelectorAll('#usersTable tbody tr');
+            const rows = document.querySelectorAll('.user-row');
             const btn = document.getElementById('showAllBtn');
             
             showingAll = !showingAll;
@@ -372,22 +650,16 @@
             });
             
             if (showingAll) {
-                btn.textContent = '📌 Показать только первые 5';
+                btn.innerHTML = '<i class="fas fa-chevron-up"></i> Скрыть лишних';
             } else {
-                btn.textContent = '📋 Показать всех пользователей (' + ({{ users|length }} - 5) + ' скрыто)';
+                const hiddenCount = rows.length - 5;
+                btn.innerHTML = `<i class="fas fa-chevron-down"></i> Показать всех пользователей (${hiddenCount} скрыто)`;
             }
         }
-        
-        // Сброс отображения (после поиска)
-        function resetUserDisplay() {
-            if (!showingAll) {
-                hideExtraUsers();
-            }
-        }
-        
-        // Скрыть пользователей после 5-го
+
+        // Скрыть лишних пользователей
         function hideExtraUsers() {
-            const rows = document.querySelectorAll('#usersTable tbody tr');
+            const rows = document.querySelectorAll('.user-row');
             rows.forEach((row, index) => {
                 if (index >= 5) {
                     row.classList.add('hidden-row');
@@ -396,11 +668,43 @@
                 }
             });
         }
-        
-        // Подтверждение изменения прав администратора
-        function confirmToggleAdmin(action) {
-            return confirm(`Вы уверены, что хотите ${action} этого пользователя?`);
+
+        // Копирование пароля (дополнительная функция)
+        function copyPassword(userId) {
+            const passwordSpan = document.getElementById(`password-visible-${userId}`);
+            const password = passwordSpan.textContent;
+            
+            navigator.clipboard.writeText(password).then(() => {
+                alert('Пароль скопирован в буфер обмена!');
+            });
         }
+
+        // Добавляем возможность копировать пароль по клику
+        document.querySelectorAll('.password-visible').forEach(span => {
+            span.addEventListener('click', function() {
+                const password = this.textContent;
+                navigator.clipboard.writeText(password).then(() => {
+                    // Временное уведомление
+                    const notification = document.createElement('div');
+                    notification.style.cssText = `
+                        position: fixed;
+                        bottom: 20px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        background: var(--success);
+                        color: white;
+                        padding: 10px 20px;
+                        border-radius: 50px;
+                        z-index: 9999;
+                        animation: slideUp 0.3s;
+                    `;
+                    notification.innerHTML = '<i class="fas fa-check"></i> Пароль скопирован!';
+                    document.body.appendChild(notification);
+                    
+                    setTimeout(() => notification.remove(), 2000);
+                });
+            });
+        });
     </script>
 </body>
 </html>

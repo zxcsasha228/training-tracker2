@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Детали пользователя</title>
+    <meta charset="utf-8">
+    <style>
+        /* Современные переменные цветов */
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #9ca3af;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Шапка */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(0,0,0,0.05);
+        }
+
+        .header h1 {
+            font-size: 2em;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header h1 i {
+            margin-right: 10px;
+        }
+
+        /* Кнопки */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-gray {
+            background: var(--gray);
+            color: white;
+        }
+
+        .btn-gray:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        /* Карточка пользователя */
+        .user-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* Аватар */
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        .user-avatar i {
+            font-size: 3em;
+            color: white;
+        }
+
+        /* Имя пользователя */
+        .user-name {
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        /* Бейдж роли */
+        .role-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin: 0 auto 30px;
+            width: fit-content;
+        }
+
+        .role-badge.admin {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .role-badge.user {
+            background: var(--gray);
+            color: white;
+        }
+
+        .role-badge i {
+            margin-right: 5px;
+        }
+
+        /* Сетка информации */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .info-item {
+            background: var(--light);
+            padding: 20px;
+            border-radius: 16px;
+            transition: all 0.3s;
+        }
+
+        .info-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.1);
+        }
+
+        .info-label {
+            color: var(--gray);
+            font-size: 0.85em;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .info-label i {
+            color: var(--primary);
+        }
+
+        .info-value {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        /* Поле пароля */
+        .password-field {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+
+        .password-text {
+            font-family: monospace;
+            font-size: 1.1em;
+            color: var(--primary);
+            letter-spacing: 1px;
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            font-size: 1.1em;
+            padding: 5px 10px;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        /* Статистика */
+        .stats-mini {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid rgba(0,0,0,0.05);
+        }
+
+        .stat-mini-item {
+            text-align: center;
+        }
+
+        .stat-mini-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-mini-label {
+            color: var(--gray);
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        /* Анимации */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .copy-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--success);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 0.9em;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            animation: slideUp 0.3s ease-out;
+            z-index: 1000;
+        }
+    </style>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка -->
+        <div class="header">
+            <h1>
+                <i class="fas fa-user-circle"></i> 
+                Профиль пользователя
+            </h1>
+            <a href="{{ url_for('admin_panel') }}" class="btn btn-gray">
+                <i class="fas fa-arrow-left"></i> Назад
+            </a>
+        </div>
+
+        <!-- Карточка пользователя -->
+        <div class="user-card">
+            <!-- Аватар -->
+            <div class="user-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+
+            <!-- Имя пользователя -->
+            <div class="user-name">{{ user.username }}</div>
+
+            <!-- Бейдж роли -->
+            <div class="role-badge {% if user.is_admin %}admin{% else %}user{% endif %}">
+                {% if user.is_admin %}
+                    <i class="fas fa-crown"></i> Администратор
+                {% else %}
+                    <i class="fas fa-user"></i> Пользователь
+                {% endif %}
+            </div>
+
+            <!-- Информация -->
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="fas fa-hashtag"></i> ID пользователя
+                    </div>
+                    <div class="info-value">#{{ user.id }}</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="fas fa-calendar"></i> Дата регистрации
+                    </div>
+                    <div class="info-value">{{ user.created_at }}</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="fas fa-dumbbell"></i> Всего тренировок
+                    </div>
+                    <div class="info-value">{{ workouts|length }}</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="fas fa-clock"></i> Последняя активность
+                    </div>
+                    <div class="info-value">
+                        {% if workouts %}
+                            {{ workouts[0].date }}
+                        {% else %}
+                            Нет тренировок
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Пароль (отдельно) -->
+            <div style="margin-top: 25px;">
+                <div class="info-label" style="margin-bottom: 10px;">
+                    <i class="fas fa-lock"></i> Пароль пользователя
+                </div>
+                <div class="password-field">
+                    <span class="password-text" id="passwordText">{{ user.password }}</span>
+                    <button class="copy-btn" onclick="copyPassword()" title="Копировать пароль">
+                        <i class="far fa-copy" id="copyIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Краткая статистика -->
+            <div class="stats-mini">
+                <div class="stat-mini-item">
+                    <div class="stat-mini-value">{{ workouts|length }}</div>
+                    <div class="stat-mini-label">Тренировок</div>
+                </div>
+                
+                <div class="stat-mini-item">
+                    <div class="stat-mini-value">
+                        {% if user.is_admin %}
+                            <i class="fas fa-crown" style="color: var(--warning);"></i>
+                        {% else %}
+                            <i class="fas fa-user" style="color: var(--gray);"></i>
+                        {% endif %}
+                    </div>
+                    <div class="stat-mini-label">Статус</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Функция копирования пароля
+        function copyPassword() {
+            const passwordText = document.getElementById('passwordText').textContent;
+            const copyIcon = document.getElementById('copyIcon');
+            
+            navigator.clipboard.writeText(passwordText).then(function() {
+                // Меняем иконку на успех
+                copyIcon.classList.remove('fa-copy');
+                copyIcon.classList.add('fa-check');
+                
+                // Показываем уведомление
+                showNotification('Пароль скопирован!');
+                
+                // Возвращаем иконку обратно через 2 секунды
+                setTimeout(function() {
+                    copyIcon.classList.remove('fa-check');
+                    copyIcon.classList.add('fa-copy');
+                }, 2000);
+            }).catch(function(err) {
+                showNotification('Ошибка при копировании', true);
+            });
+        }
+
+        // Показ уведомления
+        function showNotification(message, isError = false) {
+            const notification = document.createElement('div');
+            notification.className = 'copy-notification';
+            notification.style.background = isError ? 'var(--danger)' : 'var(--success)';
+            notification.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(function() {
+                notification.remove();
+            }, 2000);
+        }
+
+        // Добавляем возможность скопировать пароль по клику на текст
+        document.getElementById('passwordText').addEventListener('click', function() {
+            copyPassword();
+        });
+    </script>
+</body>
+</html>

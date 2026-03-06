@@ -68,15 +68,15 @@ def admin_panel():
     users = database.get_all_users()
     return render_template('admin_panel.html', stats=stats, users=users)
 
-# Просмотр тренировок пользователя (для админа)
+# Просмотр данных пользователя (для админа)
 @app.route('/admin/user/<int:user_id>')
-def admin_user_workouts(user_id):
+def admin_user_details(user_id):
     if 'user_id' not in session or not session.get('is_admin'):
         return redirect(url_for('login'))
     
-    user = database.get_user_by_id(user_id)
+    user = database.get_user_with_password(user_id)
     workouts = database.get_user_workouts_admin(user_id)
-    return render_template('admin_user_workouts.html', user=user, workouts=workouts)
+    return render_template('admin_user_details.html', user=user, workouts=workouts)
 
 
 # Страница тренировок для админа
