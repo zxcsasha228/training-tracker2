@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Редактировать упражнение</title>
+    <meta charset="utf-8">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #9ca3af;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Шапка */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(0,0,0,0.05);
+        }
+
+        .header h1 {
+            font-size: 2em;
+            background: linear-gradient(135deg, var(--warning), #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Кнопки */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning), #fbbf24);
+            color: var(--dark);
+            width: 100%;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-gray {
+            background: var(--gray);
+            color: white;
+        }
+
+        .btn-gray:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Форма */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+
+        label i {
+            color: var(--warning);
+            margin-right: 5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1em;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--warning);
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+        }
+
+        /* Загрузка изображения */
+        .image-upload {
+            border: 2px dashed #e5e7eb;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .image-upload:hover {
+            border-color: var(--warning);
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .image-upload i {
+            font-size: 3em;
+            color: var(--gray);
+            margin-bottom: 10px;
+        }
+
+        .image-upload p {
+            color: var(--gray);
+            font-size: 0.9em;
+        }
+
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            margin: 20px auto;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 3px solid var(--warning);
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Текущее изображение */
+        .current-image {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .current-image img {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 10px;
+            border: 3px solid var(--warning);
+        }
+
+        /* Подсказка */
+        .hint {
+            font-size: 0.85em;
+            color: var(--gray);
+            margin-top: 5px;
+        }
+
+        /* Группа кнопок */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .button-group .btn {
+            flex: 1;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка -->
+        <div class="header">
+            <h1><i class="fas fa-edit"></i> Редактировать упражнение</h1>
+            <div class="header-actions">
+                <a href="{{ url_for('admin_panel') }}" class="btn btn-primary">
+                    <i class="fas fa-crown"></i> Админ-панель
+                </a>
+                <a href="{{ url_for('exercises_library') }}" class="btn btn-gray">
+                    <i class="fas fa-times"></i>
+                </a>
+            </div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+            <!-- Текущее изображение (если есть) -->
+{% if exercise.image %}
+<div class="current-image">
+    <p style="margin-bottom: 10px; color: var(--gray);">Текущее изображение:</p>
+    <img src="{{ url_for('static', filename=exercise.image) }}" alt="{{ exercise.name }}">
+</div>
+{% endif %}
+
+            <!-- Загрузка нового изображения -->
+            <div class="image-upload" onclick="document.getElementById('imageInput').click()">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Нажмите чтобы загрузить новое изображение</p>
+                <p class="hint">Оставьте пустым, чтобы сохранить текущее</p>
+            </div>
+            
+            <input type="file" id="imageInput" name="image" accept="image/*" style="display: none;" onchange="previewImage(this)">
+            
+            <div class="image-preview" id="imagePreview" style="display: none;">
+                <img src="" alt="Превью">
+            </div>
+
+            <!-- Название упражнения -->
+            <div class="form-group">
+                <label><i class="fas fa-dumbbell"></i> Название упражнения *</label>
+                <input type="text" name="name" value="{{ exercise.name }}" required>
+            </div>
+
+            <!-- Группа мышц -->
+            <div class="form-group">
+                <label><i class="fas fa-bolt"></i> Группа мышц *</label>
+                <select name="muscle_group" required>
+                    <option value="Грудные" {% if exercise.muscle_group == 'Грудные' %}selected{% endif %}>Грудные</option>
+                    <option value="Спина" {% if exercise.muscle_group == 'Спина' %}selected{% endif %}>Спина</option>
+                    <option value="Ноги" {% if exercise.muscle_group == 'Ноги' %}selected{% endif %}>Ноги</option>
+                    <option value="Плечи" {% if exercise.muscle_group == 'Плечи' %}selected{% endif %}>Плечи</option>
+                    <option value="Бицепс" {% if exercise.muscle_group == 'Бицепс' %}selected{% endif %}>Бицепс</option>
+                    <option value="Трицепс" {% if exercise.muscle_group == 'Трицепс' %}selected{% endif %}>Трицепс</option>
+                    <option value="Пресс" {% if exercise.muscle_group == 'Пресс' %}selected{% endif %}>Пресс</option>
+                    <option value="Ягодицы" {% if exercise.muscle_group == 'Ягодицы' %}selected{% endif %}>Ягодицы</option>
+                    <option value="Предплечья" {% if exercise.muscle_group == 'Предплечья' %}selected{% endif %}>Предплечья</option>
+                    <option value="Трапеции" {% if exercise.muscle_group == 'Трапеции' %}selected{% endif %}>Трапеции</option>
+                </select>
+            </div>
+
+            <div class="button-group">
+                <a href="{{ url_for('exercises_library') }}" class="btn btn-gray">
+                    <i class="fas fa-times"></i> Отмена
+                </a>
+                <button type="submit" class="btn btn-warning">
+                    <i class="fas fa-save"></i> Сохранить
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function previewImage(input) {
+            const preview = document.getElementById('imagePreview');
+            const previewImg = preview.querySelector('img');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+</body>
+</html>

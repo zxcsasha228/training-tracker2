@@ -276,4 +276,167 @@ def delete_workout(workout_id, user_id):
             WHERE id = ? AND user_id = ?
         ''', (workout_id, user_id))
 
-        
+        # ================ БИБЛИОТЕКА УПРАЖНЕНИЙ ================
+# ================ БИБЛИОТЕКА УПРАЖНЕНИЙ ================
+
+def init_exercises_table():
+    """Создать таблицу упражнений, если её нет"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS exercises (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT UNIQUE NOT NULL,
+                    image TEXT,
+                    muscle_group TEXT,
+                    created_by INTEGER,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (created_by) REFERENCES users (id)
+                )
+            ''')
+            
+            # Проверяем, есть ли уже упражнения
+            cursor.execute('SELECT COUNT(*) as count FROM exercises')
+            count = cursor.fetchone()['count']
+            
+            if count == 0:
+                # Добавляем базовые упражнения
+                base_exercises = [
+                    ('Жим штанги лежа', None, 'Грудные'),
+                    ('Приседания со штангой', None, 'Ноги'),
+                    ('Становая тяга', None, 'Спина'),
+                    ('Подтягивания', None, 'Спина'),
+                    ('Отжимания на брусьях', None, 'Грудные'),
+                    ('Жим гантелей сидя', None, 'Плечи'),
+                    ('Тяга штанги в наклоне', None, 'Спина'),
+                    ('Сгибание рук со штангой', None, 'Бицепс'),
+                    ('Французский жим', None, 'Трицепс'),
+                    ('Выпады с гантелями', None, 'Ноги'),
+                    ('Скручивания', None, 'Пресс'),
+                    ('Молотки с гантелями', None, 'Бицепс'),
+                    ('Разгибание рук на блоке', None, 'Трицепс'),
+                    ('Махи гантелями в стороны', None, 'Плечи'),
+                    ('Тяга верхнего блока', None, 'Спина')
+                ]
+                
+                for ex in base_exercises:
+                    try:
+                        cursor.execute('''
+                            INSERT INTO exercises (name, image, muscle_group)
+                            VALUES (?, ?, ?)
+                        ''', ex)
+                    except:
+                        pass
+    except Exception as e:
+        print(f"Ошибка при создании таблицы exercises: {e}")
+
+def get_all_exercises():
+    """Получить все упражнения"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT * FROM exercises 
+                ORDER BY name
+            ''')
+            return cursor.fetchall()
+    except Exception as e:
+        print(f"Ошибка при получении упражнений: {e}")
+        return []
+
+def get_exercise(exercise_id):
+    """Получить упражнение по ID"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT * FROM exercises WHERE id = ?', (exercise_id,))
+            return cursor.fetchone()
+    except Exception as e:
+        print(f"Ошибка при получении упражнения: {e}")
+        return None
+
+def add_exercise(name, image, muscle_group, created_by):
+    """Добавить новое упражнение"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            
+            # Проверяем, есть ли уже такое упражнение
+            cursor.execute('SELECT id FROM exercises WHERE name = ?', (name,))
+            existing = cursor.fetchone()
+            
+            if existing:
+                print(f"Упражнение '{name}' уже существует с ID {existing['id']}")
+                return False
+            
+            cursor.execute('''
+                INSERT INTO exercises (name, image, muscle_group, created_by)
+                VALUES (?, ?, ?, ?)
+            ''', (name, image, muscle_group, created_by))
+            return True
+    except Exception as e:
+        print(f"Ошибка при добавлении упражнения: {e}")
+        return False
+
+def update_exercise(exercise_id, name, image, muscle_group):
+    """Обновить упражнение"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            
+            # Если передано новое изображение, обновляем его
+            if image:
+                cursor.execute('''
+                    UPDATE exercises 
+                    SET name = ?, image = ?, muscle_group = ?
+                    WHERE id = ?
+                ''', (name, image, muscle_group, exercise_id))
+            else:
+                cursor.execute('''
+                    UPDATE exercises 
+                    SET name = ?, muscle_group = ?
+                    WHERE id = ?
+                ''', (name, muscle_group, exercise_id))
+            
+            return True
+    except Exception as e:
+        print(f"Ошибка при обновлении упражнения: {e}")
+        return False
+    
+def delete_exercise(exercise_id):
+    """Удалить упражнение"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM exercises WHERE id = ?', (exercise_id,))
+            return True
+    except Exception as e:
+        print(f"Ошибка при удалении упражнения: {e}")
+        return False
+
+def get_muscle_groups():
+    """Получить все группы мышц"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT DISTINCT muscle_group 
+                FROM exercises 
+                WHERE muscle_group IS NOT NULL
+                ORDER BY muscle_group
+            ''')
+            return [row['muscle_group'] for row in cursor.fetchall()]
+    except Exception as e:
+        print(f"Ошибка при получении групп мышц: {e}")
+        return []
+    """Получить все группы мышц"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT DISTINCT muscle_group 
+            FROM exercises 
+            WHERE muscle_group IS NOT NULL
+            ORDER BY muscle_group
+        ''')
+        return [row['muscle_group'] for row in cursor.fetchall()]

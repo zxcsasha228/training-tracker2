@@ -432,25 +432,34 @@
 </head>
 <body>
     <div class="container">
-        <!-- Шапка -->
-        <div class="header">
-            <div>
-                <h1><i class="fas fa-crown"></i> Админ-панель</h1>
-                <p style="color: var(--gray); margin-top: 5px;">Управление пользователями</p>
-            </div>
-            <div class="user-info">
-                <span class="username">
-                    <i class="fas fa-user-circle"></i> {{ session.username }}
-                </span>
-                <span class="admin-badge">Admin</span>
-                <a href="{{ url_for('my_workouts') }}" class="btn btn-primary">
-                    <i class="fas fa-dumbbell"></i> Мои тренировки
-                </a>
-                <a href="{{ url_for('logout') }}" class="btn btn-gray">
-                    <i class="fas fa-sign-out-alt"></i> Выйти
-                </a>
-            </div>
-        </div>
+       <!-- Шапка -->
+<div class="header">
+    <div>
+        <h1><i class="fas fa-crown"></i> Админ-панель</h1>
+        <p style="color: var(--gray); margin-top: 5px;">Управление пользователями и контентом</p>
+    </div>
+    <div class="user-info">
+        <span class="username">
+            <i class="fas fa-user-circle"></i> {{ session.username }}
+        </span>
+        <span class="admin-badge">Admin</span>
+        
+        <!-- Кнопка библиотеки упражнений (новая) -->
+        <a href="{{ url_for('exercises_library') }}" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981, #059669);">
+            <i class="fas fa-dumbbell"></i> Упражнения
+        </a>
+        
+        <!-- Кнопка тренировок админа -->
+        <a href="{{ url_for('my_workouts') }}" class="btn btn-primary">
+            <i class="fas fa-calendar"></i> Мои тренировки
+        </a>
+        
+        <!-- Кнопка выхода -->
+        <a href="{{ url_for('logout') }}" class="btn btn-gray">
+            <i class="fas fa-sign-out-alt"></i> Выйти
+        </a>
+    </div>
+</div>
 
         <!-- Статистика -->
         <div class="stats-grid">

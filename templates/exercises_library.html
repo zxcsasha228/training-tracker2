@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Библиотека упражнений</title>
+    <meta charset="utf-8">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #9ca3af;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Шапка */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(0,0,0,0.05);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header h1 i {
+            margin-right: 10px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* Кнопки */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-gray {
+            background: var(--gray);
+            color: white;
+        }
+
+        .btn-gray:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        /* Фильтры */
+        .filters-section {
+            margin-bottom: 30px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 30px;
+            background: white;
+            color: var(--dark);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-color: transparent;
+        }
+
+        /* Сетка упражнений */
+        .exercises-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        /* Карточка упражнения */
+        .exercise-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            border: 1px solid rgba(0,0,0,0.05);
+            text-align: center;
+            position: relative;
+        }
+
+        .exercise-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Изображение упражнения */
+        .exercise-image {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 15px;
+            border-radius: 15px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #667eea20, #764ba220);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .exercise-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .exercise-image i {
+            font-size: 3em;
+            color: var(--gray);
+        }
+
+        /* Название упражнения */
+        .exercise-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--dark);
+            margin-bottom: 12px;
+        }
+
+        /* Группа мышц */
+        .muscle-group {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            padding: 6px 15px;
+            border-radius: 25px;
+            display: inline-block;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .muscle-group i {
+            margin-right: 5px;
+        }
+
+        /* Админ-действия */
+        .admin-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid rgba(0,0,0,0.05);
+        }
+
+        .admin-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .admin-btn.edit {
+            background: var(--warning);
+        }
+
+        .admin-btn.delete {
+            background: var(--danger);
+        }
+
+        .admin-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        /* Пустое состояние */
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            background: white;
+            border-radius: 20px;
+            grid-column: 1 / -1;
+        }
+
+        .empty-state i {
+            font-size: 4em;
+            color: var(--gray);
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: var(--gray);
+        }
+
+        /* Поиск */
+        .search-box {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            font-size: 1em;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка -->
+        <div class="header">
+            <h1><i class="fas fa-dumbbell"></i> Библиотека упражнений</h1>
+            <div class="header-actions">
+                <!-- Кнопка админ-панели (только для админов) -->
+                {% if is_admin %}
+                <a href="{{ url_for('admin_panel') }}" class="btn btn-primary">
+                    <i class="fas fa-crown"></i> Админ-панель
+                </a>
+                <!-- Кнопка добавления упражнения -->
+                <a href="{{ url_for('add_exercise') }}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Добавить
+                </a>
+                {% endif %}
+                <!-- Кнопка назад к тренировкам -->
+                <a href="{{ url_for('my_workouts') }}" class="btn btn-gray">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </a>
+            </div>
+        </div>
+
+        <!-- Поиск и фильтры -->
+        <div class="filters-section">
+            <input type="text" class="search-box" id="searchInput" 
+                   placeholder="🔍 Поиск по названию..." onkeyup="filterExercises()">
+            
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterByMuscle('all')" id="filter-all">Все</button>
+                <button class="filter-btn" onclick="filterByMuscle('Грудные')" id="filter-Грудные">Грудные</button>
+                <button class="filter-btn" onclick="filterByMuscle('Спина')" id="filter-Спина">Спина</button>
+                <button class="filter-btn" onclick="filterByMuscle('Ноги')" id="filter-Ноги">Ноги</button>
+                <button class="filter-btn" onclick="filterByMuscle('Плечи')" id="filter-Плечи">Плечи</button>
+                <button class="filter-btn" onclick="filterByMuscle('Бицепс')" id="filter-Бицепс">Бицепс</button>
+                <button class="filter-btn" onclick="filterByMuscle('Трицепс')" id="filter-Трицепс">Трицепс</button>
+                <button class="filter-btn" onclick="filterByMuscle('Пресс')" id="filter-Пресс">Пресс</button>
+                <button class="filter-btn" onclick="filterByMuscle('Ягодицы')" id="filter-Ягодицы">Ягодицы</button>
+            </div>
+        </div>
+
+        <!-- Сетка упражнений -->
+        <div class="exercises-grid" id="exercisesGrid">
+            {% for exercise in exercises %}
+            <div class="exercise-card" data-name="{{ exercise.name|lower }}" 
+                 data-muscle="{{ exercise.muscle_group }}">
+                
+                <!-- Картинка упражнения -->
+<div class="exercise-image">
+    {% if exercise.image %}
+        <img src="{{ url_for('static', filename=exercise.image) }}" alt="{{ exercise.name }}">
+    {% else %}
+        <i class="fas fa-dumbbell"></i>
+    {% endif %}
+</div>
+                
+                <!-- Название -->
+                <div class="exercise-name">{{ exercise.name }}</div>
+                
+                <!-- Группа мышц -->
+                <div class="muscle-group">
+                    <i class="fas fa-bolt"></i> {{ exercise.muscle_group }}
+                </div>
+
+                {% if is_admin %}
+                <!-- Админ-действия -->
+                <div class="admin-actions">
+                    <a href="{{ url_for('edit_exercise', exercise_id=exercise.id) }}" 
+                       class="admin-btn edit" title="Редактировать">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <form action="{{ url_for('delete_exercise', exercise_id=exercise.id) }}" 
+                          method="post" style="display: inline;" 
+                          onsubmit="return confirm('Удалить упражнение {{ exercise.name }}?')">
+                        <button type="submit" class="admin-btn delete" title="Удалить">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Пустое состояние -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <i class="fas fa-search"></i>
+            <h3>Ничего не найдено</h3>
+            <p>Попробуйте изменить параметры поиска</p>
+        </div>
+    </div>
+
+    <script>
+        let currentMuscleFilter = 'all';
+
+        function filterExercises() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.exercise-card');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name');
+                const muscle = card.getAttribute('data-muscle');
+                
+                const matchesSearch = name.includes(searchInput);
+                const matchesMuscle = currentMuscleFilter === 'all' || muscle === currentMuscleFilter;
+                
+                if (matchesSearch && matchesMuscle) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            const emptyState = document.getElementById('emptyState');
+            if (visibleCount === 0) {
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+            }
+        }
+
+        function filterByMuscle(muscle) {
+            currentMuscleFilter = muscle;
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            if (muscle === 'all') {
+                document.getElementById('filter-all').classList.add('active');
+            } else {
+                document.getElementById(`filter-${muscle}`).classList.add('active');
+            }
+            
+            filterExercises();
+        }
+    </script>
+</body>
+</html>

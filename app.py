@@ -3,9 +3,17 @@ import database
 import threading
 import webbrowser
 import time
+import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here-change-this'
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Страница входа
 @app.route('/login', methods=['GET', 'POST'])
@@ -198,7 +206,124 @@ def open_browser():
     time.sleep(1)
     webbrowser.open('http://127.0.0.1:5000')
 
+
+    
+# ================ БИБЛИОТЕКА УПРАЖНЕНИЙ ================
+
+# Страница библиотеки упражнений (доступна всем)
+@app.route('/exercises')
+def exercises_library():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    # Проверяем, есть ли таблица exercises, если нет - создаём
+    try:
+        exercises = database.get_all_exercises()
+        muscle_groups = database.get_muscle_groups()
+    except:
+        # Если таблицы нет, инициализируем её
+        database.init_exercises_table()
+        exercises = database.get_all_exercises()
+        muscle_groups = database.get_muscle_groups()
+    
+    return render_template('exercises_library.html', 
+                         exercises=exercises, 
+                         muscle_groups=muscle_groups,
+                         is_admin=session.get('is_admin', 0))
+
+# Добавление упражнения (только админ)
+@app.route('/exercises/add', methods=['GET', 'POST'])
+def add_exercise():
+    if 'user_id' not in session or not session.get('is_admin'):
+        return redirect(url_for('login'))
+    
+    if request.method == 'GET':
+        return render_template('add_exercise.html')
+    
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        muscle_group = request.form.get('muscle_group', '').strip()
+        
+        if not name or not muscle_group:
+            return render_template('add_exercise.html', 
+                                 error='Заполните все обязательные поля')
+        
+        # Обработка загруженного изображения
+        image_path = None
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and file.filename and allowed_file(file.filename):
+                # Создаём безопасное имя файла
+                filename = secure_filename(file.filename)
+                # Добавляем уникальный суффикс чтобы файлы не перезаписывались
+                import time
+                filename = f"{int(time.time())}_{filename}"
+                # Сохраняем файл
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                # Сохраняем путь для базы данных
+                image_path = f"uploads/{filename}"
+        
+        success = database.add_exercise(name, image_path, muscle_group, session['user_id'])
+        if success:
+            return redirect(url_for('exercises_library'))
+        else:
+            return render_template('add_exercise.html', 
+                                 error='Упражнение с таким названием уже существует')
+
+# Редактирование упражнения (только админ)
+@app.route('/exercises/edit/<int:exercise_id>', methods=['GET', 'POST'])
+def edit_exercise(exercise_id):
+    if 'user_id' not in session or not session.get('is_admin'):
+        return redirect(url_for('login'))
+    
+    exercise = database.get_exercise(exercise_id)
+    if not exercise:
+        return redirect(url_for('exercises_library'))
+    
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        muscle_group = request.form.get('muscle_group', '').strip()
+        
+        if not name or not muscle_group:
+            return render_template('edit_exercise.html', 
+                                 exercise=exercise,
+                                 error='Заполните все обязательные поля')
+        
+        # Обработка нового изображения
+        image_path = exercise['image']  # оставляем старое по умолчанию
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and file.filename and allowed_file(file.filename):
+                # Создаём безопасное имя файла
+                filename = secure_filename(file.filename)
+                import time
+                filename = f"{int(time.time())}_{filename}"
+                # Сохраняем файл
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                # Обновляем путь
+                image_path = f"uploads/{filename}"
+        
+        database.update_exercise(exercise_id, name, image_path, muscle_group)
+        return redirect(url_for('exercises_library'))
+    
+    return render_template('edit_exercise.html', exercise=exercise)
+
+# Удаление упражнения (только админ)
+@app.route('/exercises/delete/<int:exercise_id>', methods=['POST'])
+def delete_exercise(exercise_id):
+    if 'user_id' not in session or not session.get('is_admin'):
+        return redirect(url_for('login'))
+    
+    database.delete_exercise(exercise_id)
+    return redirect(url_for('exercises_library'))
+    if 'user_id' not in session or not session.get('is_admin'):
+        return redirect(url_for('login'))
+    
+    database.delete_exercise(exercise_id)
+    return redirect(url_for('exercises_library'))
+
 if __name__ == '__main__':
-    database.init_db()
+    database.init_db()                 # инициализация пользователей
+    database.init_exercises_table()     # <-- ДОБАВЬ ЭТУ СТРОКУ
     threading.Thread(target=open_browser).start()
     app.run(host='127.0.0.1', port=5000, debug=False)
