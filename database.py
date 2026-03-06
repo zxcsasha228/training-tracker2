@@ -337,14 +337,14 @@ def get_all_exercises():
         with get_db() as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                SELECT * FROM exercises 
+                SELECT id, name, image, muscle_group, created_by, created_at 
+                FROM exercises 
                 ORDER BY name
             ''')
             return cursor.fetchall()
     except Exception as e:
         print(f"Ошибка при получении упражнений: {e}")
         return []
-
 def get_exercise(exercise_id):
     """Получить упражнение по ID"""
     try:
