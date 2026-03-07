@@ -261,16 +261,34 @@
             transform: rotate(180deg) scale(1.1);
         }
 
-        /* Кнопки действий над карточками */
+        /* Анимация пульсации */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            }
+            50% {
+                box-shadow: 0 8px 30px rgba(16, 185, 129, 0.6);
+            }
+            100% {
+                box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            }
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        /* Панель массовых действий */
         .action-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            padding: 15px;
+            padding: 15px 20px;
             background: white;
             border-radius: 16px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
         }
 
         .selection-info {
@@ -329,29 +347,12 @@
             filter: brightness(1.1);
         }
 
-        /* Анимация пульсации */
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
-            }
-            50% {
-                box-shadow: 0 8px 30px rgba(16, 185, 129, 0.6);
-            }
-            100% {
-                box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
-            }
-        }
-
-        .pulse-animation {
-            animation: pulse 2s infinite;
-        }
-
         /* Сетка упражнений */
         .exercises-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 25px;
-            margin: 20px 0;
+            margin: 30px 0;
         }
 
         .exercise-card {
@@ -389,6 +390,10 @@
             justify-content: center;
             transition: all 0.3s;
             z-index: 10;
+        }
+
+        .exercise-card:hover .selection-checkbox {
+            border-color: var(--primary);
         }
 
         .exercise-card.selected .selection-checkbox {
@@ -479,263 +484,163 @@
             color: var(--primary);
         }
 
-        .exercise-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 2px solid rgba(0,0,0,0.05);
-        }
-
-        /* КРАСИВЫЕ КНОПКИ ИЗМЕНИТЬ И УДАЛИТЬ */
-        .exercise-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 0.95em;
-            font-weight: 600;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+        /* Пустое состояние */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px 100px;
+            background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+            border-radius: 40px;
+            margin: 30px 0;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.05);
         }
 
-        .exercise-btn::before {
+        .empty-state::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.6s ease;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
         }
 
-        .exercise-btn:hover::before {
-            left: 100%;
+        .empty-state-illustration {
+            position: relative;
+            height: 150px;
+            margin-bottom: 30px;
         }
 
-        .exercise-btn:hover {
-            transform: translateY(-2px);
+        .floating-dumbbell {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: float 3s ease-in-out infinite;
         }
 
-        .edit-btn {
-            background: linear-gradient(135deg, var(--warning), #fbbf24);
+        .floating-dumbbell i {
+            font-size: 4em;
+            color: var(--primary);
+            opacity: 0.2;
+        }
+
+        .floating-dumbbell.small {
+            top: 20px;
+            animation: float 3.5s ease-in-out infinite;
+        }
+
+        .floating-dumbbell.small i {
+            font-size: 2.5em;
+            color: var(--secondary);
+            opacity: 0.15;
+        }
+
+        .floating-dumbbell.tiny {
+            top: -10px;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .floating-dumbbell.tiny i {
+            font-size: 1.5em;
+            color: var(--success);
+            opacity: 0.1;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(-20px);
+            }
+        }
+
+        .empty-state-title {
+            font-size: 2em;
             color: var(--dark);
-            box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .edit-btn:hover {
-            box-shadow: 0 8px 15px rgba(245, 158, 11, 0.4);
+        .empty-state-message {
+            margin-bottom: 30px;
         }
 
-        .delete-btn {
-            background: linear-gradient(135deg, var(--danger), #ef4444);
-            color: white;
-            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+        .empty-state-message p {
+            color: var(--gray);
+            font-size: 1.1em;
+            margin: 5px 0;
         }
 
-        .delete-btn:hover {
-            box-shadow: 0 8px 15px rgba(239, 68, 68, 0.4);
+        .empty-state-hint {
+            font-size: 0.95em;
+            opacity: 0.8;
         }
 
-        .exercise-btn i {
-            font-size: 1em;
-            transition: transform 0.3s;
+        .empty-state-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 40px;
         }
 
-        .exercise-btn:hover i {
-            transform: scale(1.1);
+        .stat-bubble {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 60px;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s;
+            border: 1px solid rgba(99, 102, 241, 0.1);
         }
 
-      /* Интересное пустое состояние */
-.empty-state {
-    text-align: center;
-    padding: 60px 20px 80px;
-    background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
-    border-radius: 30px;
-    margin: 30px 0;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-}
+        .stat-bubble:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.2);
+        }
 
-.empty-state::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.03) 0%, transparent 70%);
-    animation: rotate 20s linear infinite;
-}
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--primary);
+            line-height: 1;
+        }
 
-@keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
 
-.empty-state-illustration {
-    position: relative;
-    height: 150px;
-    margin-bottom: 30px;
-}
+        .empty-state-footer {
+            margin-top: 40px;
+            color: var(--gray);
+            font-size: 0.95em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
 
-.floating-dumbbell {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    animation: float 3s ease-in-out infinite;
-}
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
 
-.floating-dumbbell i {
-    font-size: 4em;
-    color: var(--primary);
-    opacity: 0.2;
-}
-
-.floating-dumbbell.small {
-    top: 20px;
-    animation: float 3.5s ease-in-out infinite;
-}
-
-.floating-dumbbell.small i {
-    font-size: 2.5em;
-    color: var(--secondary);
-    opacity: 0.15;
-}
-
-.floating-dumbbell.tiny {
-    top: -10px;
-    animation: float 4s ease-in-out infinite;
-}
-
-.floating-dumbbell.tiny i {
-    font-size: 1.5em;
-    color: var(--success);
-    opacity: 0.1;
-}
-
-@keyframes float {
-    0%, 100% {
-        transform: translateX(-50%) translateY(0);
-    }
-    50% {
-        transform: translateX(-50%) translateY(-20px);
-    }
-}
-
-.empty-state-title {
-    font-size: 2em;
-    color: var(--dark);
-    margin-bottom: 15px;
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.empty-state-message {
-    margin-bottom: 30px;
-}
-
-.empty-state-message p {
-    color: var(--gray);
-    font-size: 1.1em;
-    margin: 5px 0;
-}
-
-.empty-state-hint {
-    font-size: 0.95em;
-    opacity: 0.8;
-    position: relative;
-    display: inline-block;
-}
-
-.empty-state-hint::before,
-.empty-state-hint::after {
-    content: '✨';
-    margin: 0 10px;
-    opacity: 0.5;
-}
-
-.empty-state-stats {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    margin-bottom: 40px;
-}
-
-.stat-bubble {
-    background: white;
-    padding: 20px 30px;
-    border-radius: 60px;
-    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transition: all 0.3s;
-    border: 1px solid rgba(99, 102, 241, 0.1);
-}
-
-.stat-bubble:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 40px rgba(99, 102, 241, 0.2);
-}
-
-.stat-number {
-    font-size: 2.5em;
-    font-weight: bold;
-    color: var(--primary);
-    line-height: 1;
-}
-
-.stat-label {
-    color: var(--gray);
-    font-size: 0.9em;
-    margin-top: 5px;
-}
-
-.empty-state-footer {
-    margin-top: 40px;
-    color: var(--gray);
-    font-size: 0.95em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-@keyframes bounce {
-    0%, 100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-10px);
-    }
-}
-
-/* Адаптация для мобильных */
-@media (max-width: 768px) {
-    .empty-state-title {
-        font-size: 1.6em;
-    }
-    
-    .empty-state-stats {
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
-    }
-    
-    .stat-bubble {
-        width: 200px;
-    }
-}
+        .bounce-arrow {
+            animation: bounce 2s infinite;
+            color: var(--primary);
+        }
 
         /* Модальное окно */
         .modal {
@@ -935,7 +840,7 @@
             color: var(--gray);
         }
 
-        /* Панель выбранных */
+        /* Панель выбранных в модалке */
         .selected-panel {
             position: sticky;
             bottom: 0;
@@ -1056,6 +961,11 @@
                 flex: 1;
                 justify-content: center;
             }
+            
+            .selected-panel {
+                flex-direction: column;
+                align-items: stretch;
+            }
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -1110,7 +1020,7 @@
             </div>
             <div class="action-buttons-group">
                 <button class="action-group-btn delete-group-btn" onclick="deleteSelected()">
-                    <i class="fas fa-trash"></i> Удалить 
+                    <i class="fas fa-trash"></i> Удалить выделенные
                 </button>
                 <button class="action-group-btn cancel-group-btn" onclick="clearSelection()">
                     <i class="fas fa-times"></i> Отмена
@@ -1122,8 +1032,9 @@
         {% if exercises %}
         <div class="exercises-grid" id="exercisesGrid">
             {% for ex in exercises %}
-            <div class="exercise-card" id="exercise-card-{{ ex.id }}" data-id="{{ ex.id }}" onclick="toggleSelectCard({{ ex.id }}, event)">
-                <div class="selection-checkbox">
+            <div class="exercise-card" id="exercise-card-{{ ex.id }}" data-id="{{ ex.id }}" 
+                 onclick="handleCardClick({{ ex.id }}, event)">
+                <div class="selection-checkbox" onclick="event.stopPropagation(); toggleSelectCard({{ ex.id }}, event)">
                     <i class="fas fa-check"></i>
                 </div>
                 <div class="exercise-image">
@@ -1139,32 +1050,7 @@
                         <span class="exercise-muscle">{{ ex.muscle_group }}</span>
                     </div>
                     <div class="exercise-details">
-                        <span><i class="fas fa-layer-group"></i> {{ ex.sets }}×</span>
-                        <span><i class="fas fa-repeat"></i> {{ ex.reps }}</span>
-                        <span><i class="fas fa-weight-hanging"></i> {{ ex.weight }} кг</span>
-                    </div>
-                    <div class="exercise-actions">
-                        <button class="exercise-btn edit-btn" onclick="showEditForm({{ ex.id }}, '{{ ex.sets }}', '{{ ex.reps }}', '{{ ex.weight }}', '{{ ex.notes }}'); event.stopPropagation()">
-                            <i class="fas fa-edit"></i> Изменить
-                        </button>
-                        <button class="exercise-btn delete-btn" onclick="deleteSingleExercise({{ ex.id }}); event.stopPropagation()">
-                            <i class="fas fa-trash"></i> Удалить
-                        </button>
-                    </div>
-
-                    <!-- Форма редактирования -->
-                    <div id="edit-form-{{ ex.id }}" style="display: none; margin-top: 15px;">
-                        <form action="{{ url_for('edit_workout_exercise', exercise_id=ex.id) }}" method="post" onclick="event.stopPropagation()">
-                            <input type="hidden" name="workout_id" value="{{ workout.id }}">
-                            <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-                                <input type="number" name="sets" value="{{ ex.sets }}" placeholder="Подходы" style="width: 80px; padding: 8px; border: 2px solid #e5e7eb; border-radius: 8px;">
-                                <input type="number" name="reps" value="{{ ex.reps }}" placeholder="Повторения" style="width: 100px; padding: 8px; border: 2px solid #e5e7eb; border-radius: 8px;">
-                                <input type="number" step="0.1" name="weight" value="{{ ex.weight }}" placeholder="Вес" style="width: 80px; padding: 8px; border: 2px solid #e5e7eb; border-radius: 8px;">
-                                <input type="text" name="notes" value="{{ ex.notes }}" placeholder="Заметки" style="flex: 1; padding: 8px; border: 2px solid #e5e7eb; border-radius: 8px;">
-                                <button type="submit" class="btn btn-success" style="padding: 8px 15px;">Сохранить</button>
-                                <button type="button" class="btn btn-gray" style="padding: 8px 15px;" onclick="hideEditForm({{ ex.id }})">Отмена</button>
-                            </div>
-                        </form>
+                        
                     </div>
                 </div>
             </div>
@@ -1172,48 +1058,49 @@
         </div>
         {% else %}
         <!-- Пустое состояние -->
-<div class="empty-state">
-    <div class="empty-state-illustration">
-        <div class="floating-dumbbell">
-            <i class="fas fa-dumbbell"></i>
+        <div class="empty-state">
+            <div class="empty-state-illustration">
+                <div class="floating-dumbbell">
+                    <i class="fas fa-dumbbell"></i>
+                </div>
+                <div class="floating-dumbbell small">
+                    <i class="fas fa-dumbbell"></i>
+                </div>
+                <div class="floating-dumbbell tiny">
+                    <i class="fas fa-dumbbell"></i>
+                </div>
+            </div>
+            
+            <h3 class="empty-state-title">В этой тренировке пока тишина... 🏋️‍♂️</h3>
+            
+            <div class="empty-state-message">
+                <p>Здесь будут жить ваши упражнения</p>
+                <p class="empty-state-hint">Начните с добавления первого упражнения</p>
+            </div>
+            
+            <div class="empty-state-stats">
+                <div class="stat-bubble">
+                    <span class="stat-number">0</span>
+                    <span class="stat-label">упражнений</span>
+                </div>
+                <div class="stat-bubble">
+                    <span class="stat-number">💪</span>
+                    <span class="stat-label">ждёт вас</span>
+                </div>
+            </div>
+            
+            <button class="beautiful-add-btn pulse-animation" onclick="openModal()">
+                <span class="btn-icon"><i class="fas fa-plus"></i></span>
+                <span class="btn-text">Добавить упражнения</span>
+            </button>
+            
+            <div class="empty-state-footer">
+                <i class="fas fa-arrow-up bounce-arrow"></i>
+                <span>Нажмите кнопку выше, чтобы начать</span>
+            </div>
         </div>
-        <div class="floating-dumbbell small" style="animation-delay: 0.5s;">
-            <i class="fas fa-dumbbell"></i>
-        </div>
-        <div class="floating-dumbbell tiny" style="animation-delay: 1s;">
-            <i class="fas fa-dumbbell"></i>
-        </div>
+        {% endif %}
     </div>
-    
-    <h3 class="empty-state-title">В этой тренировке пока тишина... 🏋️‍♂️</h3>
-    
-    <div class="empty-state-message">
-        <p>Здесь будут жить ваши упражнения</p>
-        <p class="empty-state-hint">Начните с добавления первого упражнения</p>
-    </div>
-    
-    <div class="empty-state-stats">
-        <div class="stat-bubble">
-            <span class="stat-number">0</span>
-            <span class="stat-label">упражнений</span>
-        </div>
-        <div class="stat-bubble">
-            <span class="stat-number">💪</span>
-            <span class="stat-label">ждёт вас</span>
-        </div>
-    </div>
-    
-    <button class="beautiful-add-btn pulse-animation" onclick="openModal()">
-        <span class="btn-icon"><i class="fas fa-plus"></i></span>
-        <span class="btn-text">Добавить упражнения</span>
-    </button>
-    
-    <div class="empty-state-footer">
-        <i class="fas fa-arrow-up" style="animation: bounce 2s infinite;"></i>
-        <span>Нажмите кнопку выше, чтобы начать</span>
-    </div>
-</div>
-{% endif %}
 
     <!-- Модальное окно с упражнениями -->
     <div class="modal" id="exerciseModal">
@@ -1275,7 +1162,16 @@
         let selectedCards = [];
         let modalSelectedExercises = [];
 
-        // Функции для выделения карточек
+        function handleCardClick(id, event) {
+            // Если есть выделенные карточки - только выделяем/снимаем выделение
+            if (selectedCards.length > 0) {
+                toggleSelectCard(id, event);
+                return;
+            }
+            // Иначе ничего не делаем (просто выделение через чекбокс)
+            // Можно добавить логику для просмотра деталей позже
+        }
+
         function toggleSelectCard(id, event) {
             event.stopPropagation();
             const card = document.getElementById(`exercise-card-${id}`);
@@ -1319,7 +1215,7 @@
             if (confirm(`Удалить ${selectedCards.length} упражнений?`)) {
                 const form = document.createElement('form');
                 form.method = 'POST';
-               form.action = '/workout/{{ workout.id }}/delete_multiple';
+                form.action = '/workout/{{ workout.id }}/delete_multiple';
                 form.style.display = 'none';
                 
                 selectedCards.forEach(id => {
@@ -1335,25 +1231,6 @@
             }
         }
 
-        function deleteSingleExercise(id) {
-            if (confirm('Удалить это упражнение?')) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '{{ url_for("delete_workout_exercise", exercise_id=0) }}'.replace('0', id);
-                form.style.display = 'none';
-                
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'workout_id';
-                input.value = '{{ workout.id }}';
-                form.appendChild(input);
-                
-                document.body.appendChild(form);
-                form.submit();
-            }
-        }
-
-        // Функции для модального окна
         function openModal() {
             document.getElementById('exerciseModal').classList.add('active');
             document.getElementById('exerciseSearch').value = '';
@@ -1461,17 +1338,12 @@
             form.submit();
         }
 
-        function showEditForm(id, sets, reps, weight, notes) {
-            document.getElementById('edit-form-' + id).style.display = 'block';
-        }
-
-        function hideEditForm(id) {
-            document.getElementById('edit-form-' + id).style.display = 'none';
-        }
-
+        // Закрытие по клику вне модального окна
         window.onclick = function(event) {
             const modal = document.getElementById('exerciseModal');
-            if (event.target == modal) closeModal();
+            if (event.target == modal) {
+                closeModal();
+            }
         }
     </script>
 </body>
