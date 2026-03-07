@@ -130,35 +130,36 @@ def admin_user_details(user_id):
     return render_template('admin_user_details.html', user=user, workouts=workouts)
 
 
-# Страница тренировок для админа
-@app.route('/my_workouts')
-def my_workouts():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
+# # Страница тренировок для админа
+# @app.route('/my_workouts')
+# def my_workouts():
+#     if 'user_id' not in session:
+#         return redirect(url_for('login'))
     
-    workouts = database.get_user_workouts(session['user_id'])
-    return render_template('index.html', workouts=workouts, username=session['username'], is_admin=session.get('is_admin', 0))
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
+#     workouts = database.get_user_workouts(session['user_id'])
+#     return render_template('index.html', workouts=workouts, username=session['username'], is_admin=session.get('is_admin', 0))
+#     if 'user_id' not in session:
+#         return redirect(url_for('login'))
     
-    # Показываем тренировки текущего пользователя (даже если он админ)
-    workouts = database.get_user_workouts(session['user_id'])
-    return render_template('index.html', workouts=workouts, username=session['username'])
+#     # Показываем тренировки текущего пользователя (даже если он админ)
+#     workouts = database.get_user_workouts(session['user_id'])
+#     return render_template('index.html', workouts=workouts, username=session['username'])
 
 # Главная страница (для обычных пользователей)
+# Главная страница для всех пользователей (и админов, и обычных)
 @app.route('/')
 def index():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
-    workouts = database.get_user_workouts(session['user_id'])
-    return render_template('index.html', workouts=workouts, username=session['username'], is_admin=session.get('is_admin', 0))
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
+    # Получаем тренировки пользователя
+    workouts = database.get_user_workout_sessions(session['user_id'])
     
-    # Если админ - показываем его тренировки, а не админку
-    workouts = database.get_user_workouts(session['user_id'])
-    return render_template('index.html', workouts=workouts, username=session['username'])
+    # Рендерим красивый шаблон для всех
+    return render_template('workouts.html', 
+                         workouts=workouts, 
+                         username=session['username'],
+                         is_admin=session.get('is_admin', 0))
 
 @app.route('/add', methods=['POST'])
 def add():
@@ -244,11 +245,7 @@ def admin_delete_user(user_id):
     
     database.delete_user_admin(user_id)
     return redirect(url_for('admin_panel'))
-
-
-
-
-    
+   
 # ================ БИБЛИОТЕКА УПРАЖНЕНИЙ ================
 
 # Страница библиотеки упражнений (доступна всем)
@@ -392,6 +389,204 @@ def delete_exercise(exercise_id):
     database.delete_exercise(exercise_id)
     return redirect(url_for('exercises_library'))
 
+
+# ================ ТРЕНИРОВКИ ================
+
+# Главная страница со списком тренировок
+@app.route('/my_workouts')
+def my_workouts():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    workouts = database.get_user_workout_sessions(session['user_id'])
+    return render_template('workouts.html', 
+                         workouts=workouts, 
+                         username=session['username'],
+                         is_admin=session.get('is_admin', 0))
+
+# Создание новой тренировки (упрощённое)
+@app.route('/workout/create', methods=['GET', 'POST'])
+def create_workout():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        
+        if not name:
+            return render_template('create_workout.html', 
+                                 error='Введите название тренировки')
+        
+        # Используем текущую дату автоматически
+        from datetime import date
+        today = date.today().isoformat()
+        
+        workout_id = database.create_workout_session(
+            session['user_id'], name, today, ""  # пустые заметки
+        )
+        
+        if workout_id:
+            return redirect(url_for('view_workout', workout_id=workout_id))
+        else:
+            return render_template('create_workout.html', 
+                                 error='Ошибка при создании тренировки')
+    
+    return render_template('create_workout.html')
+
+# Просмотр тренировки
+@app.route('/workout/<int:workout_id>')
+def view_workout(workout_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    workout = database.get_workout_session(workout_id, session['user_id'])
+    if not workout:
+        return redirect(url_for('my_workouts'))
+    
+    exercises = database.get_workout_exercises(workout_id)
+    all_exercises = database.get_all_exercises()  # для добавления новых
+    
+    return render_template('view_workout.html', 
+                         workout=workout,
+                         exercises=exercises,
+                         all_exercises=all_exercises,
+                         username=session['username'])
+
+# # Добавить упражнение в тренировку
+# @app.route('/workout/<int:workout_id>/add_exercise', methods=['POST'])
+# def add_workout_exercise(workout_id):
+#     if 'user_id' not in session:
+#         return redirect(url_for('login'))
+    
+#     exercise_id = request.form.get('exercise_id')
+#     sets = request.form.get('sets')
+#     reps = request.form.get('reps')
+#     weight = request.form.get('weight')
+    
+#     # Получаем следующий порядковый номер
+#     exercises = database.get_workout_exercises(workout_id)
+#     order_num = len(exercises) + 1
+    
+#     database.add_exercise_to_workout(
+#         workout_id, exercise_id, sets, reps, weight, order_num
+#     )
+    
+#     return redirect(url_for('view_workout', workout_id=workout_id))
+
+# Массовое добавление упражнений в тренировку
+@app.route('/workout/<int:workout_id>/add_exercises', methods=['POST'])
+def add_workout_exercises(workout_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    exercise_ids = request.form.getlist('exercise_ids[]')
+    sets = request.form.get('sets', '3')
+    reps = request.form.get('reps', '10')
+    weight = request.form.get('weight', '0')
+    
+    # Получаем следующий порядковый номер
+    exercises = database.get_workout_exercises(workout_id)
+    order_num = len(exercises) + 1
+    
+    for exercise_id in exercise_ids:
+        database.add_exercise_to_workout(
+            workout_id, exercise_id, sets, reps, weight, order_num, ""
+        )
+        order_num += 1
+    
+    return redirect(url_for('view_workout', workout_id=workout_id))
+
+# Массовое удаление упражнений из тренировки
+@app.route('/workout/<int:workout_id>/delete_multiple', methods=['POST'])
+def delete_multiple_exercises(workout_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    exercise_ids = request.form.getlist('exercise_ids[]')
+    
+    for exercise_id in exercise_ids:
+        database.delete_workout_exercise(exercise_id)
+    
+    return redirect(url_for('view_workout', workout_id=workout_id))
+# Редактировать упражнение в тренировке
+@app.route('/workout/exercise/<int:exercise_id>/edit', methods=['POST'])
+def edit_workout_exercise(exercise_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    sets = request.form.get('sets')
+    reps = request.form.get('reps')
+    weight = request.form.get('weight')
+    notes = request.form.get('notes', '')
+    
+    database.update_workout_exercise(exercise_id, sets, reps, weight, notes)
+    
+    # Возвращаемся на страницу тренировки
+    workout_id = request.form.get('workout_id')
+    return redirect(url_for('view_workout', workout_id=workout_id))
+
+# Удалить упражнение из тренировки
+@app.route('/workout/exercise/<int:exercise_id>/delete', methods=['POST'])
+def delete_workout_exercise(exercise_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    workout_id = request.form.get('workout_id')
+    database.delete_workout_exercise(exercise_id)
+    
+    return redirect(url_for('view_workout', workout_id=workout_id))
+
+# Редактировать тренировку (упрощённое)
+@app.route('/workout/<int:workout_id>/edit', methods=['GET', 'POST'])
+def edit_workout(workout_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    workout = database.get_workout_session(workout_id, session['user_id'])
+    if not workout:
+        return redirect(url_for('my_workouts'))
+    
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        
+        if not name:
+            return render_template('edit_workout.html', 
+                                 workout=workout,
+                                 error='Введите название тренировки')
+        
+        # Оставляем старую дату и заметки без изменений
+        database.update_workout_session(
+            workout_id, 
+            session['user_id'], 
+            name, 
+            workout['date'],  # оставляем старую дату
+            workout['notes'] if workout['notes'] else ""  # оставляем старые заметки
+        )
+        return redirect(url_for('view_workout', workout_id=workout_id))
+    
+    return render_template('edit_workout.html', workout=workout)
+
+# Удалить тренировку
+@app.route('/workout/<int:workout_id>/delete', methods=['POST'])
+def delete_workout(workout_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    database.delete_workout_session(workout_id, session['user_id'])
+    return redirect(url_for('my_workouts'))
+
+
+
+
+
+
+
+
+
+
+
+
+
 def open_browser():
     time.sleep(1)
     webbrowser.open('http://127.0.0.1:5000')
@@ -403,6 +598,12 @@ if __name__ == '__main__':
         print("Таблица упражнений инициализирована")
     except Exception as e:
         print(f"Ошибка при инициализации упражнений: {e}")
+    
+    try:
+        database.init_workouts_table()  # <-- ДОБАВЬ ЭТО
+        print("Таблицы тренировок инициализированы")
+    except Exception as e:
+        print(f"Ошибка при инициализации тренировок: {e}")
     
     threading.Thread(target=open_browser).start()
     app.run(host='127.0.0.1', port=5000, debug=False)

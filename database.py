@@ -440,3 +440,174 @@ def get_muscle_groups():
             ORDER BY muscle_group
         ''')
         return [row['muscle_group'] for row in cursor.fetchall()]
+
+# ================ ТРЕНИРОВКИ ================
+def init_workouts_table():
+    """Создать таблицы для тренировок"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            
+            # Таблица тренировок
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS workout_sessions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    name TEXT NOT NULL,
+                    date TEXT NOT NULL,
+                    notes TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+                )
+            ''')
+            
+            # Таблица упражнений в тренировке
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS workout_exercises (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    workout_id INTEGER NOT NULL,
+                    exercise_id INTEGER NOT NULL,
+                    sets INTEGER,
+                    reps INTEGER,
+                    weight REAL,
+                    order_num INTEGER,
+                    notes TEXT,
+                    FOREIGN KEY (workout_id) REFERENCES workout_sessions (id) ON DELETE CASCADE,
+                    FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE
+                )
+            ''')
+            print("Таблицы тренировок инициализированы")
+    except Exception as e:
+        print(f"Ошибка при создании таблиц тренировок: {e}")
+
+# Получить все тренировки пользователя
+def get_user_workout_sessions(user_id):
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT ws.*, 
+                       COUNT(we.id) as exercises_count 
+                FROM workout_sessions ws
+                LEFT JOIN workout_exercises we ON ws.id = we.workout_id
+                WHERE ws.user_id = ?
+                GROUP BY ws.id
+                ORDER BY ws.date DESC
+            ''', (user_id,))
+            return cursor.fetchall()
+    except Exception as e:
+        print(f"Ошибка при получении тренировок: {e}")
+        return []
+
+# Получить конкретную тренировку
+def get_workout_session(workout_id, user_id):
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT * FROM workout_sessions 
+                WHERE id = ? AND user_id = ?
+            ''', (workout_id, user_id))
+            return cursor.fetchone()
+    except Exception as e:
+        print(f"Ошибка при получении тренировки: {e}")
+        return None
+
+# Получить упражнения тренировки
+def get_workout_exercises(workout_id):
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT we.*, e.name, e.image, e.muscle_group
+                FROM workout_exercises we
+                JOIN exercises e ON we.exercise_id = e.id
+                WHERE we.workout_id = ?
+                ORDER BY we.order_num
+            ''', (workout_id,))
+            return cursor.fetchall()
+    except Exception as e:
+        print(f"Ошибка при получении упражнений тренировки: {e}")
+        return []
+
+# Создать тренировку
+def create_workout_session(user_id, name, date, notes=""):
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT INTO workout_sessions (user_id, name, date, notes)
+                VALUES (?, ?, ?, ?)
+            ''', (user_id, name, date, notes))
+            return cursor.lastrowid
+    except Exception as e:
+        print(f"Ошибка при создании тренировки: {e}")
+        return None
+
+# Добавить упражнение в тренировку
+def add_exercise_to_workout(workout_id, exercise_id, sets, reps, weight, order_num, notes=""):
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT INTO workout_exercises 
+                (workout_id, exercise_id, sets, reps, weight, order_num, notes)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (workout_id, exercise_id, sets, reps, weight, order_num, notes))
+            return True
+    except Exception as e:
+        print(f"Ошибка при добавлении упражнения в тренировку: {e}")
+        return False
+
+# Обновить упражнение в тренировке
+def update_workout_exercise(exercise_id, sets, reps, weight, notes):
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                UPDATE workout_exercises 
+                SET sets = ?, reps = ?, weight = ?, notes = ?
+                WHERE id = ?
+            ''', (sets, reps, weight, notes, exercise_id))
+            return True
+    except Exception as e:
+        print(f"Ошибка при обновлении упражнения: {e}")
+        return False
+
+# Удалить упражнение из тренировки
+def delete_workout_exercise(exercise_id):
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM workout_exercises WHERE id = ?', (exercise_id,))
+            return True
+    except Exception as e:
+        print(f"Ошибка при удалении упражнения: {e}")
+        return False
+
+# Удалить тренировку
+def delete_workout_session(workout_id, user_id):
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM workout_sessions WHERE id = ? AND user_id = ?', 
+                         (workout_id, user_id))
+            return True
+    except Exception as e:
+        print(f"Ошибка при удалении тренировки: {e}")
+        return False
+
+# Обновить тренировку
+def update_workout_session(workout_id, user_id, name, date, notes):
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                UPDATE workout_sessions 
+                SET name = ?, date = ?, notes = ?
+                WHERE id = ? AND user_id = ?
+            ''', (name, date, notes, workout_id, user_id))
+            return True
+    except Exception as e:
+        print(f"Ошибка при обновлении тренировки: {e}")
+        return False       

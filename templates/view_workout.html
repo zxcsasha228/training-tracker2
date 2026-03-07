@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ workout.name }}</title>
+    <meta charset="utf-8">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #9ca3af;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Шапка */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .workout-info {
+            background: var(--light);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .info-left {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--dark);
+        }
+
+        .info-item i {
+            color: var(--primary);
+            font-size: 1.2em;
+        }
+
+        .info-right {
+            display: flex;
+            gap: 15px;
+        }
+
+        /* Кнопки */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+        }
+
+        .btn-gray {
+            background: var(--gray);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: var(--dark);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        /* Кнопка начать тренировку */
+        .start-workout-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .start-workout-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .start-workout-btn:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.5);
+        }
+
+        .start-workout-btn:hover::before {
+            left: 100%;
+        }
+
+        .start-workout-btn .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transition: all 0.4s ease;
+        }
+
+        .start-workout-btn:hover .btn-icon {
+            transform: scale(1.1) rotate(10deg);
+        }
+
+        /* Кнопка добавления */
+        .beautiful-add-btn {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 50px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .beautiful-add-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .beautiful-add-btn:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(16, 185, 129, 0.5);
+            background: linear-gradient(135deg, #059669, #10b981);
+        }
+
+        .beautiful-add-btn:hover::before {
+            left: 100%;
+        }
+
+        .beautiful-add-btn .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transition: all 0.4s ease;
+        }
+
+        .beautiful-add-btn:hover .btn-icon {
+            transform: rotate(180deg) scale(1.1);
+        }
+
+        /* Кнопки действий над карточками */
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .selection-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .selection-count {
+            font-size: 1.1em;
+            color: var(--dark);
+        }
+
+        .selection-count span {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 1.2em;
+        }
+
+        .action-buttons-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-group-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .delete-group-btn {
+            background: var(--danger);
+            color: white;
+        }
+
+        .delete-group-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .cancel-group-btn {
+            background: var(--gray);
+            color: white;
+        }
+
+        .cancel-group-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        /* Анимация пульсации */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            }
+            50% {
+                box-shadow: 0 8px 30px rgba(16, 185, 129, 0.6);
+            }
+            100% {
+                box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            }
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        /* Сетка упражнений */
+        .exercises-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 20px 0;
+        }
+
+        .exercise-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .exercise-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.2);
+        }
+
+        .exercise-card.selected {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+        }
+
+        .exercise-card .selection-checkbox {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            background: white;
+            border: 2px solid var(--gray);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .exercise-card.selected .selection-checkbox {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .exercise-card .selection-checkbox i {
+            font-size: 16px;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .exercise-card.selected .selection-checkbox i {
+            opacity: 1;
+        }
+
+        .exercise-image {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #667eea20, #764ba220);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .exercise-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+
+        .exercise-card:hover .exercise-image img {
+            transform: scale(1.1);
+        }
+
+        .exercise-image i {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            color: var(--gray);
+        }
+
+        .exercise-content {
+            padding: 20px;
+        }
+
+        .exercise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .exercise-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--dark);
+        }
+
+        .exercise-muscle {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .exercise-details {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            color: var(--gray);
+            font-size: 0.95em;
+        }
+
+        .exercise-details span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .exercise-details i {
+            color: var(--primary);
+        }
+
+        .exercise-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid rgba(0,0,0,0.05);
+        }
+
+        /* КРАСИВЫЕ КНОПКИ ИЗМЕНИТЬ И УДАЛИТЬ */
+        .exercise-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .exercise-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .exercise-btn:hover::before {
+            left: 100%;
+        }
+
+        .exercise-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .edit-btn {
+            background: linear-gradient(135deg, var(--warning), #fbbf24);
+            color: var(--dark);
+            box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+        }
+
+        .edit-btn:hover {
+            box-shadow: 0 8px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .delete-btn {
+            background: linear-gradient(135deg, var(--danger), #ef4444);
+            color: white;
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+        }
+
+        .delete-btn:hover {
+            box-shadow: 0 8px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .exercise-btn i {
+            font-size: 1em;
+            transition: transform 0.3s;
+        }
+
+        .exercise-btn:hover i {
+            transform: scale(1.1);
+        }
+
+      /* Интересное пустое состояние */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px 80px;
+    background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+    border-radius: 30px;
+    margin: 30px 0;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+}
+
+.empty-state::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.03) 0%, transparent 70%);
+    animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.empty-state-illustration {
+    position: relative;
+    height: 150px;
+    margin-bottom: 30px;
+}
+
+.floating-dumbbell {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: float 3s ease-in-out infinite;
+}
+
+.floating-dumbbell i {
+    font-size: 4em;
+    color: var(--primary);
+    opacity: 0.2;
+}
+
+.floating-dumbbell.small {
+    top: 20px;
+    animation: float 3.5s ease-in-out infinite;
+}
+
+.floating-dumbbell.small i {
+    font-size: 2.5em;
+    color: var(--secondary);
+    opacity: 0.15;
+}
+
+.floating-dumbbell.tiny {
+    top: -10px;
+    animation: float 4s ease-in-out infinite;
+}
+
+.floating-dumbbell.tiny i {
+    font-size: 1.5em;
+    color: var(--success);
+    opacity: 0.1;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateX(-50%) translateY(0);
+    }
+    50% {
+        transform: translateX(-50%) translateY(-20px);
+    }
+}
+
+.empty-state-title {
+    font-size: 2em;
+    color: var(--dark);
+    margin-bottom: 15px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.empty-state-message {
+    margin-bottom: 30px;
+}
+
+.empty-state-message p {
+    color: var(--gray);
+    font-size: 1.1em;
+    margin: 5px 0;
+}
+
+.empty-state-hint {
+    font-size: 0.95em;
+    opacity: 0.8;
+    position: relative;
+    display: inline-block;
+}
+
+.empty-state-hint::before,
+.empty-state-hint::after {
+    content: '✨';
+    margin: 0 10px;
+    opacity: 0.5;
+}
+
+.empty-state-stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.stat-bubble {
+    background: white;
+    padding: 20px 30px;
+    border-radius: 60px;
+    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.3s;
+    border: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+.stat-bubble:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(99, 102, 241, 0.2);
+}
+
+.stat-number {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: var(--primary);
+    line-height: 1;
+}
+
+.stat-label {
+    color: var(--gray);
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+.empty-state-footer {
+    margin-top: 40px;
+    color: var(--gray);
+    font-size: 0.95em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 768px) {
+    .empty-state-title {
+        font-size: 1.6em;
+    }
+    
+    .empty-state-stats {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .stat-bubble {
+        width: 200px;
+    }
+}
+
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 1000px;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideUp 0.3s ease-out;
+        }
+
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 20px;
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5em;
+        }
+
+        .modal-header h2 i {
+            margin-right: 10px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 20px;
+            max-height: calc(90vh - 80px);
+            overflow-y: auto;
+        }
+
+        /* Поиск */
+        .modal-search {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1em;
+            margin-bottom: 20px;
+        }
+
+        .modal-search:focus {
+            outline: none;
+            border-color: var(--success);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        }
+
+        /* Сетка упражнений в модалке */
+        .modal-exercise-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .modal-exercise-card {
+            background: var(--light);
+            border-radius: 16px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            text-align: center;
+            position: relative;
+        }
+
+        .modal-exercise-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--success);
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .modal-exercise-card.selected {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .modal-exercise-card .checkbox {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border: 2px solid var(--gray);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .modal-exercise-card.selected .checkbox {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        .modal-exercise-card .checkbox i {
+            font-size: 14px;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .modal-exercise-card.selected .checkbox i {
+            opacity: 1;
+        }
+
+        .modal-exercise-image {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 10px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: white;
+            border: 3px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .modal-exercise-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .modal-exercise-image i {
+            font-size: 2.5em;
+            line-height: 80px;
+            color: var(--gray);
+        }
+
+        .modal-exercise-name {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .modal-exercise-muscle {
+            font-size: 0.8em;
+            color: var(--gray);
+        }
+
+        /* Панель выбранных */
+        .selected-panel {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            border-top: 2px solid #e5e7eb;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 16px 16px 0 0;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .selected-count {
+            font-size: 1.1em;
+            color: var(--dark);
+        }
+
+        .selected-count span {
+            font-weight: bold;
+            color: var(--success);
+            font-size: 1.2em;
+        }
+
+        .selected-exercises-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .selected-tag {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .selected-tag i {
+            cursor: pointer;
+            font-size: 12px;
+            opacity: 0.7;
+            transition: all 0.3s;
+        }
+
+        .selected-tag i:hover {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        .add-selected-btn {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .add-selected-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Адаптация */
+        @media (max-width: 768px) {
+            .workout-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .info-right {
+                width: 100%;
+                flex-direction: column;
+            }
+            
+            .start-workout-btn {
+                width: 100%;
+                padding: 14px 20px;
+                font-size: 1.1em;
+            }
+            
+            .beautiful-add-btn {
+                width: 100%;
+                padding: 12px 20px;
+            }
+            
+            .exercises-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-bar {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+            
+            .action-buttons-group {
+                justify-content: stretch;
+            }
+            
+            .action-group-btn {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка -->
+        <div class="header">
+            <h1><i class="fas fa-dumbbell"></i> {{ workout.name }}</h1>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="{{ url_for('my_workouts') }}" class="btn btn-gray">
+                    <i class="fas fa-arrow-left"></i> К списку
+                </a>
+                <a href="{{ url_for('edit_workout', workout_id=workout.id) }}" class="btn btn-warning">
+                    <i class="fas fa-edit"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Информация о тренировке -->
+        <div class="workout-info">
+            <div class="info-left">
+                <div class="info-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>{{ workout.date }}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-dumbbell"></i>
+                    <span id="exercisesCount">{{ exercises|length }}</span> упражнений
+                </div>
+            </div>
+            <div class="info-right">
+                <!-- Кнопка начать тренировку -->
+                <button class="start-workout-btn" onclick="alert('Окно тренировки будет позже!')">
+                    <span class="btn-icon"><i class="fas fa-play"></i></span>
+                    <span>Начать тренировку</span>
+                </button>
+                <!-- Кнопка добавить упражнение -->
+                <button class="beautiful-add-btn" onclick="openModal()">
+                    <span class="btn-icon"><i class="fas fa-plus"></i></span>
+                    <span>Добавить</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Панель массовых действий (появляется при выделении) -->
+        <div class="action-bar" id="actionBar" style="display: none;">
+            <div class="selection-info">
+                <div class="selection-count">
+                    Выделено: <span id="selectedCount">0</span>
+                </div>
+            </div>
+            <div class="action-buttons-group">
+                <button class="action-group-btn delete-group-btn" onclick="deleteSelected()">
+                    <i class="fas fa-trash"></i> Удалить 
+                </button>
+                <button class="action-group-btn cancel-group-btn" onclick="clearSelection()">
+                    <i class="fas fa-times"></i> Отмена
+                </button>
+            </div>
+        </div>
+
+        <!-- Список упражнений в виде карточек -->
+        {% if exercises %}
+        <div class="exercises-grid" id="exercisesGrid">
+            {% for ex in exercises %}
+            <div class="exercise-card" id="exercise-card-{{ ex.id }}" data-id="{{ ex.id }}" onclick="toggleSelectCard({{ ex.id }}, event)">
+                <div class="selection-checkbox">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="exercise-image">
+                    {% if ex.image %}
+                        <img src="{{ url_for('static', filename=ex.image) }}" alt="{{ ex.name }}">
+                    {% else %}
+                        <i class="fas fa-dumbbell"></i>
+                    {% endif %}
+                </div>
+                <div class="exercise-content">
+                    <div class="exercise-header">
+                        <span class="exercise-name">{{ ex.name }}</span>
+                        <span class="exercise-muscle">{{ ex.muscle_group }}</span>
+                    </div>
+                    <div class="exercise-details">
+                        <span><i class="fas fa-layer-group"></i> {{ ex.sets }}×</span>
+                        <span><i class="fas fa-repeat"></i> {{ ex.reps }}</span>
+                        <span><i class="fas fa-weight-hanging"></i> {{ ex.weight }} кг</span>
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="exercise-btn edit-btn" onclick="showEditForm({{ ex.id }}, '{{ ex.sets }}', '{{ ex.reps }}', '{{ ex.weight }}', '{{ ex.notes }}'); event.stopPropagation()">
+                            <i class="fas fa-edit"></i> Изменить
+                        </button>
+                        <button class="exercise-btn delete-btn" onclick="deleteSingleExercise({{ ex.id }}); event.stopPropagation()">
+                            <i class="fas fa-trash"></i> Удалить
+                        </button>
+                    </div>
+
+                    <!-- Форма редактирования -->
+                    <div id="edit-form-{{ ex.id }}" style="display: none; margin-top: 15px;">
+                        <form action="{{ url_for('edit_workout_exercise', exercise_id=ex.id) }}" method="post" onclick="event.stopPropagation()">
+                            <input type="hidden" name="workout_id" value="{{ workout.id }}">
+                            <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                                <input type="number" name="sets" value="{{ ex.sets }}" placeholder="Подходы" style="width: 80px; padding: 8px; border: 2px solid #e5e7eb; border-radius: 8px;">
+                                <input type="number" name="reps" value="{{ ex.reps }}" placeholder="Повторения" style="width: 100px; padding: 8px; border: 2px solid #e5e7eb; border-radius: 8px;">
+                                <input type="number" step="0.1" name="weight" value="{{ ex.weight }}" placeholder="Вес" style="width: 80px; padding: 8px; border: 2px solid #e5e7eb; border-radius: 8px;">
+                                <input type="text" name="notes" value="{{ ex.notes }}" placeholder="Заметки" style="flex: 1; padding: 8px; border: 2px solid #e5e7eb; border-radius: 8px;">
+                                <button type="submit" class="btn btn-success" style="padding: 8px 15px;">Сохранить</button>
+                                <button type="button" class="btn btn-gray" style="padding: 8px 15px;" onclick="hideEditForm({{ ex.id }})">Отмена</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <!-- Пустое состояние -->
+<div class="empty-state">
+    <div class="empty-state-illustration">
+        <div class="floating-dumbbell">
+            <i class="fas fa-dumbbell"></i>
+        </div>
+        <div class="floating-dumbbell small" style="animation-delay: 0.5s;">
+            <i class="fas fa-dumbbell"></i>
+        </div>
+        <div class="floating-dumbbell tiny" style="animation-delay: 1s;">
+            <i class="fas fa-dumbbell"></i>
+        </div>
+    </div>
+    
+    <h3 class="empty-state-title">В этой тренировке пока тишина... 🏋️‍♂️</h3>
+    
+    <div class="empty-state-message">
+        <p>Здесь будут жить ваши упражнения</p>
+        <p class="empty-state-hint">Начните с добавления первого упражнения</p>
+    </div>
+    
+    <div class="empty-state-stats">
+        <div class="stat-bubble">
+            <span class="stat-number">0</span>
+            <span class="stat-label">упражнений</span>
+        </div>
+        <div class="stat-bubble">
+            <span class="stat-number">💪</span>
+            <span class="stat-label">ждёт вас</span>
+        </div>
+    </div>
+    
+    <button class="beautiful-add-btn pulse-animation" onclick="openModal()">
+        <span class="btn-icon"><i class="fas fa-plus"></i></span>
+        <span class="btn-text">Добавить упражнения</span>
+    </button>
+    
+    <div class="empty-state-footer">
+        <i class="fas fa-arrow-up" style="animation: bounce 2s infinite;"></i>
+        <span>Нажмите кнопку выше, чтобы начать</span>
+    </div>
+</div>
+{% endif %}
+
+    <!-- Модальное окно с упражнениями -->
+    <div class="modal" id="exerciseModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-dumbbell"></i> Выберите упражнения</h2>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-gray" onclick="clearModalSelection()" style="background: rgba(255,255,255,0.2);">Очистить</button>
+                    <button class="close-btn" onclick="closeModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <!-- Поиск -->
+                <input type="text" class="modal-search" id="exerciseSearch" 
+                       placeholder="🔍 Поиск упражнений..." onkeyup="filterExercises()">
+
+                <!-- Сетка упражнений -->
+                <div class="modal-exercise-grid" id="exerciseGrid">
+                    {% for ex in all_exercises %}
+                    <div class="modal-exercise-card" onclick="toggleModalExercise({{ ex.id }}, this)"
+                         data-id="{{ ex.id }}"
+                         data-name="{{ ex.name }}"
+                         data-muscle="{{ ex.muscle_group }}"
+                         data-name-lower="{{ ex.name|lower }}"
+                         data-muscle-lower="{{ ex.muscle_group|lower }}">
+                        <div class="checkbox">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="modal-exercise-image">
+                            {% if ex.image %}
+                                <img src="{{ url_for('static', filename=ex.image) }}" alt="{{ ex.name }}">
+                            {% else %}
+                                <i class="fas fa-dumbbell"></i>
+                            {% endif %}
+                        </div>
+                        <div class="modal-exercise-name">{{ ex.name }}</div>
+                        <div class="modal-exercise-muscle">{{ ex.muscle_group }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Панель выбранных -->
+                <div class="selected-panel" id="selectedPanel" style="display: none;">
+                    <div class="selected-count">
+                        Выбрано: <span id="modalSelectedCount">0</span>
+                    </div>
+                    <div class="selected-exercises-list" id="selectedExercisesList"></div>
+                    <button class="add-selected-btn" onclick="addSelectedExercises()">
+                        <i class="fas fa-plus"></i> Добавить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedCards = [];
+        let modalSelectedExercises = [];
+
+        // Функции для выделения карточек
+        function toggleSelectCard(id, event) {
+            event.stopPropagation();
+            const card = document.getElementById(`exercise-card-${id}`);
+            const index = selectedCards.indexOf(id);
+            
+            if (index === -1) {
+                selectedCards.push(id);
+                card.classList.add('selected');
+            } else {
+                selectedCards.splice(index, 1);
+                card.classList.remove('selected');
+            }
+            
+            updateActionBar();
+        }
+
+        function updateActionBar() {
+            const actionBar = document.getElementById('actionBar');
+            const selectedCount = document.getElementById('selectedCount');
+            
+            if (selectedCards.length > 0) {
+                actionBar.style.display = 'flex';
+                selectedCount.textContent = selectedCards.length;
+            } else {
+                actionBar.style.display = 'none';
+            }
+        }
+
+        function clearSelection() {
+            selectedCards.forEach(id => {
+                const card = document.getElementById(`exercise-card-${id}`);
+                if (card) card.classList.remove('selected');
+            });
+            selectedCards = [];
+            updateActionBar();
+        }
+
+        function deleteSelected() {
+            if (selectedCards.length === 0) return;
+            
+            if (confirm(`Удалить ${selectedCards.length} упражнений?`)) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+               form.action = '/workout/{{ workout.id }}/delete_multiple';
+                form.style.display = 'none';
+                
+                selectedCards.forEach(id => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'exercise_ids[]';
+                    input.value = id;
+                    form.appendChild(input);
+                });
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        function deleteSingleExercise(id) {
+            if (confirm('Удалить это упражнение?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ url_for("delete_workout_exercise", exercise_id=0) }}'.replace('0', id);
+                form.style.display = 'none';
+                
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'workout_id';
+                input.value = '{{ workout.id }}';
+                form.appendChild(input);
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Функции для модального окна
+        function openModal() {
+            document.getElementById('exerciseModal').classList.add('active');
+            document.getElementById('exerciseSearch').value = '';
+            filterExercises();
+        }
+
+        function closeModal() {
+            document.getElementById('exerciseModal').classList.remove('active');
+            clearModalSelection();
+        }
+
+        function toggleModalExercise(id, card) {
+            const index = modalSelectedExercises.findIndex(ex => ex.id === id);
+            
+            if (index === -1) {
+                modalSelectedExercises.push({
+                    id: id,
+                    name: card.getAttribute('data-name'),
+                    muscle: card.getAttribute('data-muscle')
+                });
+                card.classList.add('selected');
+            } else {
+                modalSelectedExercises.splice(index, 1);
+                card.classList.remove('selected');
+            }
+            
+            updateModalPanel();
+        }
+
+        function updateModalPanel() {
+            const panel = document.getElementById('selectedPanel');
+            const countSpan = document.getElementById('modalSelectedCount');
+            const listDiv = document.getElementById('selectedExercisesList');
+            
+            if (modalSelectedExercises.length > 0) {
+                panel.style.display = 'flex';
+                countSpan.textContent = modalSelectedExercises.length;
+                
+                listDiv.innerHTML = '';
+                modalSelectedExercises.forEach(ex => {
+                    const tag = document.createElement('span');
+                    tag.className = 'selected-tag';
+                    tag.innerHTML = `${ex.name} <i class="fas fa-times" onclick="removeModalExercise(${ex.id})"></i>`;
+                    listDiv.appendChild(tag);
+                });
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        function removeModalExercise(id) {
+            const card = document.querySelector(`.modal-exercise-card[data-id="${id}"]`);
+            if (card) card.classList.remove('selected');
+            modalSelectedExercises = modalSelectedExercises.filter(ex => ex.id !== id);
+            updateModalPanel();
+        }
+
+        function clearModalSelection() {
+            document.querySelectorAll('.modal-exercise-card.selected').forEach(card => {
+                card.classList.remove('selected');
+            });
+            modalSelectedExercises = [];
+            updateModalPanel();
+        }
+
+        function filterExercises() {
+            const searchText = document.getElementById('exerciseSearch').value.toLowerCase();
+            const cards = document.querySelectorAll('.modal-exercise-card');
+            
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name-lower');
+                const muscle = card.getAttribute('data-muscle-lower');
+                card.style.display = (name.includes(searchText) || muscle.includes(searchText)) ? 'block' : 'none';
+            });
+        }
+
+        function addSelectedExercises() {
+            if (modalSelectedExercises.length === 0) {
+                alert('Выберите хотя бы одно упражнение');
+                return;
+            }
+            
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ url_for("add_workout_exercises", workout_id=workout.id) }}';
+            form.style.display = 'none';
+            
+            modalSelectedExercises.forEach(ex => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'exercise_ids[]';
+                input.value = ex.id;
+                form.appendChild(input);
+            });
+            
+            ['sets', 'reps', 'weight'].forEach(field => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = field;
+                input.value = field === 'sets' ? '3' : field === 'reps' ? '10' : '0';
+                form.appendChild(input);
+            });
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        function showEditForm(id, sets, reps, weight, notes) {
+            document.getElementById('edit-form-' + id).style.display = 'block';
+        }
+
+        function hideEditForm(id) {
+            document.getElementById('edit-form-' + id).style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('exerciseModal');
+            if (event.target == modal) closeModal();
+        }
+    </script>
+</body>
+</html>
