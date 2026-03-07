@@ -575,7 +575,29 @@ def delete_workout(workout_id):
     database.delete_workout_session(workout_id, session['user_id'])
     return redirect(url_for('my_workouts'))
 
+# Удаление одной тренировки
+@app.route('/workout/delete_single', methods=['POST'])
+def delete_single_workout():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    workout_id = request.form.get('workout_id')
+    database.delete_workout_session(workout_id, session['user_id'])
+    
+    return redirect(url_for('my_workouts'))
 
+# Массовое удаление тренировок
+@app.route('/workout/delete_multiple', methods=['POST'])
+def delete_multiple_workouts():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    workout_ids = request.form.getlist('workout_ids[]')
+    
+    for workout_id in workout_ids:
+        database.delete_workout_session(workout_id, session['user_id'])
+    
+    return redirect(url_for('my_workouts'))
 
 
 

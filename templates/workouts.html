@@ -59,6 +59,8 @@
             margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 2px solid rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         .header h1 {
@@ -72,8 +74,10 @@
             display: flex;
             gap: 15px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
+        /* Кнопки */
         .btn {
             padding: 12px 24px;
             border: none;
@@ -103,6 +107,165 @@
             color: white;
         }
 
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        /* Кнопка добавления тренировки */
+        .beautiful-add-btn {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+        }
+
+        .beautiful-add-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .beautiful-add-btn:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(16, 185, 129, 0.5);
+            background: linear-gradient(135deg, #059669, #10b981);
+        }
+
+        .beautiful-add-btn:hover::before {
+            left: 100%;
+        }
+
+        .beautiful-add-btn .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            font-size: 1em;
+            transition: all 0.4s ease;
+        }
+
+        .beautiful-add-btn:hover .btn-icon {
+            transform: rotate(180deg) scale(1.1);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .beautiful-add-btn .btn-text {
+            transition: all 0.3s ease;
+        }
+
+        /* Анимация пульсации */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            }
+            50% {
+                box-shadow: 0 8px 30px rgba(16, 185, 129, 0.6);
+            }
+            100% {
+                box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            }
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        /* Панель массовых действий */
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .selection-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .selection-count {
+            font-size: 1.1em;
+            color: var(--dark);
+        }
+
+        .selection-count span {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 1.2em;
+        }
+
+        .action-buttons-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-group-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .delete-group-btn {
+            background: var(--danger);
+            color: white;
+        }
+
+        .delete-group-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .cancel-group-btn {
+            background: var(--gray);
+            color: white;
+        }
+
+        .cancel-group-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
         /* Сетка тренировок */
         .workouts-grid {
             display: grid;
@@ -114,62 +277,336 @@
         .workout-card {
             background: white;
             border-radius: 20px;
-            padding: 20px;
+            padding: 25px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.05);
             transition: all 0.3s;
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 2px solid transparent;
             cursor: pointer;
+            position: relative;
         }
 
         .workout-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 15px 30px rgba(99, 102, 241, 0.2);
+            border-color: var(--primary);
+        }
+
+        .workout-card.selected {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.02);
+        }
+
+        .workout-card .selection-checkbox {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            background: white;
+            border: 2px solid var(--gray);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .workout-card:hover .selection-checkbox {
+            border-color: var(--primary);
+        }
+
+        .workout-card.selected .selection-checkbox {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .workout-card .selection-checkbox i {
+            font-size: 16px;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .workout-card.selected .selection-checkbox i {
+            opacity: 1;
         }
 
         .workout-name {
-            font-size: 1.4em;
+            font-size: 1.5em;
             font-weight: bold;
             color: var(--dark);
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            padding-right: 35px;
         }
 
         .workout-date {
             color: var(--gray);
-            font-size: 0.9em;
+            font-size: 1em;
             margin-bottom: 15px;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
+        }
+
+        .workout-date i {
+            color: var(--primary);
         }
 
         .workout-stats {
             display: flex;
-            gap: 15px;
+            gap: 20px;
+            color: var(--gray);
+            font-size: 0.95em;
+            margin-bottom: 15px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .workout-stats span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .workout-stats i {
+            color: var(--primary);
+        }
+
+        .workout-notes {
             color: var(--gray);
             font-size: 0.9em;
-            margin-bottom: 15px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            font-style: italic;
         }
 
-        .workout-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 2px solid rgba(0,0,0,0.05);
-        }
-
+        /* КРАСИВОЕ ПУСТОЕ СОСТОЯНИЕ */
         .empty-state {
             text-align: center;
-            padding: 60px;
-            background: white;
-            border-radius: 20px;
-            grid-column: 1 / -1;
+            padding: 80px 20px 100px;
+            background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+            border-radius: 40px;
+            margin: 30px 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.05);
         }
 
-        .empty-state i {
-            font-size: 4em;
-            color: var(--gray);
+        .empty-state::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        .empty-state-illustration {
+            position: relative;
+            height: 180px;
+            margin-bottom: 30px;
+        }
+
+        .floating-icon {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .floating-icon.main {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .floating-icon.main i {
+            font-size: 5em;
+            color: var(--primary);
+            opacity: 0.3;
+        }
+
+        .floating-icon.small {
+            top: 20px;
+            animation: float 3.5s ease-in-out infinite;
+        }
+
+        .floating-icon.small i {
+            font-size: 3em;
+            color: var(--secondary);
+            opacity: 0.2;
+        }
+
+        .floating-icon.tiny {
+            top: -20px;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .floating-icon.tiny i {
+            font-size: 2em;
+            color: var(--success);
+            opacity: 0.15;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(-25px);
+            }
+        }
+
+        .empty-state-title {
+            font-size: 2.5em;
             margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            z-index: 1;
+        }
+
+        .empty-state-message {
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .empty-state-message p {
+            color: var(--gray);
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+
+        .empty-state-highlight {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 8px 25px;
+            border-radius: 50px;
+            display: inline-block;
+            font-size: 1.1em;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        .empty-state-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 50px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px 35px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s;
+            border: 1px solid rgba(99, 102, 241, 0.1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2);
+        }
+
+        .stat-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--dark);
+            line-height: 1;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .empty-state-footer {
+            margin-top: 40px;
+            color: var(--gray);
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        .bounce-arrow {
+            animation: bounce 2s infinite;
+            color: var(--primary);
+            font-size: 1.2em;
+        }
+
+        /* Адаптация */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .workouts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .empty-state-title {
+                font-size: 1.8em;
+            }
+            
+            .empty-state-stats {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .stat-card {
+                width: 200px;
+            }
+            
+            .action-bar {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+            
+            .action-buttons-group {
+                justify-content: stretch;
+            }
+            
+            .action-group-btn {
+                flex: 1;
+                justify-content: center;
+            }
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -196,9 +633,32 @@
             </div>
         </div>
 
-        <div class="workouts-grid">
+        <!-- Панель массовых действий (появляется при выделении) -->
+        <div class="action-bar" id="actionBar" style="display: none;">
+            <div class="selection-info">
+                <div class="selection-count">
+                    Выделено: <span id="selectedCount">0</span>
+                </div>
+            </div>
+            <div class="action-buttons-group">
+                <button class="action-group-btn delete-group-btn" onclick="deleteSelected()">
+                    <i class="fas fa-trash"></i> Удалить 
+                </button>
+                <button class="action-group-btn cancel-group-btn" onclick="clearSelection()">
+                    <i class="fas fa-times"></i> Отмена
+                </button>
+            </div>
+        </div>
+
+        <!-- Список тренировок -->
+{% if workouts %}
+<div class="workouts-grid" id="workoutsGrid">
     {% for workout in workouts %}
-    <div class="workout-card" onclick="location.href='{{ url_for('view_workout', workout_id=workout.id) }}'">
+    <div class="workout-card" id="workout-card-{{ workout.id }}" data-id="{{ workout.id }}" 
+         onclick="handleCardClick({{ workout.id }}, event)">
+        <div class="selection-checkbox" onclick="event.stopPropagation(); toggleSelectCard({{ workout.id }}, event)">
+            <i class="fas fa-check"></i>
+        </div>
         <div class="workout-name">{{ workout.name }}</div>
         <div class="workout-date">
             <i class="fas fa-calendar"></i> {{ workout.date }}
@@ -207,22 +667,138 @@
             <span><i class="fas fa-dumbbell"></i> {{ workout.exercises_count }} упражнений</span>
         </div>
         {% if workout.notes %}
-        <div style="color: var(--gray); font-size: 0.9em; margin-top: 10px;">
-            <i class="fas fa-pencil-alt"></i> {{ workout.notes[:50] }}{% if workout.notes|length > 50 %}...{% endif %}
+        <div class="workout-notes">
+            <i class="fas fa-pencil-alt"></i> {{ workout.notes[:100] }}{% if workout.notes|length > 100 %}...{% endif %}
         </div>
         {% endif %}
     </div>
-    {% else %}
-    <div class="empty-state">
-        <i class="fas fa-dumbbell"></i>
-        <h3>У вас пока нет тренировок</h3>
-        <p style="margin: 20px 0;">Создайте свою первую тренировку!</p>
-        <a href="{{ url_for('create_workout') }}" class="btn btn-success">
-            <i class="fas fa-plus"></i> Создать тренировку
-        </a>
-    </div>
     {% endfor %}
 </div>
+{% else %}
+        <!-- КРАСИВОЕ ПУСТОЕ СОСТОЯНИЕ -->
+        <div class="empty-state">
+            <div class="empty-state-illustration">
+                <div class="floating-icon main">
+                    <i class="fas fa-dumbbell"></i>
+                </div>
+                <div class="floating-icon small">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div class="floating-icon tiny">
+                    <i class="fas fa-running"></i>
+                </div>
+            </div>
+            
+            <h2 class="empty-state-title">Пора начинать! 💪</h2>
+            
+            <div class="empty-state-message">
+                <p>У вас пока нет ни одной тренировки</p>
+                <p class="empty-state-highlight">Создайте свою первую тренировку</p>
+            </div>
+            
+            <div class="empty-state-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">тренировок</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏳</div>
+                    <div class="stat-number">∞</div>
+                    <div class="stat-label">возможностей</div>
+                </div>
+            </div>
+            
+            <a href="{{ url_for('create_workout') }}" class="beautiful-add-btn pulse-animation">
+                <span class="btn-icon"><i class="fas fa-plus"></i></span>
+                <span class="btn-text">Создать первую тренировку</span>
+            </a>
+            
+            <div class="empty-state-footer">
+                <i class="fas fa-arrow-up bounce-arrow"></i>
+                <span>Нажмите кнопку, чтобы начать</span>
+                <i class="fas fa-arrow-up bounce-arrow"></i>
+            </div>
+        </div>
+        {% endif %}
     </div>
+
+    <script>
+        let selectedCards = [];
+
+        function toggleSelectCard(id, event) {
+    event.stopPropagation();
+    const card = document.getElementById(`workout-card-${id}`);
+    const index = selectedCards.indexOf(id);
+    
+    if (index === -1) {
+        selectedCards.push(id);
+        card.classList.add('selected');
+    } else {
+        selectedCards.splice(index, 1);
+        card.classList.remove('selected');
+    }
+    
+    updateActionBar();
+}
+
+        function updateActionBar() {
+            const actionBar = document.getElementById('actionBar');
+            const selectedCount = document.getElementById('selectedCount');
+            
+            if (selectedCards.length > 0) {
+                actionBar.style.display = 'flex';
+                selectedCount.textContent = selectedCards.length;
+            } else {
+                actionBar.style.display = 'none';
+            }
+        }
+
+        function clearSelection() {
+            selectedCards.forEach(id => {
+                const card = document.getElementById(`workout-card-${id}`);
+                if (card) card.classList.remove('selected');
+            });
+            selectedCards = [];
+            updateActionBar();
+        }
+
+       function handleCardClick(id, event) {
+    // Если есть выделенные карточки - только выделяем/снимаем выделение
+    if (selectedCards.length > 0) {
+        toggleSelectCard(id, event);
+        return;
+    }
+    // Иначе переходим на страницу тренировки
+    window.location.href = "{{ url_for('view_workout', workout_id=0) }}".replace('0', id);
+}
+
+        function deleteSelected() {
+            if (selectedCards.length === 0) return;
+            
+            if (confirm(`Удалить ${selectedCards.length} тренировок? Все упражнения внутри также будут удалены.`)) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/workout/delete_multiple';
+                form.style.display = 'none';
+                
+                selectedCards.forEach(id => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'workout_ids[]';
+                    input.value = id;
+                    form.appendChild(input);
+                });
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Закрытие по клику вне
+        window.onclick = function(event) {
+            // Если нужно добавить логику для модалок
+        }
+    </script>
 </body>
 </html>
