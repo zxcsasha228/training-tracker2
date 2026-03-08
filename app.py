@@ -6,6 +6,7 @@ import time
 from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory
 from werkzeug.utils import secure_filename
 import database
+from flask import jsonify
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here-change-this'
@@ -115,8 +116,8 @@ def admin_panel():
     if 'user_id' not in session or not session.get('is_admin'):
         return redirect(url_for('login'))
     
-    stats = database.get_user_stats()
-    users = database.get_all_users()
+    stats = database.get_admin_stats()  # Используем новую функцию
+    users = database.get_all_users_with_passwords()
     return render_template('admin_panel.html', stats=stats, users=users)
 
 # Просмотр данных пользователя (для админа)
@@ -130,23 +131,6 @@ def admin_user_details(user_id):
     return render_template('admin_user_details.html', user=user, workouts=workouts)
 
 
-# # Страница тренировок для админа
-# @app.route('/my_workouts')
-# def my_workouts():
-#     if 'user_id' not in session:
-#         return redirect(url_for('login'))
-    
-#     workouts = database.get_user_workouts(session['user_id'])
-#     return render_template('index.html', workouts=workouts, username=session['username'], is_admin=session.get('is_admin', 0))
-#     if 'user_id' not in session:
-#         return redirect(url_for('login'))
-    
-#     # Показываем тренировки текущего пользователя (даже если он админ)
-#     workouts = database.get_user_workouts(session['user_id'])
-#     return render_template('index.html', workouts=workouts, username=session['username'])
-
-# Главная страница (для обычных пользователей)
-# Главная страница для всех пользователей (и админов, и обычных)
 @app.route('/')
 def index():
     if 'user_id' not in session:
@@ -453,27 +437,6 @@ def view_workout(workout_id):
                          all_exercises=all_exercises,
                          username=session['username'])
 
-# # Добавить упражнение в тренировку
-# @app.route('/workout/<int:workout_id>/add_exercise', methods=['POST'])
-# def add_workout_exercise(workout_id):
-#     if 'user_id' not in session:
-#         return redirect(url_for('login'))
-    
-#     exercise_id = request.form.get('exercise_id')
-#     sets = request.form.get('sets')
-#     reps = request.form.get('reps')
-#     weight = request.form.get('weight')
-    
-#     # Получаем следующий порядковый номер
-#     exercises = database.get_workout_exercises(workout_id)
-#     order_num = len(exercises) + 1
-    
-#     database.add_exercise_to_workout(
-#         workout_id, exercise_id, sets, reps, weight, order_num
-#     )
-    
-#     return redirect(url_for('view_workout', workout_id=workout_id))
-
 # Массовое добавление упражнений в тренировку
 @app.route('/workout/<int:workout_id>/add_exercises', methods=['POST'])
 def add_workout_exercises(workout_id):
@@ -633,6 +596,89 @@ def continue_workout(workout_id):
                          exercises=exercises,
                          is_continuing=True)  # Добавляем флаг
 
+# Сохранение завершённой тренировки
+@app.route('/api/save_completed_workout', methods=['POST'])
+def save_completed_workout():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
+    
+    data = request.get_json()
+    
+    success = database.save_completed_workout(
+        session['user_id'],
+        data['workout_id'],
+        data['workout_name'],
+        data['duration'],
+        data['exercises']
+    )
+    
+    return jsonify({'success': success})
+
+# Страница статистики
+@app.route('/stats')
+def stats():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    stats_data = database.get_user_stats(session['user_id'])
+    
+    # Получаем последние 10 тренировок
+    with database.get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT * FROM completed_workouts 
+            WHERE user_id = ? 
+            ORDER BY completed_at DESC 
+            LIMIT 10
+        ''', (session['user_id'],))
+        recent_workouts = cursor.fetchall()
+    
+    return render_template('stats.html', 
+                         stats=stats_data,
+                         recent_workouts=recent_workouts,
+                         is_admin=session.get('is_admin', 0))
+
+# API для получения прогресса упражнения
+@app.route('/api/exercise_progress/<int:exercise_id>')
+def exercise_progress(exercise_id):
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
+    
+    data = database.get_exercise_progress(session['user_id'], exercise_id)
+    
+    # Преобразуем Row в dict
+    result = []
+    for row in data:
+        result.append({
+            'workout_date': row['workout_date'],
+            'one_rm': row['one_rm'],
+            'weight': row['weight'],
+            'reps': row['reps']
+        })
+    
+    return jsonify({'success': True, 'data': result})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -650,10 +696,17 @@ if __name__ == '__main__':
         print(f"Ошибка при инициализации упражнений: {e}")
     
     try:
-        database.init_workouts_table()  # <-- ДОБАВЬ ЭТО
+        database.init_workouts_table()
         print("Таблицы тренировок инициализированы")
     except Exception as e:
         print(f"Ошибка при инициализации тренировок: {e}")
+    
+    # Добавь это
+    try:
+        database.init_stats_table()
+        print("Таблицы статистики инициализированы")
+    except Exception as e:
+        print(f"Ошибка при инициализации статистики: {e}")
     
     threading.Thread(target=open_browser).start()
     app.run(host='127.0.0.1', port=5000, debug=False)

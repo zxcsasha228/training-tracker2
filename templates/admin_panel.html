@@ -462,26 +462,36 @@
 </div>
 
         <!-- Статистика -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>Всего пользователей</h3>
-                    <div class="stat-number">{{ stats.total_users }}</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-crown"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>Администраторов</h3>
-                    <div class="stat-number">{{ stats.total_admins }}</div>
-                </div>
-            </div>
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-users"></i>
         </div>
+        <div class="stat-content">
+            <h3>Всего пользователей</h3>
+            <div class="stat-number">{{ stats.total_users }}</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-crown"></i>
+        </div>
+        <div class="stat-content">
+            <h3>Администраторов</h3>
+            <div class="stat-number">{{ stats.total_admins }}</div>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-book"></i>
+        </div>
+        <div class="stat-content">
+            <h3>Упражнений в библиотеке</h3>
+            <div class="stat-number">{{ stats.total_exercises }}</div>
+        </div>
+    </div>
+</div>
 
         <!-- Поиск -->
         <div class="search-section">

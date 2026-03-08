@@ -610,4 +610,184 @@ def update_workout_session(workout_id, user_id, name, date, notes):
             return True
     except Exception as e:
         print(f"Ошибка при обновлении тренировки: {e}")
-        return False       
+        return False     
+
+   
+ # ================ СТАТИСТИКА ================
+def init_stats_table():
+    """Создать таблицу для статистики тренировок"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            
+            # Таблица завершённых тренировок
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS completed_workouts (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    workout_id INTEGER NOT NULL,
+                    workout_name TEXT NOT NULL,
+                    date TEXT NOT NULL,
+                    duration INTEGER NOT NULL,  -- в секундах
+                    completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+                    FOREIGN KEY (workout_id) REFERENCES workout_sessions (id) ON DELETE CASCADE
+                )
+            ''')
+            
+            # Таблица выполненных упражнений с 1ПМ
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS completed_exercises (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    exercise_id INTEGER NOT NULL,
+                    exercise_name TEXT NOT NULL,
+                    workout_date TEXT NOT NULL,
+                    one_rm REAL NOT NULL,  -- 1ПМ
+                    weight REAL NOT NULL,
+                    reps INTEGER NOT NULL,
+                    sets INTEGER NOT NULL,
+                    completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+                    FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE
+                )
+            ''')
+            
+            print("Таблицы статистики инициализированы")
+    except Exception as e:
+        print(f"Ошибка при создании таблиц статистики: {e}")
+
+# Сохранить завершённую тренировку
+def save_completed_workout(user_id, workout_id, workout_name, duration, exercises_data):
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            
+            from datetime import datetime
+            today = datetime.now().strftime('%Y-%m-%d')
+            
+            # Сохраняем тренировку
+            cursor.execute('''
+                INSERT INTO completed_workouts (user_id, workout_id, workout_name, date, duration)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (user_id, workout_id, workout_name, today, duration))
+            
+            # Сохраняем каждое упражнение с расчётом 1ПМ
+            for ex in exercises_data:
+                # Расчёт 1ПМ по формуле Бжицки: вес * (1 + повторения/30)
+                one_rm = float(ex['weight']) * (1 + int(ex['reps']) / 30)
+                
+                cursor.execute('''
+                    INSERT INTO completed_exercises 
+                    (user_id, exercise_id, exercise_name, workout_date, one_rm, weight, reps, sets)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    user_id, 
+                    ex['exercise_id'], 
+                    ex['exercise_name'], 
+                    today, 
+                    round(one_rm, 1),
+                    ex['weight'],
+                    ex['reps'],
+                    ex['sets']
+                ))
+            
+            return True
+    except Exception as e:
+        print(f"Ошибка при сохранении тренировки: {e}")
+        return False
+
+# Получить статистику пользователя
+def get_user_stats(user_id):
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            
+            # Количество завершённых тренировок
+            cursor.execute('''
+                SELECT COUNT(*) as count FROM completed_workouts WHERE user_id = ?
+            ''', (user_id,))
+            workouts_count = cursor.fetchone()['count']
+            
+            # Общее время тренировок
+            cursor.execute('''
+                SELECT SUM(duration) as total FROM completed_workouts WHERE user_id = ?
+            ''', (user_id,))
+            total_duration = cursor.fetchone()['total'] or 0
+            
+            # Список упражнений, которые выполнял пользователь
+            cursor.execute('''
+                SELECT DISTINCT exercise_id, exercise_name 
+                FROM completed_exercises 
+                WHERE user_id = ?
+                ORDER BY exercise_name
+            ''', (user_id,))
+            exercises = cursor.fetchall()
+            
+            return {
+                'workouts_count': workouts_count,
+                'total_duration': total_duration,
+                'exercises': exercises
+            }
+    except Exception as e:
+        print(f"Ошибка при получении статистики: {e}")
+        return {
+            'workouts_count': 0,
+            'total_duration': 0,
+            'exercises': []
+        }
+
+# Получить данные для графика упражнения
+def get_exercise_progress(user_id, exercise_id):
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                SELECT workout_date, one_rm, weight, reps
+                FROM completed_exercises 
+                WHERE user_id = ? AND exercise_id = ?
+                ORDER BY completed_at
+            ''', (user_id, exercise_id))
+            
+            return cursor.fetchall()
+    except Exception as e:
+        print(f"Ошибка при получении прогресса: {e}")
+        return []  
+    
+def get_admin_stats():
+    """Получить общую статистику для админ-панели"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            
+            # Общее количество пользователей
+            cursor.execute('SELECT COUNT(*) as count FROM users')
+            total_users = cursor.fetchone()['count']
+            
+            # Количество админов
+            cursor.execute('SELECT COUNT(*) as count FROM users WHERE is_admin = 1')
+            total_admins = cursor.fetchone()['count']
+            
+            # Общее количество тренировок
+            cursor.execute('SELECT COUNT(*) as count FROM workout_sessions')
+            total_workouts = cursor.fetchone()['count']
+            
+            # Общее количество упражнений в библиотеке
+            cursor.execute('SELECT COUNT(*) as count FROM exercises')
+            total_exercises = cursor.fetchone()['count']
+            
+            return {
+                'total_users': total_users,
+                'total_admins': total_admins,
+                'total_workouts': total_workouts,
+                'total_exercises': total_exercises
+            }
+    except Exception as e:
+        print(f"Ошибка при получении админ-статистики: {e}")
+        return {
+            'total_users': 0,
+            'total_admins': 0,
+            'total_workouts': 0,
+            'total_exercises': 0
+        }

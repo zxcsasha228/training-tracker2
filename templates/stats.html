@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Статистика тренировок</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #9ca3af;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Шапка */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* Кнопки */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-gray {
+            background: var(--gray);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        /* Карточки статистики */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.2);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-icon i {
+            font-size: 2em;
+            color: white;
+        }
+
+        .stat-content h3 {
+            color: var(--gray);
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .stat-number {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: var(--dark);
+        }
+
+        .stat-unit {
+            font-size: 0.9em;
+            color: var(--gray);
+            margin-left: 5px;
+        }
+
+        /* Выбор упражнения */
+        .exercise-selector {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+
+        .selector-title {
+            font-size: 1.3em;
+            color: var(--dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .selector-title i {
+            color: var(--primary);
+        }
+
+        .exercise-select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1em;
+            color: var(--dark);
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .exercise-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        /* График */
+        .chart-container {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+        .chart-title {
+            font-size: 1.3em;
+            color: var(--dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chart-title i {
+            color: var(--primary);
+        }
+
+        .chart-wrapper {
+            height: 400px;
+            position: relative;
+        }
+
+        /* Таблица последних тренировок */
+        .recent-table {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+
+        .table-title {
+            padding: 20px;
+            font-size: 1.3em;
+            color: var(--dark);
+            border-bottom: 2px solid rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .table-title i {
+            color: var(--primary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: var(--light);
+            color: var(--dark);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            color: var(--gray);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        /* Адаптация */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .chart-wrapper {
+                height: 300px;
+            }
+            
+            table {
+                font-size: 0.9em;
+            }
+            
+            th, td {
+                padding: 10px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка -->
+        <div class="header">
+            <h1><i class="fas fa-chart-line"></i> Статистика</h1>
+            <div class="header-actions">
+                <a href="{{ url_for('my_workouts') }}" class="btn btn-gray">
+                    <i class="fas fa-arrow-left"></i> К тренировкам
+                </a>
+                {% if is_admin %}
+                <a href="{{ url_for('admin_panel') }}" class="btn btn-primary">
+                    <i class="fas fa-crown"></i> Админка
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Карточки статистики -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Завершённые тренировки</h3>
+                    <div class="stat-number">{{ stats.workouts_count }}</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Общее время</h3>
+                    <div class="stat-number">
+                        {{ (stats.total_duration / 60) | int }}
+                        <span class="stat-unit">мин</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-dumbbell"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Упражнений</h3>
+                    <div class="stat-number">{{ stats.exercises|length }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Выбор упражнения -->
+        <div class="exercise-selector">
+            <div class="selector-title">
+                <i class="fas fa-search"></i>
+                Выберите упражнение для просмотра прогресса
+            </div>
+            <select class="exercise-select" id="exerciseSelect" onchange="loadExerciseProgress()">
+                <option value="">-- Выберите упражнение --</option>
+                {% for ex in stats.exercises %}
+                <option value="{{ ex.exercise_id }}">{{ ex.exercise_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- График -->
+        <div class="chart-container" id="chartContainer" style="display: none;">
+            <div class="chart-title">
+                <i class="fas fa-chart-line"></i>
+                <span id="selectedExerciseName">Прогресс 1ПМ</span>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="progressChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Последние тренировки -->
+        <div class="recent-table">
+            <div class="table-title">
+                <i class="fas fa-history"></i>
+                Последние тренировки
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Тренировка</th>
+                        <th>Время</th>
+                        <th>Упражнений</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for workout in recent_workouts %}
+                    <tr>
+                        <td>{{ workout.date }}</td>
+                        <td>{{ workout.workout_name }}</td>
+                        <td>{{ (workout.duration / 60) | int }} мин</td>
+                        <td>{{ workout.exercises_count }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 40px;">
+                            <i class="fas fa-dumbbell" style="font-size: 2em; color: var(--gray); margin-bottom: 10px; display: block;"></i>
+                            Пока нет завершённых тренировок
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let progressChart = null;
+
+        function loadExerciseProgress() {
+            const exerciseId = document.getElementById('exerciseSelect').value;
+            const chartContainer = document.getElementById('chartContainer');
+            
+            if (!exerciseId) {
+                chartContainer.style.display = 'none';
+                return;
+            }
+            
+            // Загружаем данные для графика
+            fetch(`/api/exercise_progress/${exerciseId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data.length > 0) {
+                        // Обновляем название упражнения
+                        const exerciseName = document.querySelector(`#exerciseSelect option[value="${exerciseId}"]`).text;
+                        document.getElementById('selectedExerciseName').text = `${exerciseName} - прогресс 1ПМ`;
+                        
+                        // Подготавливаем данные для графика
+                        const dates = data.data.map(item => item.workout_date);
+                        const oneRMs = data.data.map(item => item.one_rm);
+                        
+                        // Создаём или обновляем график
+                        if (progressChart) {
+                            progressChart.destroy();
+                        }
+                        
+                        const ctx = document.getElementById('progressChart').getContext('2d');
+                        progressChart = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: dates,
+                                datasets: [{
+                                    label: '1ПМ (кг)',
+                                    data: oneRMs,
+                                    borderColor: '#10b981',
+                                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                    borderWidth: 3,
+                                    pointBackgroundColor: '#6366f1',
+                                    pointBorderColor: 'white',
+                                    pointBorderWidth: 2,
+                                    pointRadius: 6,
+                                    pointHoverRadius: 8,
+                                    tension: 0.1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    },
+                                    tooltip: {
+                                        backgroundColor: 'white',
+                                        titleColor: '#1f2937',
+                                        bodyColor: '#1f2937',
+                                        borderColor: '#e5e7eb',
+                                        borderWidth: 1,
+                                        callbacks: {
+                                            label: function(context) {
+                                                return `1ПМ: ${context.raw} кг`;
+                                            }
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        grid: {
+                                            color: '#e5e7eb'
+                                        },
+                                        title: {
+                                            display: true,
+                                            text: 'Вес (кг)',
+                                            color: '#9ca3af'
+                                        }
+                                    },
+                                    x: {
+                                        grid: {
+                                            display: false
+                                        },
+                                        title: {
+                                            display: true,
+                                            text: 'Дата тренировки',
+                                            color: '#9ca3af'
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        
+                        chartContainer.style.display = 'block';
+                    } else {
+                        alert('Нет данных для этого упражнения');
+                        chartContainer.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка загрузки данных:', error);
+                    alert('Ошибка при загрузке данных');
+                });
+        }
+    </script>
+</body>
+{% include 'active_workout_banner.html' %}
+</html>

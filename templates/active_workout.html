@@ -879,29 +879,68 @@
             saveTimer();
         });
 
+        
         // Завершение тренировки
         function finishWorkout() {
-            if (confirm('Завершить тренировку?')) {
-                // Сохраняем финальное состояние для статистики
-                saveWorkoutState();
+    if (confirm('Завершить тренировку?')) {
+        // Собираем данные для статистики
+        const exercisesData = [];
+        
+        document.querySelectorAll('.exercise-card').forEach(card => {
+            const exerciseId = card.dataset.exerciseId;
+            const exerciseName = card.querySelector('.exercise-name').textContent;
+            
+            card.querySelectorAll('.set-card').forEach(set => {
+                const weight = set.querySelector('.weight-input').value;
+                const reps = set.querySelector('.reps-input').value;
+                const completed = set.classList.contains('completed');
                 
+                // Сохраняем только выполненные подходы
+                if (completed && parseFloat(weight) > 0) {
+                    exercisesData.push({
+                        exercise_id: exerciseId,
+                        exercise_name: exerciseName,
+                        weight: parseFloat(weight),
+                        reps: parseInt(reps),
+                        sets: 1  // Каждый подход сохраняем отдельно
+                    });
+                }
+            });
+        });
+        
+        // Отправляем данные на сервер
+        fetch('/api/save_completed_workout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                workout_id: workoutId,
+                workout_name: "{{ workout.name }}",
+                duration: seconds,
+                exercises: exercisesData
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
                 // Удаляем флаг активности и данные тренировки
                 localStorage.removeItem(`workout_${userId}_${workoutId}_active`);
                 localStorage.removeItem(`workout_${userId}_${workoutId}`);
                 localStorage.removeItem(`workout_${userId}_${workoutId}_timer`);
                 
-                // Здесь потом будет сохранение в статистику
-                console.log('Тренировка завершена', {
-                    userId: userId,
-                    workoutId: workoutId,
-                    duration: seconds,
-                    exercises: collectWorkoutData()
-                });
-                
-                // Переходим на страницу просмотра тренировки
-                window.location.href = `/workout/${workoutId}`;
+                // Переходим на страницу статистики
+                window.location.href = '/stats';
+            } else {
+                alert('Ошибка при сохранении тренировки');
             }
-        }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            alert('Ошибка при сохранении тренировки');
+        });
+    }
+}
 
         // Функция для сбора данных тренировки
         function collectWorkoutData() {
