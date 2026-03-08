@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ workout.name }} - Тренировка</title>
+    <meta charset="utf-8">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #9ca3af;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Шапка */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Таймер */
+        .timer-section {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 60px;
+            padding: 15px 30px;
+            display: inline-flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        .timer-display {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: white;
+            font-family: monospace;
+            letter-spacing: 5px;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .timer-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            font-size: 1.1em;
+        }
+
+        .timer-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .timer-btn.pause {
+            background: rgba(239, 68, 68, 0.8);
+        }
+
+        .timer-btn.pause:hover {
+            background: rgba(239, 68, 68, 1);
+        }
+
+        /* Информация о тренировке */
+        .workout-info {
+            background: var(--light);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--dark);
+        }
+
+        .info-item i {
+            color: var(--primary);
+            font-size: 1.2em;
+        }
+
+        /* Карточка упражнения */
+        .exercise-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            border: 2px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .exercise-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 20px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .exercise-name {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .exercise-muscle {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .exercise-content {
+            padding: 20px;
+        }
+
+        /* Плашка подхода */
+        .set-card {
+            background: var(--light);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .set-card.completed {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--success);
+            opacity: 0.8;
+        }
+
+        .set-number {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--dark);
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .set-inputs {
+            display: flex;
+            gap: 15px;
+            flex: 1;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s;
+        }
+
+        .input-group:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .input-group i {
+            color: var(--gray);
+            font-size: 1em;
+        }
+
+        .input-group input {
+            border: none;
+            outline: none;
+            width: 70px;
+            font-size: 1.1em;
+            font-weight: 600;
+            text-align: center;
+            background: transparent;
+        }
+
+        .input-group input::-webkit-inner-spin-button,
+        .input-group input::-webkit-outer-spin-button {
+            opacity: 1;
+            height: 20px;
+        }
+
+        .set-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .complete-btn {
+            background: none;
+            border: 2px solid var(--gray);
+            color: var(--gray);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            font-size: 1.1em;
+        }
+
+        .complete-btn:hover {
+            border-color: var(--success);
+            color: var(--success);
+            transform: scale(1.1);
+        }
+
+        .complete-btn.completed {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        .delete-set-btn {
+            background: none;
+            border: 2px solid var(--gray);
+            color: var(--gray);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            font-size: 1.1em;
+        }
+
+        .delete-set-btn:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+            transform: scale(1.1);
+        }
+
+        /* Кнопка добавления подхода */
+        .add-set-btn {
+            width: 100%;
+            padding: 15px;
+            background: none;
+            border: 2px dashed var(--primary);
+            border-radius: 16px;
+            color: var(--primary);
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+            margin-top: 15px;
+        }
+
+        .add-set-btn:hover {
+            background: rgba(99, 102, 241, 0.1);
+            border-style: solid;
+            transform: translateY(-2px);
+        }
+
+        .add-set-btn i {
+            font-size: 1.2em;
+        }
+
+        /* Кнопки завершения */
+        .finish-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(0,0,0,0.05);
+        }
+
+        .finish-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .finish-btn.complete {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+        }
+
+        .finish-btn.complete:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .finish-btn.cancel {
+            background: var(--gray);
+            color: white;
+        }
+
+        .finish-btn.cancel:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        /* Статистика подходов */
+        .sets-stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            color: var(--gray);
+            font-size: 0.9em;
+        }
+
+        .sets-stats span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sets-stats i {
+            color: var(--success);
+        }
+
+        /* Адаптация */
+        @media (max-width: 768px) {
+            .timer-section {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .set-card {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .set-number {
+                text-align: left;
+            }
+            
+            .set-inputs {
+                justify-content: center;
+            }
+            
+            .set-actions {
+                justify-content: flex-end;
+            }
+            
+            .finish-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка -->
+        <div class="header">
+            <h1><i class="fas fa-play-circle"></i> {{ workout.name }}</h1>
+            <a href="{{ url_for('view_workout', workout_id=workout.id) }}" class="btn btn-gray">
+                <i class="fas fa-times"></i> Выйти
+            </a>
+        </div>
+
+        <!-- Таймер -->
+        <div style="text-align: center; margin-bottom: 30px;">
+            <div class="timer-section">
+                <div class="timer-display" id="timer">00:00</div>
+                <div class="timer-controls">
+                    <button class="timer-btn" onclick="startTimer()" id="startBtn" title="Старт">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="timer-btn pause" onclick="pauseTimer()" id="pauseBtn" style="display: none;" title="Пауза">
+                        <i class="fas fa-pause"></i>
+                    </button>
+                    <button class="timer-btn" onclick="resetTimer()" title="Сброс">
+                        <i class="fas fa-undo-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Информация о тренировке -->
+        <div class="workout-info">
+            <div class="info-item">
+                <i class="fas fa-calendar"></i>
+                <span>{{ workout.date }}</span>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-dumbbell"></i>
+                <span id="totalExercises">{{ exercises|length }}</span> упражнений
+            </div>
+            <div class="info-item">
+                <i class="fas fa-layer-group"></i>
+                <span id="totalSets">0</span> подходов
+            </div>
+        </div>
+
+        <!-- Карточки упражнений -->
+        <div id="exercisesContainer">
+            {% for ex in exercises %}
+            <div class="exercise-card" id="exercise-{{ ex.id }}" data-exercise-id="{{ ex.id }}">
+                <div class="exercise-header">
+                    <span class="exercise-name">{{ ex.name }}</span>
+                    <span class="exercise-muscle">{{ ex.muscle_group }}</span>
+                </div>
+                <div class="exercise-content">
+                    <!-- Контейнер для подходов -->
+                    <div class="sets-container" id="sets-{{ ex.id }}">
+                        <!-- Первый подход (будет добавлен через JS) -->
+                    </div>
+                    
+                    <!-- Кнопка добавления подхода -->
+                    <button class="add-set-btn" onclick="addSet({{ ex.id }})">
+                        <i class="fas fa-plus"></i> Добавить подход
+                    </button>
+
+                    <!-- Статистика подходов -->
+                    <div class="sets-stats" id="stats-{{ ex.id }}">
+                        <span><i class="fas fa-check-circle"></i> <span class="completed-count">0</span>/<span class="total-count">0</span> выполнено</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Кнопки завершения -->
+        <div class="finish-buttons">
+            <button class="finish-btn complete" onclick="finishWorkout()">
+                <i class="fas fa-check-circle"></i> Завершить тренировку
+            </button>
+            <button class="finish-btn cancel" onclick="cancelWorkout()">
+                <i class="fas fa-times-circle"></i> Отмена
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Таймер
+        let timerInterval;
+        let seconds = 0;
+        let isRunning = false;
+
+        function formatTime(secs) {
+            const mins = Math.floor(secs / 60);
+            const remainingSecs = secs % 60;
+            return `${mins.toString().padStart(2, '0')}:${remainingSecs.toString().padStart(2, '0')}`;
+        }
+
+        function updateTimer() {
+            document.getElementById('timer').textContent = formatTime(seconds);
+        }
+
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                timerInterval = setInterval(() => {
+                    seconds++;
+                    updateTimer();
+                }, 1000);
+                document.getElementById('startBtn').style.display = 'none';
+                document.getElementById('pauseBtn').style.display = 'block';
+            }
+        }
+
+        function pauseTimer() {
+            if (isRunning) {
+                isRunning = false;
+                clearInterval(timerInterval);
+                document.getElementById('startBtn').style.display = 'block';
+                document.getElementById('pauseBtn').style.display = 'none';
+            }
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            seconds = 0;
+            updateTimer();
+        }
+
+        // Управление подходами
+        let setCounter = 1;
+        let completedSets = 0;
+
+        function addSet(exerciseId) {
+            const container = document.getElementById(`sets-${exerciseId}`);
+            const setNumber = container.children.length + 1;
+            
+            const setDiv = document.createElement('div');
+            setDiv.className = 'set-card';
+            setDiv.id = `set-${exerciseId}-${setNumber}`;
+            setDiv.innerHTML = `
+                <div class="set-number">#${setNumber}</div>
+                <div class="set-inputs">
+                    <div class="input-group">
+                        <i class="fas fa-weight-hanging"></i>
+                        <input type="number" value="0" step="0.5" min="0" class="weight-input">
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-repeat"></i>
+                        <input type="number" value="10" min="1" class="reps-input">
+                    </div>
+                </div>
+                <div class="set-actions">
+                    <button class="complete-btn" onclick="toggleComplete(this)" title="Выполнено">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button class="delete-set-btn" onclick="deleteSet(this, ${exerciseId})" title="Удалить">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(setDiv);
+            updateExerciseStats(exerciseId);
+        }
+
+        function toggleComplete(btn) {
+            const setCard = btn.closest('.set-card');
+            const exerciseId = setCard.closest('.exercise-card').dataset.exerciseId;
+            
+            if (btn.classList.contains('completed')) {
+                btn.classList.remove('completed');
+                setCard.classList.remove('completed');
+                completedSets--;
+            } else {
+                btn.classList.add('completed');
+                setCard.classList.add('completed');
+                completedSets++;
+            }
+            
+            updateExerciseStats(exerciseId);
+            updateTotalStats();
+        }
+
+        function deleteSet(btn, exerciseId) {
+            const setCard = btn.closest('.set-card');
+            if (setCard.classList.contains('completed')) {
+                completedSets--;
+            }
+            setCard.remove();
+            
+            // Перенумеровываем подходы
+            const container = document.getElementById(`sets-${exerciseId}`);
+            const sets = container.children;
+            for (let i = 0; i < sets.length; i++) {
+                const numberDiv = sets[i].querySelector('.set-number');
+                numberDiv.textContent = `#${i + 1}`;
+                sets[i].id = `set-${exerciseId}-${i + 1}`;
+            }
+            
+            updateExerciseStats(exerciseId);
+            updateTotalStats();
+        }
+
+        function updateExerciseStats(exerciseId) {
+            const container = document.getElementById(`sets-${exerciseId}`);
+            const statsDiv = document.getElementById(`stats-${exerciseId}`);
+            const sets = container.children;
+            let completed = 0;
+            
+            for (let set of sets) {
+                if (set.classList.contains('completed')) {
+                    completed++;
+                }
+            }
+            
+            statsDiv.innerHTML = `
+                <span><i class="fas fa-check-circle"></i> <span class="completed-count">${completed}</span>/<span class="total-count">${sets.length}</span> выполнено</span>
+            `;
+        }
+
+        function updateTotalStats() {
+            const totalSets = document.querySelectorAll('.set-card').length;
+            document.getElementById('totalSets').textContent = totalSets;
+        }
+
+        // Инициализация первого подхода для каждого упражнения
+        document.addEventListener('DOMContentLoaded', function() {
+            {% for ex in exercises %}
+            addSet({{ ex.id }});
+            {% endfor %}
+        });
+
+        // Завершение тренировки
+        function finishWorkout() {
+            if (confirm('Завершить тренировку? Все несохранённые данные будут потеряны.')) {
+                // Здесь можно сохранить результаты тренировки
+                window.location.href = "{{ url_for('view_workout', workout_id=workout.id) }}";
+            }
+        }
+
+        function cancelWorkout() {
+            if (confirm('Выйти из тренировки? Прогресс не сохранится.')) {
+                window.location.href = "{{ url_for('view_workout', workout_id=workout.id) }}";
+            }
+        }
+    </script>
+</body>
+</html>

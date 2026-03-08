@@ -600,7 +600,21 @@ def delete_multiple_workouts():
     
     return redirect(url_for('my_workouts'))
 
-
+# Начать тренировку
+@app.route('/workout/<int:workout_id>/start')
+def start_workout(workout_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    workout = database.get_workout_session(workout_id, session['user_id'])
+    if not workout:
+        return redirect(url_for('my_workouts'))
+    
+    exercises = database.get_workout_exercises(workout_id)
+    
+    return render_template('active_workout.html',
+                         workout=workout,
+                         exercises=exercises)
 
 
 

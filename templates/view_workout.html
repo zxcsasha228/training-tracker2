@@ -998,12 +998,16 @@
                 </div>
             </div>
             <div class="info-right">
-                <!-- Кнопка начать тренировку -->
-                <button class="start-workout-btn" onclick="alert('Окно тренировки будет позже!')">
-                    <span class="btn-icon"><i class="fas fa-play"></i></span>
-                    <span>Начать тренировку</span>
+                <!-- Кнопка начать тренировку (теперь ссылка, но с теми же стилями) -->
+<a href="{{ url_for('start_workout', workout_id=workout.id) }}" class="start-workout-btn" style="text-decoration: none;">
+    <span class="btn-icon"><i class="fas fa-play"></i></span>
+    <span>Начать тренировку</span>
+</a>
+                <!-- Кнопка добавить упражнение -->
+                <button class="beautiful-add-btn" onclick="openModal()">
+                    <span class="btn-icon"><i class="fas fa-plus"></i></span>
+                    <span>Добавить</span>
                 </button>
-               
             </div>
         </div>
 
@@ -1068,13 +1072,15 @@
             </div>
             
            
-            
             <button class="beautiful-add-btn pulse-animation" onclick="openModal()">
                 <span class="btn-icon"><i class="fas fa-plus"></i></span>
                 <span class="btn-text">Добавить упражнения</span>
             </button>
             
-            
+            <div class="empty-state-footer">
+                <i class="fas fa-arrow-up bounce-arrow"></i>
+                <span>Нажмите кнопку выше, чтобы начать</span>
+            </div>
         </div>
         {% endif %}
     </div>
