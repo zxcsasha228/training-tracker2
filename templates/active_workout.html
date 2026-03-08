@@ -3,30 +3,37 @@
 <head>
     <title>{{ workout.name }} - Тренировка</title>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         :root {
             --primary: #6366f1;
             --primary-dark: #4f46e5;
             --secondary: #8b5cf6;
             --success: #10b981;
+            --success-bg: rgba(16, 185, 129, 0.15);
+            --success-light: #d1fae5;
             --danger: #ef4444;
+            --danger-light: #fee2e2;
             --warning: #f59e0b;
             --dark: #1f2937;
-            --light: #f9fafb;
+            --light: #f3f4f6;
             --gray: #9ca3af;
+            --gray-light: #e5e7eb;
+            --input-bg: #f9fafb;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 20px;
         }
 
         .container {
@@ -56,78 +63,78 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
             border-bottom: 2px solid rgba(0,0,0,0.05);
             flex-wrap: wrap;
             gap: 15px;
         }
 
         .header h1 {
-            font-size: 2em;
+            font-size: 1.8em;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
+        .header-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
         /* Таймер */
         .timer-section {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: white;
             border-radius: 60px;
             padding: 15px 30px;
             display: inline-flex;
             align-items: center;
             gap: 20px;
-            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            border: 1px solid rgba(0,0,0,0.05);
         }
 
         .timer-display {
             font-size: 2.5em;
             font-weight: bold;
-            color: white;
+            color: var(--dark);
             font-family: monospace;
             letter-spacing: 5px;
         }
 
-        .timer-controls {
-            display: flex;
-            gap: 10px;
-        }
-
-        .timer-btn {
-            background: rgba(255, 255, 255, 0.2);
+        /* Кнопки */
+        .btn {
+            padding: 10px 20px;
             border: none;
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+            border-radius: 12px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-size: 0.95em;
+            font-weight: 600;
             transition: all 0.3s;
-            font-size: 1.1em;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .timer-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.1);
+        .btn-gray {
+            background: var(--gray);
+            color: white;
         }
 
-        .timer-btn.pause {
-            background: rgba(239, 68, 68, 0.8);
-        }
-
-        .timer-btn.pause:hover {
-            background: rgba(239, 68, 68, 1);
+        .btn-gray:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
         }
 
         /* Информация о тренировке */
         .workout-info {
             background: var(--light);
             border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 30px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
             display: flex;
             gap: 20px;
             flex-wrap: wrap;
@@ -151,8 +158,14 @@
             border-radius: 20px;
             overflow: hidden;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             border: 2px solid rgba(99, 102, 241, 0.2);
+            transition: all 0.3s;
+        }
+
+        .exercise-card.completed-all {
+            border-color: var(--success);
+            opacity: 0.8;
         }
 
         .exercise-header {
@@ -160,267 +173,335 @@
             padding: 20px;
             color: white;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 20px;
+            cursor: pointer;
+        }
+
+        .exercise-header img {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            object-fit: cover;
+            border: 4px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .exercise-header i {
+            font-size: 3.5em;
+            color: white;
+            opacity: 0.8;
+        }
+
+        .exercise-header-info {
+            flex: 1;
         }
 
         .exercise-name {
             font-size: 1.5em;
             font-weight: bold;
+            margin-bottom: 5px;
         }
 
         .exercise-muscle {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9em;
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .exercise-chevron {
+            transition: transform 0.3s;
+            font-size: 1.5em;
+        }
+
+        .exercise-chevron.rotated {
+            transform: rotate(180deg);
         }
 
         .exercise-content {
             padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .exercise-content.collapsed {
+            display: none;
         }
 
         /* Плашка подхода */
+        .set-card-wrapper {
+            margin-bottom: 10px;
+        }
+
         .set-card {
             background: var(--light);
-            border-radius: 16px;
             padding: 15px;
-            margin-bottom: 15px;
             display: flex;
             align-items: center;
-            gap: 15px;
-            transition: all 0.3s;
+            gap: 12px;
+            border-radius: 16px;
             border: 2px solid transparent;
+            transition: all 0.2s ease;
         }
 
         .set-card.completed {
-            background: rgba(16, 185, 129, 0.1);
+            background: var(--success-bg);
             border-color: var(--success);
-            opacity: 0.8;
+        }
+
+        .delete-set-btn {
+            background: var(--gray-light);
+            color: var(--gray);
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1em;
+            transition: all 0.2s;
+        }
+
+        .delete-set-btn:hover {
+            background: var(--danger-light);
+            color: var(--danger);
+            transform: scale(1.05);
+        }
+
+        .delete-set-btn:active {
+            background: var(--danger);
+            color: white;
         }
 
         .set-number {
             font-size: 1.2em;
             font-weight: bold;
             color: var(--dark);
-            min-width: 50px;
-            text-align: center;
+            min-width: 40px;
         }
 
         .set-inputs {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             flex: 1;
-            flex-wrap: wrap;
         }
 
-        .input-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: white;
-            padding: 8px 15px;
-            border-radius: 12px;
-            border: 2px solid #e5e7eb;
-            transition: all 0.3s;
+        .input-field {
+            flex: 1;
+            background: var(--input-bg);
+            border: 2px solid var(--gray-light);
+            border-radius: 16px;
+            overflow: hidden;
+            text-align: center;
+            padding: 8px 0;
+            transition: all 0.2s;
         }
 
-        .input-group:focus-within {
+        .set-card.completed .input-field {
+            background: var(--success-light);
+            border-color: var(--success);
+        }
+
+        .input-field:focus-within {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: white;
         }
 
-        .input-group i {
-            color: var(--gray);
-            font-size: 1em;
-        }
-
-        .input-group input {
+        .input-field input {
+            width: 100%;
             border: none;
             outline: none;
-            width: 70px;
-            font-size: 1.1em;
+            font-size: 1.3em;
             font-weight: 600;
             text-align: center;
             background: transparent;
+            -moz-appearance: textfield;
+            color: var(--dark);
         }
 
-        .input-group input::-webkit-inner-spin-button,
-        .input-group input::-webkit-outer-spin-button {
-            opacity: 1;
-            height: 20px;
+        .set-card.completed .input-field input {
+            color: var(--success);
+            font-weight: bold;
         }
 
-        .set-actions {
-            display: flex;
-            gap: 8px;
+        .input-field input:focus {
+            background: transparent;
+        }
+
+        .input-field input::-webkit-outer-spin-button,
+        .input-field input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .input-label {
+            font-size: 0.75em;
+            color: var(--gray);
+            margin-top: 2px;
+            text-align: center;
+        }
+
+        .set-card.completed .input-label {
+            color: var(--success);
         }
 
         .complete-btn {
-            background: none;
-            border: 2px solid var(--gray);
+            background: var(--gray-light);
+            border: none;
             color: var(--gray);
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             border-radius: 12px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s;
-            font-size: 1.1em;
+            transition: all 0.2s;
+            font-size: 1.2em;
         }
 
         .complete-btn:hover {
-            border-color: var(--success);
+            background: var(--success-light);
             color: var(--success);
-            transform: scale(1.1);
+            transform: scale(1.05);
         }
 
         .complete-btn.completed {
             background: var(--success);
-            border-color: var(--success);
             color: white;
         }
 
-        .delete-set-btn {
-            background: none;
-            border: 2px solid var(--gray);
-            color: var(--gray);
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-            font-size: 1.1em;
-        }
-
-        .delete-set-btn:hover {
-            border-color: var(--danger);
-            color: var(--danger);
-            transform: scale(1.1);
+        .complete-btn.completed:hover {
+            background: var(--success);
+            filter: brightness(1.1);
         }
 
         /* Кнопка добавления подхода */
         .add-set-btn {
             width: 100%;
-            padding: 15px;
+            padding: 12px;
             background: none;
             border: 2px dashed var(--primary);
             border-radius: 16px;
             color: var(--primary);
-            font-size: 1.1em;
+            font-size: 1em;
             font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            transition: all 0.3s;
-            margin-top: 15px;
+            gap: 8px;
+            transition: all 0.2s;
+            margin-top: 10px;
         }
 
         .add-set-btn:hover {
             background: rgba(99, 102, 241, 0.1);
             border-style: solid;
-            transform: translateY(-2px);
-        }
-
-        .add-set-btn i {
-            font-size: 1.2em;
-        }
-
-        /* Кнопки завершения */
-        .finish-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 2px solid rgba(0,0,0,0.05);
-        }
-
-        .finish-btn {
-            flex: 1;
-            padding: 15px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.1em;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.3s;
-        }
-
-        .finish-btn.complete {
-            background: linear-gradient(135deg, var(--success), #059669);
-            color: white;
-        }
-
-        .finish-btn.complete:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
-        }
-
-        .finish-btn.cancel {
-            background: var(--gray);
-            color: white;
-        }
-
-        .finish-btn.cancel:hover {
-            transform: translateY(-2px);
-            filter: brightness(1.1);
         }
 
         /* Статистика подходов */
         .sets-stats {
-            display: flex;
-            gap: 15px;
-            margin-top: 15px;
+            margin-top: 10px;
             color: var(--gray);
             font-size: 0.9em;
-        }
-
-        .sets-stats span {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
         }
 
         .sets-stats i {
             color: var(--success);
         }
 
-        /* Адаптация */
+        /* Кнопки действий */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .action-btn.finish {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+        }
+
+        .action-btn.finish:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .action-btn.add {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .action-btn.add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Для мобильных */
         @media (max-width: 768px) {
             .timer-section {
                 width: 100%;
-                justify-content: space-between;
-            }
-            
-            .set-card {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .set-number {
-                text-align: left;
-            }
-            
-            .set-inputs {
                 justify-content: center;
             }
             
-            .set-actions {
-                justify-content: flex-end;
+            .set-card {
+                flex-wrap: wrap;
+                padding: 15px 10px;
             }
             
-            .finish-buttons {
+            .delete-set-btn {
+                order: 1;
+            }
+            
+            .set-number {
+                order: 2;
+                width: auto;
+                margin-bottom: 0;
+            }
+            
+            .set-inputs {
+                order: 3;
+                width: 100%;
+            }
+            
+            .complete-btn {
+                order: 4;
+            }
+
+            .exercise-header {
+                padding: 15px;
+            }
+
+            .exercise-header img {
+                width: 60px;
+                height: 60px;
+            }
+
+            .exercise-name {
+                font-size: 1.2em;
+            }
+
+            .action-buttons {
                 flex-direction: column;
             }
         }
@@ -428,30 +509,25 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <!-- Скрытое поле для передачи данных -->
+    <input type="hidden" id="workoutId" value="{{ workout.id }}">
+    <input type="hidden" id="isContinuing" value="{{ 'true' if is_continuing else 'false' }}">
+
     <div class="container">
         <!-- Шапка -->
         <div class="header">
             <h1><i class="fas fa-play-circle"></i> {{ workout.name }}</h1>
-            <a href="{{ url_for('view_workout', workout_id=workout.id) }}" class="btn btn-gray">
-                <i class="fas fa-times"></i> Выйти
-            </a>
+            <div class="header-right">
+                <a href="{{ url_for('view_workout', workout_id=workout.id) }}" class="btn btn-gray" onclick="saveBeforeLeave()">
+                    <i class="fas fa-sign-out-alt"></i> Выйти
+                </a>
+            </div>
         </div>
 
         <!-- Таймер -->
-        <div style="text-align: center; margin-bottom: 30px;">
+        <div style="text-align: center;">
             <div class="timer-section">
                 <div class="timer-display" id="timer">00:00</div>
-                <div class="timer-controls">
-                    <button class="timer-btn" onclick="startTimer()" id="startBtn" title="Старт">
-                        <i class="fas fa-play"></i>
-                    </button>
-                    <button class="timer-btn pause" onclick="pauseTimer()" id="pauseBtn" style="display: none;" title="Пауза">
-                        <i class="fas fa-pause"></i>
-                    </button>
-                    <button class="timer-btn" onclick="resetTimer()" title="Сброс">
-                        <i class="fas fa-undo-alt"></i>
-                    </button>
-                </div>
             </div>
         </div>
 
@@ -465,25 +541,27 @@
                 <i class="fas fa-dumbbell"></i>
                 <span id="totalExercises">{{ exercises|length }}</span> упражнений
             </div>
-            <div class="info-item">
-                <i class="fas fa-layer-group"></i>
-                <span id="totalSets">0</span> подходов
-            </div>
         </div>
 
         <!-- Карточки упражнений -->
         <div id="exercisesContainer">
             {% for ex in exercises %}
             <div class="exercise-card" id="exercise-{{ ex.id }}" data-exercise-id="{{ ex.id }}">
-                <div class="exercise-header">
-                    <span class="exercise-name">{{ ex.name }}</span>
-                    <span class="exercise-muscle">{{ ex.muscle_group }}</span>
-                </div>
-                <div class="exercise-content">
-                    <!-- Контейнер для подходов -->
-                    <div class="sets-container" id="sets-{{ ex.id }}">
-                        <!-- Первый подход (будет добавлен через JS) -->
+                <div class="exercise-header" onclick="toggleExercise({{ ex.id }})">
+                    {% if ex.image %}
+                        <img src="{{ url_for('static', filename=ex.image) }}" alt="{{ ex.name }}">
+                    {% else %}
+                        <i class="fas fa-dumbbell"></i>
+                    {% endif %}
+                    <div class="exercise-header-info">
+                        <div class="exercise-name">{{ ex.name }}</div>
+                        <div class="exercise-muscle">{{ ex.muscle_group }}</div>
                     </div>
+                    <i class="fas fa-chevron-down exercise-chevron" id="chevron-{{ ex.id }}"></i>
+                </div>
+                <div class="exercise-content" id="content-{{ ex.id }}">
+                    <!-- Контейнер для подходов -->
+                    <div class="sets-container" id="sets-{{ ex.id }}"></div>
                     
                     <!-- Кнопка добавления подхода -->
                     <button class="add-set-btn" onclick="addSet({{ ex.id }})">
@@ -491,30 +569,32 @@
                     </button>
 
                     <!-- Статистика подходов -->
-                    <div class="sets-stats" id="stats-{{ ex.id }}">
-                        <span><i class="fas fa-check-circle"></i> <span class="completed-count">0</span>/<span class="total-count">0</span> выполнено</span>
-                    </div>
+                    <div class="sets-stats" id="stats-{{ ex.id }}"></div>
                 </div>
             </div>
             {% endfor %}
         </div>
 
-        <!-- Кнопки завершения -->
-        <div class="finish-buttons">
-            <button class="finish-btn complete" onclick="finishWorkout()">
-                <i class="fas fa-check-circle"></i> Завершить тренировку
+        <!-- Кнопки действий -->
+        <div class="action-buttons">
+            <button class="action-btn finish" onclick="finishWorkout()">
+                <i class="fas fa-check-circle"></i> Завершить
             </button>
-            <button class="finish-btn cancel" onclick="cancelWorkout()">
-                <i class="fas fa-times-circle"></i> Отмена
+            <button class="action-btn add" onclick="openAddExerciseModal()">
+                <i class="fas fa-plus"></i> Добавить упражнение
             </button>
         </div>
     </div>
 
     <script>
+        // Получаем данные из скрытых полей
+        const workoutId = document.getElementById('workoutId').value;
+        const isContinuing = document.getElementById('isContinuing').value === 'true';
+
         // Таймер
         let timerInterval;
         let seconds = 0;
-        let isRunning = false;
+        let timerStarted = false;
 
         function formatTime(secs) {
             const mins = Math.floor(secs / 60);
@@ -522,110 +602,115 @@
             return `${mins.toString().padStart(2, '0')}:${remainingSecs.toString().padStart(2, '0')}`;
         }
 
-        function updateTimer() {
-            document.getElementById('timer').textContent = formatTime(seconds);
-        }
-
         function startTimer() {
-            if (!isRunning) {
-                isRunning = true;
+            if (!timerStarted) {
+                timerStarted = true;
                 timerInterval = setInterval(() => {
                     seconds++;
-                    updateTimer();
+                    document.getElementById('timer').textContent = formatTime(seconds);
                 }, 1000);
-                document.getElementById('startBtn').style.display = 'none';
-                document.getElementById('pauseBtn').style.display = 'block';
             }
         }
 
-        function pauseTimer() {
-            if (isRunning) {
-                isRunning = false;
-                clearInterval(timerInterval);
-                document.getElementById('startBtn').style.display = 'block';
-                document.getElementById('pauseBtn').style.display = 'none';
+        // Загружаем таймер
+        function loadTimer() {
+            const savedTime = localStorage.getItem(`workout_${workoutId}_timer`);
+            
+            if (savedTime && isContinuing) {
+                seconds = parseInt(savedTime);
+            } else {
+                seconds = 0;
             }
+            
+            document.getElementById('timer').textContent = formatTime(seconds);
+            startTimer();
         }
 
-        function resetTimer() {
-            pauseTimer();
-            seconds = 0;
-            updateTimer();
+        // Сохраняем время
+        function saveTimer() {
+            localStorage.setItem(`workout_${workoutId}_timer`, seconds.toString());
         }
 
-        // Управление подходами
-        let setCounter = 1;
-        let completedSets = 0;
-
-        function addSet(exerciseId) {
+        // Функции для работы с подходами
+        function addSet(exerciseId, setData = null) {
             const container = document.getElementById(`sets-${exerciseId}`);
             const setNumber = container.children.length + 1;
+            
+            const wrapper = document.createElement('div');
+            wrapper.className = 'set-card-wrapper';
             
             const setDiv = document.createElement('div');
             setDiv.className = 'set-card';
             setDiv.id = `set-${exerciseId}-${setNumber}`;
+            
+            // Значения по умолчанию или из сохранённых данных
+            const weight = setData ? setData.weight : 0;
+            const reps = setData ? setData.reps : 10;
+            const isCompleted = setData ? setData.completed : false;
+            
             setDiv.innerHTML = `
+                <button class="delete-set-btn" onclick="deleteSet(this)" title="Удалить подход">
+                    <i class="fas fa-trash"></i>
+                </button>
                 <div class="set-number">#${setNumber}</div>
                 <div class="set-inputs">
-                    <div class="input-group">
-                        <i class="fas fa-weight-hanging"></i>
-                        <input type="number" value="0" step="0.5" min="0" class="weight-input">
+                    <div class="input-field">
+                        <input type="number" value="${weight}" step="0.5" min="0" class="weight-input" inputmode="decimal">
+                        <div class="input-label">кг</div>
                     </div>
-                    <div class="input-group">
-                        <i class="fas fa-repeat"></i>
-                        <input type="number" value="10" min="1" class="reps-input">
+                    <div class="input-field">
+                        <input type="number" value="${reps}" min="1" class="reps-input" inputmode="numeric">
+                        <div class="input-label">раз</div>
                     </div>
                 </div>
-                <div class="set-actions">
-                    <button class="complete-btn" onclick="toggleComplete(this)" title="Выполнено">
-                        <i class="fas fa-check"></i>
-                    </button>
-                    <button class="delete-set-btn" onclick="deleteSet(this, ${exerciseId})" title="Удалить">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
+                <button class="complete-btn ${isCompleted ? 'completed' : ''}" onclick="toggleComplete(this)" title="Выполнено">
+                    <i class="fas fa-check"></i>
+                </button>
             `;
             
-            container.appendChild(setDiv);
+            if (isCompleted) {
+                setDiv.classList.add('completed');
+            }
+            
+            wrapper.appendChild(setDiv);
+            container.appendChild(wrapper);
+            
             updateExerciseStats(exerciseId);
+        }
+
+        function deleteSet(btn) {
+            if (confirm('Удалить этот подход?')) {
+                const setWrapper = btn.closest('.set-card-wrapper');
+                const exerciseId = setWrapper.closest('.exercise-card').dataset.exerciseId;
+                
+                setWrapper.remove();
+                
+                // Перенумеровываем подходы
+                const container = document.getElementById(`sets-${exerciseId}`);
+                const sets = container.children;
+                for (let i = 0; i < sets.length; i++) {
+                    const numberDiv = sets[i].querySelector('.set-number');
+                    if (numberDiv) {
+                        numberDiv.textContent = `#${i + 1}`;
+                    }
+                }
+                
+                updateExerciseStats(exerciseId);
+                updateAllExercisesCollapse();
+                saveWorkoutState();
+            }
         }
 
         function toggleComplete(btn) {
             const setCard = btn.closest('.set-card');
             const exerciseId = setCard.closest('.exercise-card').dataset.exerciseId;
             
-            if (btn.classList.contains('completed')) {
-                btn.classList.remove('completed');
-                setCard.classList.remove('completed');
-                completedSets--;
-            } else {
-                btn.classList.add('completed');
-                setCard.classList.add('completed');
-                completedSets++;
-            }
+            btn.classList.toggle('completed');
+            setCard.classList.toggle('completed');
             
             updateExerciseStats(exerciseId);
-            updateTotalStats();
-        }
-
-        function deleteSet(btn, exerciseId) {
-            const setCard = btn.closest('.set-card');
-            if (setCard.classList.contains('completed')) {
-                completedSets--;
-            }
-            setCard.remove();
-            
-            // Перенумеровываем подходы
-            const container = document.getElementById(`sets-${exerciseId}`);
-            const sets = container.children;
-            for (let i = 0; i < sets.length; i++) {
-                const numberDiv = sets[i].querySelector('.set-number');
-                numberDiv.textContent = `#${i + 1}`;
-                sets[i].id = `set-${exerciseId}-${i + 1}`;
-            }
-            
-            updateExerciseStats(exerciseId);
-            updateTotalStats();
+            updateAllExercisesCollapse();
+            saveWorkoutState();
         }
 
         function updateExerciseStats(exerciseId) {
@@ -635,40 +720,215 @@
             let completed = 0;
             
             for (let set of sets) {
-                if (set.classList.contains('completed')) {
+                if (set.querySelector('.set-card')?.classList.contains('completed')) {
                     completed++;
                 }
             }
             
-            statsDiv.innerHTML = `
-                <span><i class="fas fa-check-circle"></i> <span class="completed-count">${completed}</span>/<span class="total-count">${sets.length}</span> выполнено</span>
-            `;
+            if (statsDiv) {
+                statsDiv.innerHTML = `
+                    <i class="fas fa-check-circle"></i>
+                    <span>${completed}/${sets.length} выполнено</span>
+                `;
+            }
         }
 
-        function updateTotalStats() {
-            const totalSets = document.querySelectorAll('.set-card').length;
-            document.getElementById('totalSets').textContent = totalSets;
-        }
-
-        // Инициализация первого подхода для каждого упражнения
-        document.addEventListener('DOMContentLoaded', function() {
+        function updateAllExercisesCollapse() {
             {% for ex in exercises %}
-            addSet({{ ex.id }});
+            checkAndCollapseExercise({{ ex.id }});
             {% endfor %}
+        }
+
+        function checkAndCollapseExercise(exerciseId) {
+            const container = document.getElementById(`sets-${exerciseId}`);
+            const content = document.getElementById(`content-${exerciseId}`);
+            const chevron = document.getElementById(`chevron-${exerciseId}`);
+            
+            if (!content || !chevron || !container) return;
+            
+            let allCompleted = true;
+            for (let wrapper of container.children) {
+                const set = wrapper.querySelector('.set-card');
+                if (!set || !set.classList.contains('completed')) {
+                    allCompleted = false;
+                    break;
+                }
+            }
+            
+            if (allCompleted && container.children.length > 0) {
+                content.classList.add('collapsed');
+                chevron.classList.add('rotated');
+            } else {
+                content.classList.remove('collapsed');
+                chevron.classList.remove('rotated');
+            }
+        }
+
+        function toggleExercise(exerciseId) {
+            const content = document.getElementById(`content-${exerciseId}`);
+            const chevron = document.getElementById(`chevron-${exerciseId}`);
+            
+            content.classList.toggle('collapsed');
+            chevron.classList.toggle('rotated');
+        }
+
+        // Сохранение и загрузка состояния
+        function saveWorkoutState() {
+            const workoutState = {
+                exercises: [],
+                timer: seconds
+            };
+            
+            document.querySelectorAll('.exercise-card').forEach(card => {
+                const exerciseId = card.dataset.exerciseId;
+                const sets = [];
+                
+                card.querySelectorAll('.set-card').forEach(set => {
+                    const weight = set.querySelector('.weight-input').value;
+                    const reps = set.querySelector('.reps-input').value;
+                    const completed = set.classList.contains('completed');
+                    
+                    sets.push({ weight, reps, completed });
+                });
+                
+                workoutState.exercises.push({
+                    id: exerciseId,
+                    sets: sets
+                });
+            });
+            
+            localStorage.setItem(`workout_${workoutId}`, JSON.stringify(workoutState));
+            localStorage.setItem(`workout_${workoutId}_timer`, seconds.toString());
+        }
+
+        function loadWorkoutState() {
+            const saved = localStorage.getItem(`workout_${workoutId}`);
+            if (!saved) return false;
+            
+            try {
+                const state = JSON.parse(saved);
+                
+                // Очищаем все подходы
+                document.querySelectorAll('.sets-container').forEach(container => {
+                    container.innerHTML = '';
+                });
+                
+                // Восстанавливаем подходы
+                state.exercises.forEach(ex => {
+                    ex.sets.forEach(setData => {
+                        addSet(ex.id, setData);
+                    });
+                });
+                
+                return true;
+            } catch (e) {
+                console.error('Ошибка загрузки состояния:', e);
+                return false;
+            }
+        }
+
+        function saveBeforeLeave() {
+            saveWorkoutState();
+            saveTimer();
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            if (isContinuing) {
+                // Продолжение тренировки - загружаем сохранённое состояние
+                const loaded = loadWorkoutState();
+                if (!loaded) {
+                    // Если нет сохранённого состояния, создаём новые подходы
+                    {% for ex in exercises %}
+                    addSet({{ ex.id }});
+                    {% endfor %}
+                }
+            } else {
+                // Новая тренировка - очищаем все старые данные
+                localStorage.removeItem(`workout_${workoutId}`);
+                localStorage.removeItem(`workout_${workoutId}_timer`);
+                
+                // Создаём новые подходы
+                {% for ex in exercises %}
+                addSet({{ ex.id }});
+                {% endfor %}
+            }
+            
+            // Запускаем таймер
+            loadTimer();
+            
+            // Помечаем, что тренировка активна
+            localStorage.setItem(`workout_${workoutId}_active`, 'true');
+        });
+
+        // Автосохранение каждые 3 секунды
+        setInterval(() => {
+            saveWorkoutState();
+            saveTimer();
+        }, 3000);
+
+        // Сохраняем при уходе со страницы
+        window.addEventListener('beforeunload', () => {
+            saveWorkoutState();
+            saveTimer();
         });
 
         // Завершение тренировки
         function finishWorkout() {
-            if (confirm('Завершить тренировку? Все несохранённые данные будут потеряны.')) {
-                // Здесь можно сохранить результаты тренировки
-                window.location.href = "{{ url_for('view_workout', workout_id=workout.id) }}";
+            if (confirm('Завершить тренировку?')) {
+                // Сохраняем финальное состояние для статистики
+                saveWorkoutState();
+                
+                // Помечаем, что тренировка больше не активна
+                localStorage.setItem(`workout_${workoutId}_active`, 'false');
+                
+                // Здесь потом будет сохранение в статистику
+                console.log('Тренировка завершена', {
+                    workoutId: workoutId,
+                    duration: seconds,
+                    exercises: collectWorkoutData()
+                });
+                
+                // Удаляем временные данные
+                localStorage.removeItem(`workout_${workoutId}`);
+                localStorage.removeItem(`workout_${workoutId}_timer`);
+                
+                // Переходим на страницу просмотра тренировки
+                window.location.href = `/workout/${workoutId}`;
             }
         }
 
-        function cancelWorkout() {
-            if (confirm('Выйти из тренировки? Прогресс не сохранится.')) {
-                window.location.href = "{{ url_for('view_workout', workout_id=workout.id) }}";
-            }
+        // Функция для сбора данных тренировки
+        function collectWorkoutData() {
+            const data = [];
+            document.querySelectorAll('.exercise-card').forEach(card => {
+                const exerciseId = card.dataset.exerciseId;
+                const exerciseName = card.querySelector('.exercise-name').textContent;
+                const sets = [];
+                
+                card.querySelectorAll('.set-card').forEach(set => {
+                    const weight = set.querySelector('.weight-input').value;
+                    const reps = set.querySelector('.reps-input').value;
+                    const completed = set.classList.contains('completed');
+                    
+                    sets.push({ weight, reps, completed });
+                });
+                
+                data.push({
+                    exerciseId,
+                    exerciseName,
+                    sets
+                });
+            });
+            return data;
+        }
+
+        // Добавление упражнения
+        function openAddExerciseModal() {
+            // Сохраняем перед уходом
+            saveWorkoutState();
+            saveTimer();
+            window.location.href = "{{ url_for('view_workout', workout_id=workout.id) }}";
         }
     </script>
 </body>
