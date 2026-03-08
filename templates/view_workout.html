@@ -1003,11 +1003,7 @@
                     <span class="btn-icon"><i class="fas fa-play"></i></span>
                     <span>Начать тренировку</span>
                 </button>
-                <!-- Кнопка добавить упражнение -->
-                <button class="beautiful-add-btn" onclick="openModal()">
-                    <span class="btn-icon"><i class="fas fa-plus"></i></span>
-                    <span>Добавить</span>
-                </button>
+               
             </div>
         </div>
 
@@ -1020,7 +1016,7 @@
             </div>
             <div class="action-buttons-group">
                 <button class="action-group-btn delete-group-btn" onclick="deleteSelected()">
-                    <i class="fas fa-trash"></i> Удалить выделенные
+                    <i class="fas fa-trash"></i> Удалить 
                 </button>
                 <button class="action-group-btn cancel-group-btn" onclick="clearSelection()">
                     <i class="fas fa-times"></i> Отмена
@@ -1071,33 +1067,14 @@
                 </div>
             </div>
             
-            <h3 class="empty-state-title">В этой тренировке пока тишина... 🏋️‍♂️</h3>
-            
-            <div class="empty-state-message">
-                <p>Здесь будут жить ваши упражнения</p>
-                <p class="empty-state-hint">Начните с добавления первого упражнения</p>
-            </div>
-            
-            <div class="empty-state-stats">
-                <div class="stat-bubble">
-                    <span class="stat-number">0</span>
-                    <span class="stat-label">упражнений</span>
-                </div>
-                <div class="stat-bubble">
-                    <span class="stat-number">💪</span>
-                    <span class="stat-label">ждёт вас</span>
-                </div>
-            </div>
+           
             
             <button class="beautiful-add-btn pulse-animation" onclick="openModal()">
                 <span class="btn-icon"><i class="fas fa-plus"></i></span>
                 <span class="btn-text">Добавить упражнения</span>
             </button>
             
-            <div class="empty-state-footer">
-                <i class="fas fa-arrow-up bounce-arrow"></i>
-                <span>Нажмите кнопку выше, чтобы начать</span>
-            </div>
+            
         </div>
         {% endif %}
     </div>

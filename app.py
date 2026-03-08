@@ -426,7 +426,8 @@ def create_workout():
         )
         
         if workout_id:
-            return redirect(url_for('view_workout', workout_id=workout_id))
+            # ВОЗВРАЩАЕМСЯ К СПИСКУ ТРЕНИРОВОК, А НЕ В СОЗДАННУЮ
+            return redirect(url_for('my_workouts'))
         else:
             return render_template('create_workout.html', 
                                  error='Ошибка при создании тренировки')
