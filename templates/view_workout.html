@@ -850,18 +850,18 @@
                 </div>
             </div>
             <div class="info-right">
-                <!-- Проверяем, есть ли активная тренировка в localStorage -->
-                <a href="#" id="workoutActionBtn" class="workout-action-btn" style="text-decoration: none;">
-                    <span class="btn-icon"><i class="fas fa-play"></i></span>
-                    <span id="workoutActionText">Начать тренировку</span>
-                </a>
-                
-                <!-- Кнопка добавить упражнение -->
-                <button class="beautiful-add-btn" onclick="openModal()">
-                    <span class="btn-icon"><i class="fas fa-plus"></i></span>
-                    <span>Добавить</span>
-                </button>
-            </div>
+    <!-- Кнопка продолжить/начать тренировку -->
+    <a href="#" id="workoutActionBtn" class="workout-action-btn" style="text-decoration: none;">
+        <span class="btn-icon"><i class="fas fa-play"></i></span>
+        <span id="workoutActionText">Начать тренировку</span>
+    </a>
+    
+    <!-- Кнопка добавить упражнение -->
+    <button class="beautiful-add-btn" onclick="openModal()">
+        <span class="btn-icon"><i class="fas fa-plus"></i></span>
+        <span>Добавить</span>
+    </button>
+</div>
         </div>
 
         <!-- Панель массовых действий (появляется при выделении) -->
@@ -972,7 +972,7 @@
         </div>
     </div>
 
-    <script>
+    <!-- <script>
     // Состояние выделенных карточек
     let selectedCards = [];
     let modalSelectedExercises = [];
@@ -1192,6 +1192,233 @@
             closeModal();
         }
     }
+</script> -->
+<script>
+    // Функция обновления статуса тренировки
+    function updateWorkoutStatus() {
+        const workoutId = {{ workout.id }};
+        const userId = "{{ session['user_id'] }}";
+        const actionBtn = document.getElementById('workoutActionBtn');
+        const actionText = document.getElementById('workoutActionText');
+        
+        // Проверяем, есть ли активная тренировка для этого пользователя
+        const isActive = localStorage.getItem(`workout_${userId}_${workoutId}_active`) === 'true';
+        const hasData = localStorage.getItem(`workout_${userId}_${workoutId}`) !== null;
+        
+        if (isActive && hasData) {
+            actionBtn.href = `/workout/${workoutId}/continue`;
+            actionText.textContent = 'Продолжить тренировку';
+        } else {
+            actionBtn.href = `/workout/${workoutId}/start`;
+            actionText.textContent = 'Начать тренировку';
+        }
+    }
+
+    // Обновляем при загрузке
+    document.addEventListener('DOMContentLoaded', function() {
+        updateWorkoutStatus();
+    });
+
+    // Обновляем при возврате на страницу
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+            updateWorkoutStatus();
+        }
+    });
+
+    // Обновляем каждые 3 секунды (на случай, если тренировка завершена в другом окне)
+    setInterval(updateWorkoutStatus, 3000);
+
+    // Состояние выделенных карточек
+    let selectedCards = [];
+    let modalSelectedExercises = [];
+
+    // Выделение карточки
+    function toggleSelectCard(id, event) {
+        event.stopPropagation();
+        const card = document.getElementById(`exercise-card-${id}`);
+        const index = selectedCards.indexOf(id);
+        
+        if (index === -1) {
+            selectedCards.push(id);
+            card.classList.add('selected');
+        } else {
+            selectedCards.splice(index, 1);
+            card.classList.remove('selected');
+        }
+        
+        updateActionBar();
+    }
+
+    // Обновление панели действий
+    function updateActionBar() {
+        const actionBar = document.getElementById('actionBar');
+        const selectedCount = document.getElementById('selectedCount');
+        
+        if (selectedCards.length > 0) {
+            actionBar.style.display = 'flex';
+            selectedCount.textContent = selectedCards.length;
+        } else {
+            actionBar.style.display = 'none';
+        }
+    }
+
+    // Очистка выделения
+    function clearSelection() {
+        selectedCards.forEach(id => {
+            const card = document.getElementById(`exercise-card-${id}`);
+            if (card) card.classList.remove('selected');
+        });
+        selectedCards = [];
+        updateActionBar();
+    }
+
+    // Удаление выбранных упражнений
+    function deleteSelected() {
+        if (selectedCards.length === 0) return;
+        
+        if (confirm(`Удалить ${selectedCards.length} упражнений?`)) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/workout/{{ workout.id }}/delete_multiple';
+            form.style.display = 'none';
+            
+            selectedCards.forEach(id => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'exercise_ids[]';
+                input.value = id;
+                form.appendChild(input);
+            });
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    // Модальное окно
+    function openModal() {
+        document.getElementById('exerciseModal').classList.add('active');
+        document.getElementById('exerciseSearch').value = '';
+        filterExercises();
+    }
+
+    function closeModal() {
+        document.getElementById('exerciseModal').classList.remove('active');
+        clearModalSelection();
+    }
+
+    // Выбор упражнения в модалке
+    function toggleModalExercise(id, card) {
+        const index = modalSelectedExercises.findIndex(ex => ex.id === id);
+        
+        if (index === -1) {
+            modalSelectedExercises.push({
+                id: id,
+                name: card.getAttribute('data-name'),
+                muscle: card.getAttribute('data-muscle')
+            });
+            card.classList.add('selected');
+        } else {
+            modalSelectedExercises.splice(index, 1);
+            card.classList.remove('selected');
+        }
+        
+        updateModalPanel();
+    }
+
+    // Обновление панели выбранных в модалке
+    function updateModalPanel() {
+        const panel = document.getElementById('selectedPanel');
+        const countSpan = document.getElementById('modalSelectedCount');
+        const listDiv = document.getElementById('selectedExercisesList');
+        
+        if (modalSelectedExercises.length > 0) {
+            panel.style.display = 'flex';
+            countSpan.textContent = modalSelectedExercises.length;
+            
+            listDiv.innerHTML = '';
+            modalSelectedExercises.forEach(ex => {
+                const tag = document.createElement('span');
+                tag.className = 'selected-tag';
+                tag.innerHTML = `${ex.name} <i class="fas fa-times" onclick="removeModalExercise(${ex.id})"></i>`;
+                listDiv.appendChild(tag);
+            });
+        } else {
+            panel.style.display = 'none';
+        }
+    }
+
+    // Удаление упражнения из выбранных в модалке
+    function removeModalExercise(id) {
+        const card = document.querySelector(`.modal-exercise-card[data-id="${id}"]`);
+        if (card) card.classList.remove('selected');
+        modalSelectedExercises = modalSelectedExercises.filter(ex => ex.id !== id);
+        updateModalPanel();
+    }
+
+    // Очистка выбора в модалке
+    function clearModalSelection() {
+        document.querySelectorAll('.modal-exercise-card.selected').forEach(card => {
+            card.classList.remove('selected');
+        });
+        modalSelectedExercises = [];
+        updateModalPanel();
+    }
+
+    // Фильтрация упражнений в модалке
+    function filterExercises() {
+        const searchText = document.getElementById('exerciseSearch').value.toLowerCase();
+        const cards = document.querySelectorAll('.modal-exercise-card');
+        
+        cards.forEach(card => {
+            const name = card.getAttribute('data-name-lower');
+            const muscle = card.getAttribute('data-muscle-lower');
+            card.style.display = (name.includes(searchText) || muscle.includes(searchText)) ? 'block' : 'none';
+        });
+    }
+
+    // Добавление выбранных упражнений
+    function addSelectedExercises() {
+        if (modalSelectedExercises.length === 0) {
+            alert('Выберите хотя бы одно упражнение');
+            return;
+        }
+        
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("add_workout_exercises", workout_id=workout.id) }}';
+        form.style.display = 'none';
+        
+        modalSelectedExercises.forEach(ex => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'exercise_ids[]';
+            input.value = ex.id;
+            form.appendChild(input);
+        });
+        
+        ['sets', 'reps', 'weight'].forEach(field => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = field;
+            input.value = field === 'sets' ? '3' : field === 'reps' ? '10' : '0';
+            form.appendChild(input);
+        });
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    // Закрытие модалки по клику вне
+    window.onclick = function(event) {
+        const modal = document.getElementById('exerciseModal');
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
 </script>
+
+     {% include 'active_workout_banner.html' %}
 </body>
 </html>

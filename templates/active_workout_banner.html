@@ -1,0 +1,221 @@
+<!-- Активная тренировка - плашка внизу -->
+<div class="active-workout-banner" id="activeWorkoutBanner" style="display: none;">
+    <div class="banner-content">
+        <div class="banner-left">
+            <div class="banner-icon">
+                <i class="fas fa-play-circle"></i>
+            </div>
+            <div class="banner-info">
+                <div class="banner-title" id="activeWorkoutName">Тренировка</div>
+                <div class="banner-timer" id="activeWorkoutTimer">00:00</div>
+            </div>
+        </div>
+        <div class="banner-right">
+            <a href="#" id="continueWorkoutBtn" class="banner-btn">
+                <i class="fas fa-arrow-right"></i> Продолжить
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .active-workout-banner {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        z-index: 9999;
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .banner-content {
+        max-width: 800px;
+        margin: 0 auto;
+        background: linear-gradient(135deg, var(--success), #059669);
+        border-radius: 60px;
+        padding: 12px 20px;
+        box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .banner-left {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .banner-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2em;
+    }
+
+    .banner-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .banner-title {
+        font-weight: 600;
+        font-size: 1em;
+        opacity: 0.9;
+    }
+
+    .banner-timer {
+        font-size: 1.3em;
+        font-weight: bold;
+        font-family: monospace;
+        letter-spacing: 2px;
+    }
+
+    .banner-right {
+        display: flex;
+        align-items: center;
+    }
+
+    .banner-btn {
+        background: white;
+        color: var(--success);
+        border: none;
+        padding: 10px 25px;
+        border-radius: 50px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .banner-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .banner-btn i {
+        font-size: 0.9em;
+    }
+
+    @media (max-width: 768px) {
+        .banner-content {
+            padding: 12px 15px;
+        }
+        
+        .banner-title {
+            font-size: 0.9em;
+        }
+        
+        .banner-timer {
+            font-size: 1.1em;
+        }
+        
+        .banner-btn {
+            padding: 8px 15px;
+            font-size: 0.9em;
+        }
+    }
+</style>
+
+<script>
+    // Функция для обновления плашки с активной тренировкой
+    function updateActiveWorkoutBanner() {
+        const banner = document.getElementById('activeWorkoutBanner');
+        if (!banner) return;
+        
+        const workoutName = document.getElementById('activeWorkoutName');
+        const workoutTimer = document.getElementById('activeWorkoutTimer');
+        const continueBtn = document.getElementById('continueWorkoutBtn');
+        
+        // Получаем текущего пользователя из сессии (передаём из шаблона)
+        const currentUserId = "{{ session['user_id'] }}";
+        
+        // Ищем активную тренировку ТОЛЬКО для текущего пользователя
+        let activeWorkoutId = null;
+        let activeWorkoutData = null;
+        
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            
+            // Ищем ключи вида workout_*_*_active для текущего пользователя
+            if (key && key.startsWith(`workout_${currentUserId}_`) && key.endsWith('_active')) {
+                const isActive = localStorage.getItem(key) === 'true';
+                
+                if (isActive) {
+                    // Извлекаем ID тренировки (убираем префикс workout_${userId}_ и суффикс _active)
+                    activeWorkoutId = key.replace(`workout_${currentUserId}_`, '').replace('_active', '');
+                    
+                    // Проверяем, есть ли данные тренировки
+                    const workoutData = localStorage.getItem(`workout_${currentUserId}_${activeWorkoutId}`);
+                    if (workoutData) {
+                        try {
+                            activeWorkoutData = JSON.parse(workoutData);
+                        } catch (e) {
+                            console.error('Ошибка парсинга данных:', e);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        
+        // Если есть активная тренировка И данные тренировки существуют
+        if (activeWorkoutId && activeWorkoutData) {
+            // Получаем таймер
+            const timerData = localStorage.getItem(`workout_${currentUserId}_${activeWorkoutId}_timer`);
+            
+            // Название тренировки
+            workoutName.textContent = activeWorkoutData.name || 'Активная тренировка';
+            
+            // Таймер
+            if (timerData) {
+                const seconds = parseInt(timerData);
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                workoutTimer.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            } else {
+                workoutTimer.textContent = '00:00';
+            }
+            
+            // Устанавливаем ссылку
+            continueBtn.href = `/workout/${activeWorkoutId}/continue`;
+            
+            // Показываем баннер
+            banner.style.display = 'block';
+        } else {
+            // Если нет активной тренировки, скрываем баннер
+            banner.style.display = 'none';
+        }
+    }
+
+    // Обновляем баннер при загрузке страницы
+    document.addEventListener('DOMContentLoaded', updateActiveWorkoutBanner);
+    
+    // Обновляем баннер каждые 5 секунд (для таймера)
+    setInterval(updateActiveWorkoutBanner, 5000);
+    
+    // Также обновляем при возврате на страницу
+    window.addEventListener('pageshow', updateActiveWorkoutBanner);
+</script>

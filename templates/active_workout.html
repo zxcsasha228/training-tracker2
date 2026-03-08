@@ -509,7 +509,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <!-- Скрытое поле для передачи данных -->
+    <!-- Скрытые поля для передачи данных -->
+    <input type="hidden" id="userId" value="{{ session['user_id'] }}">
     <input type="hidden" id="workoutId" value="{{ workout.id }}">
     <input type="hidden" id="isContinuing" value="{{ 'true' if is_continuing else 'false' }}">
 
@@ -588,6 +589,7 @@
 
     <script>
         // Получаем данные из скрытых полей
+        const userId = document.getElementById('userId').value;
         const workoutId = document.getElementById('workoutId').value;
         const isContinuing = document.getElementById('isContinuing').value === 'true';
 
@@ -614,7 +616,7 @@
 
         // Загружаем таймер
         function loadTimer() {
-            const savedTime = localStorage.getItem(`workout_${workoutId}_timer`);
+            const savedTime = localStorage.getItem(`workout_${userId}_${workoutId}_timer`);
             
             if (savedTime && isContinuing) {
                 seconds = parseInt(savedTime);
@@ -628,7 +630,7 @@
 
         // Сохраняем время
         function saveTimer() {
-            localStorage.setItem(`workout_${workoutId}_timer`, seconds.toString());
+            localStorage.setItem(`workout_${userId}_${workoutId}_timer`, seconds.toString());
         }
 
         // Функции для работы с подходами
@@ -776,7 +778,8 @@
         function saveWorkoutState() {
             const workoutState = {
                 exercises: [],
-                timer: seconds
+                timer: seconds,
+                name: "{{ workout.name }}"
             };
             
             document.querySelectorAll('.exercise-card').forEach(card => {
@@ -797,12 +800,12 @@
                 });
             });
             
-            localStorage.setItem(`workout_${workoutId}`, JSON.stringify(workoutState));
-            localStorage.setItem(`workout_${workoutId}_timer`, seconds.toString());
+            localStorage.setItem(`workout_${userId}_${workoutId}`, JSON.stringify(workoutState));
+            localStorage.setItem(`workout_${userId}_${workoutId}_timer`, seconds.toString());
         }
 
         function loadWorkoutState() {
-            const saved = localStorage.getItem(`workout_${workoutId}`);
+            const saved = localStorage.getItem(`workout_${userId}_${workoutId}`);
             if (!saved) return false;
             
             try {
@@ -845,8 +848,9 @@
                 }
             } else {
                 // Новая тренировка - очищаем все старые данные
-                localStorage.removeItem(`workout_${workoutId}`);
-                localStorage.removeItem(`workout_${workoutId}_timer`);
+                localStorage.removeItem(`workout_${userId}_${workoutId}`);
+                localStorage.removeItem(`workout_${userId}_${workoutId}_timer`);
+                localStorage.removeItem(`workout_${userId}_${workoutId}_active`);
                 
                 // Создаём новые подходы
                 {% for ex in exercises %}
@@ -857,8 +861,10 @@
             // Запускаем таймер
             loadTimer();
             
-            // Помечаем, что тренировка активна
-            localStorage.setItem(`workout_${workoutId}_active`, 'true');
+            // Помечаем, что тренировка активна (ТОЛЬКО если есть подходы)
+            if (document.querySelectorAll('.set-card').length > 0) {
+                localStorage.setItem(`workout_${userId}_${workoutId}_active`, 'true');
+            }
         });
 
         // Автосохранение каждые 3 секунды
@@ -879,19 +885,18 @@
                 // Сохраняем финальное состояние для статистики
                 saveWorkoutState();
                 
-                // Помечаем, что тренировка больше не активна
-                localStorage.setItem(`workout_${workoutId}_active`, 'false');
+                // Удаляем флаг активности и данные тренировки
+                localStorage.removeItem(`workout_${userId}_${workoutId}_active`);
+                localStorage.removeItem(`workout_${userId}_${workoutId}`);
+                localStorage.removeItem(`workout_${userId}_${workoutId}_timer`);
                 
                 // Здесь потом будет сохранение в статистику
                 console.log('Тренировка завершена', {
+                    userId: userId,
                     workoutId: workoutId,
                     duration: seconds,
                     exercises: collectWorkoutData()
                 });
-                
-                // Удаляем временные данные
-                localStorage.removeItem(`workout_${workoutId}`);
-                localStorage.removeItem(`workout_${workoutId}_timer`);
                 
                 // Переходим на страницу просмотра тренировки
                 window.location.href = `/workout/${workoutId}`;
