@@ -362,8 +362,8 @@ def add_exercise(name, image, muscle_group, created_by):
         with get_db() as conn:
             cursor = conn.cursor()
             
-            # Проверяем, есть ли уже такое упражнение
-            cursor.execute('SELECT id FROM exercises WHERE name = ?', (name,))
+            # Проверяем, есть ли уже упражнение с таким названием
+            cursor.execute('SELECT id FROM exercises WHERE name = ? COLLATE NOCASE', (name,))
             existing = cursor.fetchone()
             
             if existing:
@@ -519,13 +519,32 @@ def get_workout_exercises(workout_id):
         with get_db() as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                SELECT we.*, e.name, e.image, e.muscle_group
+                SELECT 
+                    we.id,  -- это ID записи в workout_exercises
+                    we.exercise_id,  -- а это ID упражнения из библиотеки
+                    we.sets,
+                    we.reps,
+                    we.weight,
+                    we.notes,
+                    we.order_num,
+                    e.name,
+                    e.image,
+                    e.muscle_group
                 FROM workout_exercises we
                 JOIN exercises e ON we.exercise_id = e.id
                 WHERE we.workout_id = ?
                 ORDER BY we.order_num
             ''', (workout_id,))
-            return cursor.fetchall()
+            
+            results = []
+            for row in cursor.fetchall():
+                # Преобразуем в словарь, но добавляем оба поля
+                result = dict(row)
+                # Явно добавляем exercise_id из библиотеки
+                result['exercise_lib_id'] = row['exercise_id']
+                results.append(result)
+            
+            return results
     except Exception as e:
         print(f"Ошибка при получении упражнений тренировки: {e}")
         return []
@@ -549,6 +568,13 @@ def add_exercise_to_workout(workout_id, exercise_id, sets, reps, weight, order_n
     try:
         with get_db() as conn:
             cursor = conn.cursor()
+            
+            # Проверяем, что упражнение существует в библиотеке
+            cursor.execute('SELECT id FROM exercises WHERE id = ?', (exercise_id,))
+            if not cursor.fetchone():
+                print(f"Ошибка: упражнение с ID {exercise_id} не существует в библиотеке")
+                return False
+            
             cursor.execute('''
                 INSERT INTO workout_exercises 
                 (workout_id, exercise_id, sets, reps, weight, order_num, notes)
@@ -590,6 +616,26 @@ def delete_workout_session(workout_id, user_id):
     try:
         with get_db() as conn:
             cursor = conn.cursor()
+            
+            # Сначала удаляем все подходы этой тренировки из статистики
+            cursor.execute('''
+                DELETE FROM completed_sets 
+                WHERE workout_id = ? AND user_id = ?
+            ''', (workout_id, user_id))
+            
+            # Затем удаляем запись о завершённой тренировке
+            cursor.execute('''
+                DELETE FROM completed_workouts 
+                WHERE workout_id = ? AND user_id = ?
+            ''', (workout_id, user_id))
+            
+            # Затем удаляем все упражнения из тренировки
+            cursor.execute('''
+                DELETE FROM workout_exercises 
+                WHERE workout_id = ?
+            ''', (workout_id,))
+            
+            # И наконец удаляем саму тренировку
             cursor.execute('DELETE FROM workout_sessions WHERE id = ? AND user_id = ?', 
                          (workout_id, user_id))
             return True
@@ -613,7 +659,8 @@ def update_workout_session(workout_id, user_id, name, date, notes):
         return False     
 
    
- # ================ СТАТИСТИКА ================
+# ================ СТАТИСТИКА ================
+
 def init_stats_table():
     """Создать таблицу для статистики тренировок"""
     try:
@@ -635,20 +682,20 @@ def init_stats_table():
                 )
             ''')
             
-            # Таблица выполненных упражнений с 1ПМ
+            # Таблица выполненных подходов
             cursor.execute('''
-                CREATE TABLE IF NOT EXISTS completed_exercises (
+                CREATE TABLE IF NOT EXISTS completed_sets (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     user_id INTEGER NOT NULL,
+                    workout_id INTEGER NOT NULL,
                     exercise_id INTEGER NOT NULL,
                     exercise_name TEXT NOT NULL,
                     workout_date TEXT NOT NULL,
-                    one_rm REAL NOT NULL,  -- 1ПМ
                     weight REAL NOT NULL,
                     reps INTEGER NOT NULL,
-                    sets INTEGER NOT NULL,
                     completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+                    FOREIGN KEY (workout_id) REFERENCES workout_sessions (id) ON DELETE CASCADE,
                     FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE
                 )
             ''')
@@ -657,8 +704,8 @@ def init_stats_table():
     except Exception as e:
         print(f"Ошибка при создании таблиц статистики: {e}")
 
-# Сохранить завершённую тренировку
-def save_completed_workout(user_id, workout_id, workout_name, duration, exercises_data):
+
+def save_completed_workout(user_id, workout_id, workout_name, duration, sets_data):
     try:
         with get_db() as conn:
             cursor = conn.cursor()
@@ -672,25 +719,26 @@ def save_completed_workout(user_id, workout_id, workout_name, duration, exercise
                 VALUES (?, ?, ?, ?, ?)
             ''', (user_id, workout_id, workout_name, today, duration))
             
-            # Сохраняем каждое упражнение с расчётом 1ПМ
-            for ex in exercises_data:
-                # Расчёт 1ПМ по формуле Бжицки: вес * (1 + повторения/30)
-                one_rm = float(ex['weight']) * (1 + int(ex['reps']) / 30)
-                
-                cursor.execute('''
-                    INSERT INTO completed_exercises 
-                    (user_id, exercise_id, exercise_name, workout_date, one_rm, weight, reps, sets)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                ''', (
-                    user_id, 
-                    ex['exercise_id'], 
-                    ex['exercise_name'], 
-                    today, 
-                    round(one_rm, 1),
-                    ex['weight'],
-                    ex['reps'],
-                    ex['sets']
-                ))
+            # Сохраняем каждый выполненный подход
+            for set_data in sets_data:
+                # Проверяем, что упражнение существует в библиотеке
+                cursor.execute('SELECT id FROM exercises WHERE id = ?', (set_data['exercise_id'],))
+                if cursor.fetchone():
+                    cursor.execute('''
+                        INSERT INTO completed_sets 
+                        (user_id, workout_id, exercise_id, exercise_name, workout_date, weight, reps)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    ''', (
+                        user_id,
+                        workout_id,
+                        set_data['exercise_id'],
+                        set_data['exercise_name'],
+                        today,
+                        set_data['weight'],
+                        set_data['reps']
+                    ))
+                else:
+                    print(f"Предупреждение: упражнение с ID {set_data['exercise_id']} не найдено, пропускаем")
             
             return True
     except Exception as e:
@@ -705,28 +753,34 @@ def get_user_stats(user_id):
             
             # Количество завершённых тренировок
             cursor.execute('''
-                SELECT COUNT(*) as count FROM completed_workouts WHERE user_id = ?
+                SELECT COUNT(DISTINCT workout_id) as count 
+                FROM completed_workouts 
+                WHERE user_id = ?
             ''', (user_id,))
             workouts_count = cursor.fetchone()['count']
             
-            # Общее время тренировок
+            # Общее время тренировок (в минутах)
             cursor.execute('''
-                SELECT SUM(duration) as total FROM completed_workouts WHERE user_id = ?
+                SELECT SUM(duration) as total 
+                FROM completed_workouts 
+                WHERE user_id = ?
             ''', (user_id,))
             total_duration = cursor.fetchone()['total'] or 0
+            total_minutes = total_duration // 60
             
-            # Список упражнений, которые выполнял пользователь
+            # Упражнения - группируем по ID (теперь они должны быть одинаковыми)
             cursor.execute('''
-                SELECT DISTINCT exercise_id, exercise_name 
-                FROM completed_exercises 
+                SELECT exercise_id, exercise_name 
+                FROM completed_sets 
                 WHERE user_id = ?
+                GROUP BY exercise_id
                 ORDER BY exercise_name
             ''', (user_id,))
             exercises = cursor.fetchall()
             
             return {
                 'workouts_count': workouts_count,
-                'total_duration': total_duration,
+                'total_duration': total_minutes,
                 'exercises': exercises
             }
     except Exception as e:
@@ -736,25 +790,58 @@ def get_user_stats(user_id):
             'total_duration': 0,
             'exercises': []
         }
-
+    
 # Получить данные для графика упражнения
 def get_exercise_progress(user_id, exercise_id):
     try:
         with get_db() as conn:
             cursor = conn.cursor()
             
+            # Получаем все подходы этого упражнения
             cursor.execute('''
-                SELECT workout_date, one_rm, weight, reps
-                FROM completed_exercises 
+                SELECT workout_date, weight, reps
+                FROM completed_sets 
                 WHERE user_id = ? AND exercise_id = ?
                 ORDER BY completed_at
             ''', (user_id, exercise_id))
             
-            return cursor.fetchall()
+            results = []
+            for row in cursor.fetchall():
+                # Расчёт 1ПМ: если 1 повторение, то 1ПМ = вес
+                if row['reps'] == 1:
+                    one_rm = row['weight']
+                else:
+                    # Формула Эйпли для нескольких повторений
+                    one_rm = row['weight'] * (1 + row['reps'] / 30)
+                
+                results.append({
+                    'workout_date': row['workout_date'],
+                    'weight': row['weight'],
+                    'reps': row['reps'],
+                    'one_rm': round(one_rm, 1)
+                })
+            
+            return results
     except Exception as e:
         print(f"Ошибка при получении прогресса: {e}")
-        return []  
-    
+        return []
+
+# Получить последние тренировки
+def get_recent_workouts(user_id, limit=10):
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT * FROM completed_workouts 
+                WHERE user_id = ? 
+                ORDER BY completed_at DESC 
+                LIMIT ?
+            ''', (user_id, limit))
+            return cursor.fetchall()
+    except Exception as e:
+        print(f"Ошибка при получении последних тренировок: {e}")
+        return []   
+
 def get_admin_stats():
     """Получить общую статистику для админ-панели"""
     try:

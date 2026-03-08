@@ -344,24 +344,15 @@
                 <div class="stat-content">
                     <h3>Общее время</h3>
                     <div class="stat-number">
-                        {{ (stats.total_duration / 60) | int }}
+                        {{ stats.total_duration }}
                         <span class="stat-unit">мин</span>
                     </div>
-                </div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-dumbbell"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>Упражнений</h3>
-                    <div class="stat-number">{{ stats.exercises|length }}</div>
                 </div>
             </div>
         </div>
 
         <!-- Выбор упражнения -->
+        {% if stats.exercises %}
         <div class="exercise-selector">
             <div class="selector-title">
                 <i class="fas fa-search"></i>
@@ -378,15 +369,23 @@
         <!-- График -->
         <div class="chart-container" id="chartContainer" style="display: none;">
             <div class="chart-title">
-                <i class="fas fa-chart-line"></i>
+                <i class="fas fa-chart-bar"></i>
                 <span id="selectedExerciseName">Прогресс 1ПМ</span>
             </div>
             <div class="chart-wrapper">
                 <canvas id="progressChart"></canvas>
             </div>
         </div>
+        {% else %}
+        <div class="exercise-selector" style="text-align: center; padding: 50px;">
+            <i class="fas fa-dumbbell" style="font-size: 3em; color: var(--gray); margin-bottom: 20px;"></i>
+            <h3 style="color: var(--dark); margin-bottom: 10px;">Пока нет данных</h3>
+            <p style="color: var(--gray);">Завершите первую тренировку, чтобы увидеть статистику</p>
+        </div>
+        {% endif %}
 
         <!-- Последние тренировки -->
+        {% if recent_workouts %}
         <div class="recent-table">
             <div class="table-title">
                 <i class="fas fa-history"></i>
@@ -398,7 +397,6 @@
                         <th>Дата</th>
                         <th>Тренировка</th>
                         <th>Время</th>
-                        <th>Упражнений</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -407,19 +405,12 @@
                         <td>{{ workout.date }}</td>
                         <td>{{ workout.workout_name }}</td>
                         <td>{{ (workout.duration / 60) | int }} мин</td>
-                        <td>{{ workout.exercises_count }}</td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="4" style="text-align: center; padding: 40px;">
-                            <i class="fas fa-dumbbell" style="font-size: 2em; color: var(--gray); margin-bottom: 10px; display: block;"></i>
-                            Пока нет завершённых тренировок
-                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+        {% endif %}
     </div>
 
     <script>
@@ -447,28 +438,23 @@
                         const dates = data.data.map(item => item.workout_date);
                         const oneRMs = data.data.map(item => item.one_rm);
                         
-                        // Создаём или обновляем график
+                        // Создаём или обновляем график (столбцы)
                         if (progressChart) {
                             progressChart.destroy();
                         }
                         
                         const ctx = document.getElementById('progressChart').getContext('2d');
                         progressChart = new Chart(ctx, {
-                            type: 'line',
+                            type: 'bar',
                             data: {
                                 labels: dates,
                                 datasets: [{
                                     label: '1ПМ (кг)',
                                     data: oneRMs,
-                                    borderColor: '#10b981',
-                                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                                    borderWidth: 3,
-                                    pointBackgroundColor: '#6366f1',
-                                    pointBorderColor: 'white',
-                                    pointBorderWidth: 2,
-                                    pointRadius: 6,
-                                    pointHoverRadius: 8,
-                                    tension: 0.1
+                                    backgroundColor: 'rgba(99, 102, 241, 0.7)',
+                                    borderColor: '#4f46e5',
+                                    borderWidth: 2,
+                                    borderRadius: 6,
                                 }]
                             },
                             options: {

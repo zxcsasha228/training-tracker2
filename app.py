@@ -448,17 +448,32 @@ def add_workout_exercises(workout_id):
     reps = request.form.get('reps', '10')
     weight = request.form.get('weight', '0')
     
+    print(f"\n=== ДОБАВЛЕНИЕ УПРАЖНЕНИЙ В ТРЕНИРОВКУ {workout_id} ===")
+    print(f"Полученные ID: {exercise_ids}")
+    print(f"Параметры: {sets} подходов x {reps} повторений, вес {weight}")
+    
     # Получаем следующий порядковый номер
     exercises = database.get_workout_exercises(workout_id)
     order_num = len(exercises) + 1
     
+    added_count = 0
     for exercise_id in exercise_ids:
-        database.add_exercise_to_workout(
-            workout_id, exercise_id, sets, reps, weight, order_num, ""
-        )
-        order_num += 1
+        # Проверяем, что упражнение существует в библиотеке
+        exercise = database.get_exercise(exercise_id)
+        if exercise:
+            print(f"✅ Добавляем упражнение ID {exercise_id}: {exercise['name']}")
+            database.add_exercise_to_workout(
+                workout_id, exercise_id, sets, reps, weight, order_num, ""
+            )
+            order_num += 1
+            added_count += 1
+        else:
+            print(f"❌ Упражнение с ID {exercise_id} не найдено в библиотеке!")
     
+    print(f"Добавлено упражнений: {added_count}")
+    print("="*50)
     return redirect(url_for('view_workout', workout_id=workout_id))
+
 
 # Массовое удаление упражнений из тренировки
 @app.route('/workout/<int:workout_id>/delete_multiple', methods=['POST'])
@@ -604,34 +619,34 @@ def save_completed_workout():
     
     data = request.get_json()
     
+    print(f"\n=== СОХРАНЕНИЕ ТРЕНИРОВКИ ===")
+    print(f"Тренировка: {data['workout_name']} (ID {data['workout_id']})")
+    print(f"Количество подходов: {len(data['sets'])}")
+    
+    # Проверим каждый подход
+    for i, s in enumerate(data['sets']):
+        print(f"  Подход {i+1}: упражнение ID {s['exercise_id']} - {s['exercise_name']}, {s['weight']}x{s['reps']}")
+    
     success = database.save_completed_workout(
         session['user_id'],
         data['workout_id'],
         data['workout_name'],
         data['duration'],
-        data['exercises']
+        data['sets']
     )
     
+    print(f"Результат сохранения: {success}")
+    print("="*50)
     return jsonify({'success': success})
 
-# Страница статистики
+## Страница статистики
 @app.route('/stats')
 def stats():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
     stats_data = database.get_user_stats(session['user_id'])
-    
-    # Получаем последние 10 тренировок
-    with database.get_db() as conn:
-        cursor = conn.cursor()
-        cursor.execute('''
-            SELECT * FROM completed_workouts 
-            WHERE user_id = ? 
-            ORDER BY completed_at DESC 
-            LIMIT 10
-        ''', (session['user_id'],))
-        recent_workouts = cursor.fetchall()
+    recent_workouts = database.get_recent_workouts(session['user_id'])
     
     return render_template('stats.html', 
                          stats=stats_data,

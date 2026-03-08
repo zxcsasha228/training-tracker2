@@ -1,0 +1,46 @@
+import sqlite3
+
+conn = sqlite3.connect('train.db')
+conn.row_factory = sqlite3.Row
+cursor = conn.cursor()
+
+print("=== ПРОВЕРКА ТРЕНИРОВКИ ID 34 ===\n")
+
+# Проверяем саму тренировку
+cursor.execute('SELECT * FROM workout_sessions WHERE id = 34')
+workout = cursor.fetchone()
+if workout:
+    print(f"Тренировка: {workout['name']}")
+    print(f"Дата: {workout['date']}")
+    print(f"User ID: {workout['user_id']}")
+else:
+    print("Тренировка 34 не найдена")
+
+print("\n=== УПРАЖНЕНИЯ В ТРЕНИРОВКЕ 34 ===")
+cursor.execute('''
+    SELECT we.*, e.id as lib_id, e.name as lib_name
+    FROM workout_exercises we
+    LEFT JOIN exercises e ON we.exercise_id = e.id
+    WHERE we.workout_id = 34
+''')
+exercises = cursor.fetchall()
+
+for ex in exercises:
+    print(f"\nЗапись в тренировке:")
+    print(f"  exercise_id в тренировке: {ex['exercise_id']}")
+    print(f"  В библиотеке: ID {ex['lib_id']}, название '{ex['lib_name']}'")
+    print(f"  подходы: {ex['sets']}x{ex['reps']}, вес: {ex['weight']}")
+
+print("\n=== ПРОВЕРКА СТАТИСТИКИ ===")
+cursor.execute('''
+    SELECT * FROM completed_sets 
+    WHERE workout_id = 34
+''')
+stats = cursor.fetchall()
+
+print(f"Записей в статистике: {len(stats)}")
+for s in stats:
+    print(f"  exercise_id: {s['exercise_id']}, вес: {s['weight']}x{s['reps']}")
+
+conn.close()
+input("\nНажми Enter для выхода...")
