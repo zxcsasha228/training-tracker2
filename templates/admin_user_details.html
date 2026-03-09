@@ -3,8 +3,9 @@
 <head>
     <title>Детали пользователя</title>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Современные переменные цветов */
         :root {
             --primary: #6366f1;
             --primary-dark: #4f46e5;
@@ -27,7 +28,18 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-content {
+            margin-left: 280px;
             padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 80px;
         }
 
         .container {
@@ -37,22 +49,9 @@
             backdrop-filter: blur(10px);
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 30px;
-            animation: slideUp 0.6s ease-out;
+            padding: 40px;
         }
 
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Шапка */
         .header {
             display: flex;
             justify-content: space-between;
@@ -63,7 +62,7 @@
         }
 
         .header h1 {
-            font-size: 1.8em;
+            font-size: 2em;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -73,13 +72,12 @@
             margin-right: 10px;
         }
 
-        /* Кнопки */
         .btn {
             padding: 10px 20px;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 0.95em;
             font-weight: 600;
             transition: all 0.3s;
             text-decoration: none;
@@ -94,7 +92,15 @@
         }
 
         .btn-gray:hover {
-            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
             filter: brightness(1.1);
         }
 
@@ -237,88 +243,124 @@
             animation: slideUp 0.3s ease-out;
             z-index: 1000;
         }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 60px 20px 20px;
+            }
+            
+            .container {
+                padding: 30px 20px;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .user-name {
+                font-size: 1.5em;
+            }
+        }
     </style>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Шапка -->
-        <div class="header">
-            <h1>
-                <i class="fas fa-user-circle"></i> 
-                Профиль
-            </h1>
-            <a href="{{ url_for('admin_panel') }}" class="btn btn-gray">
-                <i class="fas fa-arrow-left"></i> Назад
-            </a>
-        </div>
-
-        <!-- Карточка пользователя -->
-        <div class="user-card">
-            <!-- Аватар -->
-            <div class="user-avatar">
-                <i class="fas fa-user"></i>
-            </div>
-
-            <!-- Имя пользователя -->
-            <div class="user-name">{{ user.username }}</div>
-
-            <!-- Бейдж роли -->
-            <div class="role-badge {% if user.is_admin %}admin{% else %}user{% endif %}">
-                {% if user.is_admin %}
-                    <i class="fas fa-crown"></i> Администратор
-                {% else %}
-                    <i class="fas fa-user"></i> Пользователь
-                {% endif %}
-            </div>
-
-            <!-- ID пользователя -->
-            <div class="info-item">
-                <div class="info-label">
-                    <i class="fas fa-hashtag"></i> ID пользователя
+    <input type="hidden" id="userId" value="{{ session['user_id'] }}">
+    {% include 'sidebar.html' %}
+    
+    <div class="main-content" id="mainContent">
+        <div class="container">
+            <!-- Шапка -->
+            <div class="header">
+                <h1>
+                    <i class="fas fa-user-circle"></i> 
+                    Профиль пользователя
+                </h1>
+                <div style="display: flex; gap: 10px;">
+                    
+                    <a href="{{ url_for('admin_panel') }}" class="btn btn-gray">
+                        <i class="fas fa-arrow-left"></i> Назад
+                    </a>
                 </div>
-                <div class="info-value">#{{ user.id }}</div>
             </div>
 
-            <!-- Дата регистрации -->
-            <div class="info-item">
-                <div class="info-label">
-                    <i class="fas fa-calendar"></i> Дата регистрации
+            <!-- Карточка пользователя -->
+            <div class="user-card">
+                <!-- Аватар -->
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
                 </div>
-                <div class="info-value">{{ user.created_at }}</div>
-            </div>
 
-            <!-- Пароль -->
-            <div class="info-item">
-                <div class="info-label">
-                    <i class="fas fa-lock"></i> Пароль
+                <!-- Имя пользователя -->
+                <div class="user-name">{{ user.username }}</div>
+
+                <!-- Бейдж роли -->
+                <div class="role-badge {% if user.is_admin %}admin{% else %}user{% endif %}">
+                    {% if user.is_admin %}
+                        <i class="fas fa-crown"></i> Администратор
+                    {% else %}
+                        <i class="fas fa-user"></i> Пользователь
+                    {% endif %}
                 </div>
-                <div class="password-field">
-                    <span class="password-text" id="passwordText">{{ user.password }}</span>
-                    <button class="copy-btn" onclick="copyPassword()" title="Копировать пароль">
-                        <i class="far fa-copy" id="copyIcon"></i>
-                    </button>
+
+                <!-- ID пользователя -->
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="fas fa-hashtag"></i> ID пользователя
+                    </div>
+                    <div class="info-value">#{{ user.id }}</div>
+                </div>
+
+                <!-- Дата регистрации -->
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="fas fa-calendar"></i> Дата регистрации
+                    </div>
+                    <div class="info-value">{{ user.created_at }}</div>
+                </div>
+
+                <!-- Пароль -->
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="fas fa-lock"></i> Пароль
+                    </div>
+                    <div class="password-field">
+                        <span class="password-text" id="passwordText">{{ user.password }}</span>
+                        <button class="copy-btn" onclick="copyPassword()" title="Копировать пароль">
+                            <i class="far fa-copy" id="copyIcon"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
+    {% include 'active_workout_banner.html' %}
+
     <script>
+        // Синхронизация состояния сайдбара
+        document.addEventListener('DOMContentLoaded', function() {
+            const mainContent = document.getElementById('mainContent');
+            const savedState = localStorage.getItem('sidebar_collapsed');
+            
+            if (savedState === 'true') {
+                mainContent.classList.add('expanded');
+            }
+        });
+
         // Функция копирования пароля
         function copyPassword() {
             const passwordText = document.getElementById('passwordText').textContent;
             const copyIcon = document.getElementById('copyIcon');
             
             navigator.clipboard.writeText(passwordText).then(function() {
-                // Меняем иконку на успех
                 copyIcon.classList.remove('fa-copy');
                 copyIcon.classList.add('fa-check');
                 
-                // Показываем уведомление
                 showNotification('Пароль скопирован!');
                 
-                // Возвращаем иконку обратно через 2 секунды
                 setTimeout(function() {
                     copyIcon.classList.remove('fa-check');
                     copyIcon.classList.add('fa-copy');
@@ -347,5 +389,6 @@
             copyPassword();
         });
     </script>
+      {% include 'active_workout_banner.html' %}
 </body>
-</html>а
+</html>

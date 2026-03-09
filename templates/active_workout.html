@@ -44,19 +44,10 @@
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 30px;
-            animation: slideUp 0.6s ease-out;
+           
         }
 
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+       
 
         /* Шапка */
         .header {
@@ -509,6 +500,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+   {% include 'sidebar.html' %}  
 
 <!-- ОТЛАДКА -->
 <script>
@@ -530,15 +522,16 @@
     <input type="hidden" id="userId" value="{{ session['user_id'] }}">
     <input type="hidden" id="workoutId" value="{{ workout.id }}">
     <input type="hidden" id="isContinuing" value="{{ 'true' if is_continuing else 'false' }}">
+    <input type="hidden" id="isAdmin" value="{{ 'true' if is_admin else 'false' }}">
 
     <div class="container">
         <!-- Шапка -->
         <div class="header">
             <h1><i class="fas fa-play-circle"></i> {{ workout.name }}</h1>
             <div class="header-right">
-                <a href="{{ url_for('view_workout', workout_id=workout.id) }}" class="btn btn-gray" onclick="saveBeforeLeave()">
-                    <i class="fas fa-sign-out-alt"></i> Выйти
-                </a>
+               <a href="{{ url_for('view_workout', workout_id=workout.id) }}" class="btn btn-gray" onclick="return confirmExit()">
+            <i class="fas fa-sign-out-alt"></i> к тренировке
+        </a>
             </div>
         </div>
 
@@ -1002,12 +995,6 @@ function finishWorkout() {
         
         console.log('Данные для отправки на сервер:', setsData);
         
-        if (setsData.length === 0) {
-            if (!confirm('Нет выполненных подходов. Всё равно завершить тренировку?')) {
-                return;
-            }
-        }
-        
         // Отправляем данные на сервер
         fetch('/api/save_completed_workout', {
             method: 'POST',
@@ -1024,10 +1011,12 @@ function finishWorkout() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Удаляем флаг активности и данные тренировки
+                // Очищаем localStorage
                 localStorage.removeItem(`workout_${userId}_${workoutId}_active`);
                 localStorage.removeItem(`workout_${userId}_${workoutId}`);
                 localStorage.removeItem(`workout_${userId}_${workoutId}_timer`);
+                
+                console.log('Тренировка завершена, данные очищены');
                 
                 // Переходим на страницу статистики
                 window.location.href = '/stats';

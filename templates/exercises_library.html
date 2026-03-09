@@ -37,20 +37,10 @@
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 30px;
-            animation: slideUp 0.6s ease-out;
+            
         }
 
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
+      
         /* Шапка */
         .header {
             display: flex;
@@ -315,6 +305,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <input type="hidden" id="userId" value="{{ session['user_id'] }}">
+    
+     {% include 'sidebar.html' %}
     <div class="container">
         <!-- Шапка -->
         <div class="header">
@@ -322,9 +315,7 @@
             <div class="header-actions">
                 <!-- Кнопка админ-панели (только для админов) -->
                 {% if is_admin %}
-                <a href="{{ url_for('admin_panel') }}" class="btn btn-primary">
-                    <i class="fas fa-crown"></i> Админ-панель
-                </a>
+                
                 <!-- Кнопка добавления упражнения -->
                 <a href="{{ url_for('add_exercise') }}" class="btn btn-success">
                     <i class="fas fa-plus"></i> Добавить
@@ -452,6 +443,7 @@
             filterExercises();
         }
     </script>
+    
 </body>
 {% include 'active_workout_banner.html' %}
 </html>

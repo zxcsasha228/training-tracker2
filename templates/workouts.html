@@ -37,19 +37,7 @@
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 30px;
-            animation: slideUp 0.6s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+            
 
         /* Шапка */
         .header {
@@ -426,27 +414,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <input type="hidden" id="userId" value="{{ session['user_id'] }}">
+       {% include 'sidebar.html' %}
     <div class="container">
         <div class="header">
             <h1><i class="fas fa-dumbbell"></i> Мои тренировки</h1>
             <div class="header-actions">
                  <!-- Добавь эту кнопку -->
-    <a href="{{ url_for('stats') }}" class="btn btn-primary">
-        <i class="fas fa-chart-line"></i> Статистика
-    </a>
-                {% if is_admin %}
-                <a href="{{ url_for('admin_panel') }}" class="btn btn-primary">
-                    <i class="fas fa-crown"></i> Админка
-                </a>
-                <a href="{{ url_for('exercises_library') }}" class="btn btn-primary">
-                    <i class="fas fa-book"></i> Упражнения
-                </a>
-                {% endif %}
                 <a href="{{ url_for('create_workout') }}" class="btn btn-success">
                     <i class="fas fa-plus"></i> Новая тренировка
-                </a>
-                <a href="{{ url_for('logout') }}" class="btn btn-gray">
-                    <i class="fas fa-sign-out-alt"></i> Выйти
                 </a>
             </div>
         </div>
@@ -552,27 +528,48 @@
             updateActionBar();
         }
 
-        function deleteSelected() {
-            if (selectedCards.length === 0) return;
-            
-            if (confirm(`Удалить ${selectedCards.length} тренировок? Все упражнения внутри также будут удалены.`)) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '/workout/delete_multiple';
-                form.style.display = 'none';
-                
-                selectedCards.forEach(id => {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'workout_ids[]';
-                    input.value = id;
-                    form.appendChild(input);
-                });
-                
-                document.body.appendChild(form);
-                form.submit();
-            }
-        }
+       // Удаление выбранных тренировок
+function deleteSelected() {
+    if (selectedCards.length === 0) return;
+    
+    if (confirm(`Удалить ${selectedCards.length} тренировок? Все упражнения внутри также будут удалены.`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/workout/delete_multiple';
+        form.style.display = 'none';
+        
+        selectedCards.forEach(id => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'workout_ids[]';
+            input.value = id;
+            form.appendChild(input);
+        });
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+
+// Удаление одной тренировки
+function deleteSingleWorkout(id) {
+    if (confirm('Удалить эту тренировку? Все упражнения внутри также будут удалены.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/workout/delete_single';
+        form.style.display = 'none';
+        
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'workout_id';
+        input.value = id;
+        form.appendChild(input);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
     </script>
     {% include 'active_workout_banner.html' %}
 </body>

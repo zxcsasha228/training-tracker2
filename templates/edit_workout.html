@@ -3,6 +3,8 @@
 <head>
     <title>Редактировать тренировку</title>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
             --primary: #6366f1;
@@ -26,31 +28,32 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 40px 20px;
+            margin: 0;
+            padding: 0;
         }
 
-        .container {
-            max-width: 500px;
+        .main-content {
+            margin-left: 280px;
+            padding: 40px 20px;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+
+        .content-container {
+            max-width: 600px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 40px;
-            animation: slideUp 0.6s ease-out;
-        }
+           
 
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
+        /* Шапка */
         .header {
             display: flex;
             justify-content: space-between;
@@ -67,12 +70,13 @@
             -webkit-text-fill-color: transparent;
         }
 
+        /* Кнопки */
         .btn {
             padding: 10px 20px;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 0.95em;
             font-weight: 600;
             transition: all 0.3s;
             text-decoration: none;
@@ -94,9 +98,8 @@
         .btn-warning {
             background: linear-gradient(135deg, var(--warning), #fbbf24);
             color: var(--dark);
-            width: 100%;
-            justify-content: center;
-            margin-top: 20px;
+            padding: 12px 24px;
+            font-size: 1em;
         }
 
         .btn-warning:hover {
@@ -104,6 +107,7 @@
             box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
         }
 
+        /* Форма */
         .form-group {
             margin-bottom: 25px;
         }
@@ -137,17 +141,6 @@
             box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
         }
 
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .button-group .btn {
-            flex: 1;
-            margin-top: 0;
-        }
-
         .workout-info {
             background: var(--light);
             border-radius: 16px;
@@ -163,41 +156,93 @@
         .workout-info i {
             color: var(--warning);
         }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .button-group .btn {
+            flex: 1;
+            justify-content: center;
+            padding: 12px 20px;
+        }
+
+        /* Адаптация */
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 60px 20px 20px;
+            }
+            
+            .content-container {
+                padding: 30px 20px;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+        }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1><i class="fas fa-edit"></i> Редактировать</h1>
-            <a href="{{ url_for('view_workout', workout_id=workout.id) }}" class="btn btn-gray">
-                <i class="fas fa-times"></i>
-            </a>
-        </div>
-
-        <!-- Информация о дате (только для информации) -->
-        <div class="workout-info">
-            <i class="fas fa-calendar"></i>
-            <span>Тренировка от {{ workout.date }}</span>
-        </div>
-
-        <form method="post">
-            <div class="form-group">
-                <label><i class="fas fa-dumbbell"></i> Название тренировки</label>
-                <input type="text" name="name" value="{{ workout.name }}" required 
-                       placeholder="Например: Тренировка груди"
-                       autofocus>
-            </div>
-
-            <div class="button-group">
+    <input type="hidden" id="userId" value="{{ session['user_id'] }}">
+    {% include 'sidebar.html' %}
+    
+    <div class="main-content" id="mainContent">
+        <div class="content-container">
+            <div class="header">
+                <h1><i class="fas fa-edit"></i> Редактировать тренировку</h1>
                 <a href="{{ url_for('view_workout', workout_id=workout.id) }}" class="btn btn-gray">
-                    Отмена
+                    <i class="fas fa-times"></i> Отмена
                 </a>
-                <button type="submit" class="btn btn-warning">
-                    <i class="fas fa-save"></i> Сохранить
-                </button>
             </div>
-        </form>
+
+            <!-- Информация о дате -->
+            <div class="workout-info">
+                <i class="fas fa-calendar"></i>
+                <span>Тренировка от {{ workout.date }}</span>
+            </div>
+
+            <form method="post">
+                <div class="form-group">
+                    <label><i class="fas fa-dumbbell"></i> Название тренировки</label>
+                    <input type="text" name="name" value="{{ workout.name }}" required 
+                           placeholder="Например: Тренировка груди"
+                           autofocus>
+                </div>
+
+                <div class="button-group">
+                    <a href="{{ url_for('view_workout', workout_id=workout.id) }}" class="btn btn-gray">
+                        Отмена
+                    </a>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save"></i> Сохранить
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
+
+    {% include 'active_workout_banner.html' %}
+
+    <script>
+        // Синхронизация состояния сайдбара
+        document.addEventListener('DOMContentLoaded', function() {
+            const mainContent = document.getElementById('mainContent');
+            const savedState = localStorage.getItem('sidebar_collapsed');
+            
+            if (savedState === 'true') {
+                mainContent.classList.add('expanded');
+            }
+        });
+    </script>
 </body>
 </html>

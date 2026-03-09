@@ -39,18 +39,7 @@
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 30px;
-            animation: slideUp 0.6s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            
         }
 
         /* Шапка */
@@ -826,15 +815,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <input type="hidden" id="userId" value="{{ session['user_id'] }}">
+     {% include 'sidebar.html' %}
     <div class="container">
         <!-- Шапка -->
         <div class="header">
             <h1><i class="fas fa-dumbbell"></i> {{ workout.name }}</h1>
             <div class="header-right">
-                <a href="{{ url_for('my_workouts') }}" class="btn btn-gray">
-                    <i class="fas fa-arrow-left"></i> К списку
-                </a>
-            </div>
+    <a href="{{ url_for('my_workouts') }}" class="btn btn-gray">
+        <i class="fas fa-arrow-left"></i> К списку
+    </a>
+    <a href="{{ url_for('edit_workout', workout_id=workout.id) }}" class="btn btn-warning">
+        <i class="fas fa-edit"></i> Изменить
+    </a>
+</div>
         </div>
 
         <!-- Информация о тренировке -->

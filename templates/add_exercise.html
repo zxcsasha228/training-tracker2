@@ -3,6 +3,8 @@
 <head>
     <title>Добавить упражнение</title>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
             --primary: #6366f1;
@@ -26,7 +28,18 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-content {
+            margin-left: 280px;
             padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 80px;
         }
 
         .container {
@@ -37,21 +50,8 @@
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 40px;
-            animation: slideUp 0.6s ease-out;
         }
 
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Шапка */
         .header {
             display: flex;
             justify-content: space-between;
@@ -68,18 +68,12 @@
             -webkit-text-fill-color: transparent;
         }
 
-        .header-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        /* Кнопки */
         .btn {
             padding: 10px 20px;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 0.95em;
             font-weight: 600;
             transition: all 0.3s;
             text-decoration: none;
@@ -88,14 +82,13 @@
             gap: 8px;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        .btn-gray {
+            background: var(--gray);
             color: white;
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+        .btn-gray:hover {
+            filter: brightness(1.1);
         }
 
         .btn-success {
@@ -104,24 +97,83 @@
             width: 100%;
             justify-content: center;
             margin-top: 20px;
+            padding: 15px;
+            font-size: 1.1em;
         }
 
         .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
-        }
-
-        .btn-gray {
-            background: var(--gray);
-            color: white;
-        }
-
-        .btn-gray:hover {
-            transform: translateY(-2px);
             filter: brightness(1.1);
         }
 
-        /* Форма */
+        /* Красивый дизайн для загрузки файла */
+        .file-upload {
+            border: 2px dashed #e5e7eb;
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 25px;
+            background: var(--light);
+        }
+
+        .file-upload:hover {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .file-upload i {
+            font-size: 3em;
+            color: var(--gray);
+            margin-bottom: 10px;
+        }
+
+        .file-upload p {
+            color: var(--gray);
+            font-size: 1em;
+            margin-bottom: 5px;
+        }
+
+        .file-upload .hint {
+            font-size: 0.85em;
+            color: var(--gray);
+            opacity: 0.7;
+        }
+
+        .file-name {
+            margin-top: 10px;
+            padding: 8px;
+            background: white;
+            border-radius: 8px;
+            color: var(--success);
+            font-weight: 500;
+            display: none;
+        }
+
+        .file-name.active {
+            display: block;
+        }
+
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            margin: 20px auto;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 3px solid var(--success);
+            display: none;
+        }
+
+        .image-preview.active {
+            display: block;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
         .form-group {
             margin-bottom: 25px;
         }
@@ -131,175 +183,147 @@
             margin-bottom: 8px;
             color: var(--dark);
             font-weight: 500;
-            font-size: 0.95em;
         }
 
         label i {
             color: var(--success);
-            margin-right: 5px;
+            margin-right: 8px;
         }
 
         input, select {
             width: 100%;
-            padding: 14px 16px;
+            padding: 15px 18px;
             border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            font-size: 1em;
-            transition: all 0.3s;
+            border-radius: 16px;
+            font-size: 1.1em;
             font-family: inherit;
         }
 
         input:focus, select:focus {
             outline: none;
             border-color: var(--success);
-            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
         }
 
-        /* Загрузка изображения */
-        .image-upload {
-            border: 2px dashed #e5e7eb;
-            border-radius: 12px;
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 20px;
-        }
-
-        .image-upload:hover {
-            border-color: var(--success);
-            background: rgba(16, 185, 129, 0.05);
-        }
-
-        .image-upload i {
-            font-size: 3em;
-            color: var(--gray);
-            margin-bottom: 10px;
-        }
-
-        .image-upload p {
-            color: var(--gray);
-            font-size: 0.9em;
-        }
-
-        .image-preview {
-            max-width: 200px;
-            max-height: 200px;
-            margin: 20px auto;
-            display: none;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 3px solid var(--success);
-        }
-
-        .image-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* Подсказка */
-        .hint {
-            font-size: 0.85em;
-            color: var(--gray);
-            margin-top: 5px;
-        }
-
-        /* Ошибка */
         .error-message {
             background: #fee2e2;
             color: var(--danger);
-            padding: 12px 16px;
-            border-radius: 12px;
+            padding: 15px 18px;
+            border-radius: 16px;
             margin-bottom: 25px;
-            border-left: 4px solid var(--danger);
+            border-left: 5px solid var(--danger);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 60px 20px 20px;
+            }
+            
+            .container {
+                padding: 30px 20px;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Шапка -->
-        <div class="header">
-            <h1><i class="fas fa-plus-circle"></i> Добавить упражнение</h1>
-            <div class="header-actions">
-                <a href="{{ url_for('admin_panel') }}" class="btn btn-primary">
-                    <i class="fas fa-crown"></i> Админ-панель
-                </a>
+    <input type="hidden" id="userId" value="{{ session['user_id'] }}">
+    {% include 'sidebar.html' %}
+    
+    <div class="main-content" id="mainContent">
+        <div class="container">
+            <div class="header">
+                <h1><i class="fas fa-plus-circle"></i> Добавить упражнение</h1>
                 <a href="{{ url_for('exercises_library') }}" class="btn btn-gray">
-                    <i class="fas fa-times"></i>
+                    <i class="fas fa-times"></i> Отмена
                 </a>
             </div>
+
+            {% if error %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i> {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data">
+                <!-- Красивая загрузка изображения -->
+                <div class="file-upload" onclick="document.getElementById('imageInput').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Нажмите чтобы загрузить изображение</p>
+                    <p class="hint">Поддерживаются JPG, PNG, GIF, WEBP</p>
+                    <div class="file-name" id="fileName"></div>
+                </div>
+                
+                <input type="file" id="imageInput" name="image" accept="image/*" style="display: none;" onchange="previewImage(this)">
+                
+                <div class="image-preview" id="imagePreview">
+                    <img src="" alt="Превью">
+                </div>
+
+                <!-- Название упражнения -->
+                <div class="form-group">
+                    <label><i class="fas fa-dumbbell"></i> Название упражнения *</label>
+                    <input type="text" name="name" required placeholder="Например: Жим штанги лежа">
+                </div>
+
+                <!-- Группа мышц -->
+                <div class="form-group">
+                    <label><i class="fas fa-bolt"></i> Группа мышц *</label>
+                    <select name="muscle_group" required>
+                        <option value="">Выберите группу мышц</option>
+                        <option value="Грудные">Грудные</option>
+                        <option value="Спина">Спина</option>
+                        <option value="Ноги">Ноги</option>
+                        <option value="Плечи">Плечи</option>
+                        <option value="Бицепс">Бицепс</option>
+                        <option value="Трицепс">Трицепс</option>
+                        <option value="Пресс">Пресс</option>
+                        <option value="Ягодицы">Ягодицы</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> Сохранить упражнение
+                </button>
+            </form>
         </div>
-
-        {% if error %}
-        <div class="error-message">
-            <i class="fas fa-exclamation-circle"></i> {{ error }}
-        </div>
-        {% endif %}
-
-        <form method="post" enctype="multipart/form-data">
-            <!-- Загрузка картинки -->
-            <div class="image-upload" onclick="document.getElementById('imageInput').click()">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <p>Нажмите чтобы загрузить картинку</p>
-                <p class="hint">Поддерживаются JPG, PNG, GIF</p>
-            </div>
-            
-            <input type="file" id="imageInput" name="image" accept="image/*" style="display: none;" onchange="previewImage(this)">
-            
-            <div class="image-preview" id="imagePreview">
-                <img src="" alt="Превью">
-            </div>
-
-            <!-- Название упражнения -->
-            <div class="form-group">
-                <label><i class="fas fa-dumbbell"></i> Название упражнения *</label>
-                <input type="text" name="name" required placeholder="Например: Жим штанги лежа">
-            </div>
-
-            <!-- Группа мышц -->
-            <div class="form-group">
-                <label><i class="fas fa-bolt"></i> Группа мышц *</label>
-                <select name="muscle_group" required>
-                    <option value="">Выберите группу мышц</option>
-                    <option value="Грудные">Грудные</option>
-                    <option value="Спина">Спина</option>
-                    <option value="Ноги">Ноги</option>
-                    <option value="Плечи">Плечи</option>
-                    <option value="Бицепс">Бицепс</option>
-                    <option value="Трицепс">Трицепс</option>
-                    <option value="Пресс">Пресс</option>
-                    <option value="Ягодицы">Ягодицы</option>
-                    <option value="Предплечья">Предплечья</option>
-                    <option value="Трапеции">Трапеции</option>
-                </select>
-            </div>
-
-            <div class="hint" style="margin-bottom: 20px;">
-                <i class="fas fa-info-circle"></i> Поля отмеченные * обязательны для заполнения
-            </div>
-
-            <button type="submit" class="btn btn-success">
-                <i class="fas fa-save"></i> Сохранить упражнение
-            </button>
-        </form>
     </div>
 
+    {% include 'active_workout_banner.html' %}
+
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mainContent = document.getElementById('mainContent');
+            const savedState = localStorage.getItem('sidebar_collapsed');
+            
+            if (savedState === 'true') {
+                mainContent.classList.add('expanded');
+            }
+        });
+
         function previewImage(input) {
             const preview = document.getElementById('imagePreview');
+            const fileName = document.getElementById('fileName');
             const previewImg = preview.querySelector('img');
             
             if (input.files && input.files[0]) {
+                const file = input.files[0];
+                fileName.textContent = file.name;
+                fileName.classList.add('active');
+                
                 const reader = new FileReader();
                 
                 reader.onload = function(e) {
                     previewImg.src = e.target.result;
-                    preview.style.display = 'block';
+                    preview.classList.add('active');
                 }
                 
-                reader.readAsDataURL(input.files[0]);
+                reader.readAsDataURL(file);
             }
         }
     </script>

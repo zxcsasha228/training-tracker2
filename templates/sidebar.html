@@ -1,0 +1,447 @@
+<!-- Боковое меню -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <i class="fas fa-dumbbell" style="color: var(--primary);"></i>
+            <span>FitTrack</span>
+        </div>
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-chevron-left" id="toggleIcon"></i>
+        </button>
+    </div>
+    
+    <div class="sidebar-menu">
+        <a href="{{ url_for('my_workouts') }}" class="menu-item {% if request.endpoint == 'my_workouts' %}active{% endif %}">
+            <i class="fas fa-home"></i>
+            <span>Мои тренировки</span>
+        </a>
+        
+        <a href="{{ url_for('stats') }}" class="menu-item {% if request.endpoint == 'stats' %}active{% endif %}">
+            <i class="fas fa-chart-line"></i>
+            <span>Статистика</span>
+        </a>
+
+        <a href="{{ url_for('exercises_library') }}" class="menu-item {% if request.endpoint == 'exercises_library' %}active{% endif %}">
+            <i class="fas fa-book"></i>
+            <span>Упражнения</span>
+        </a>
+
+        {% if is_admin %}
+<a href="{{ url_for('admin_panel') }}" class="menu-item {% if request.endpoint == 'admin_panel' %}active{% endif %}">
+    <i class="fas fa-crown"></i>
+    <span>Админ-панель</span>
+</a>
+{% endif %}
+    </div>
+
+    <div class="sidebar-footer">
+        <!-- Кнопка профиля -->
+        <a href="{{ url_for('profile') }}" class="profile-button">
+            <div class="profile-info">
+                <i class="fas fa-user-circle"></i>
+                <span class="profile-name">{{ session.username }}</span>
+            </div>
+            <i class="fas fa-chevron-right profile-arrow"></i>
+        </a>
+        
+        <!-- Кнопка выхода -->
+        <a href="{{ url_for('logout') }}" class="logout-button">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Выйти</span>
+        </a>
+    </div>
+</div>
+
+<style>
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        width: 280px;
+        background: linear-gradient(135deg, #1e2937 0%, #0f172a 100%);
+        color: white;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar.collapsed {
+        width: 80px;
+    }
+
+    .sidebar.collapsed .logo span,
+    .sidebar.collapsed .menu-item span:not(.active span),
+    .sidebar.collapsed .profile-name,
+    .sidebar.collapsed .logout-button span,
+    .sidebar.collapsed .profile-arrow {
+        display: none;
+    }
+
+    .sidebar.collapsed .profile-button {
+        justify-content: center;
+        padding: 12px;
+    }
+
+    .sidebar.collapsed .profile-button i {
+        margin: 0;
+        font-size: 1.5em;
+    }
+
+    .sidebar.collapsed .logout-button {
+        justify-content: center;
+        padding: 12px;
+    }
+
+    .sidebar.collapsed .logout-button i {
+        margin: 0;
+        font-size: 1.3em;
+    }
+
+    /* Для активного пункта меню показываем текст даже в свернутом состоянии */
+    .sidebar.collapsed .menu-item.active span {
+        display: inline-block;
+        margin-left: 10px;
+        white-space: nowrap;
+    }
+
+    .sidebar-header {
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 1.3em;
+        font-weight: bold;
+        color: white;
+    }
+
+    .logo i {
+        font-size: 1.5em;
+    }
+
+    .sidebar-toggle {
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: white;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+        outline: none;
+    }
+
+    .sidebar-toggle:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.1);
+    }
+
+    .sidebar-toggle:focus {
+        outline: none;
+    }
+
+    .sidebar-toggle i {
+        transition: transform 0.3s;
+    }
+
+    .sidebar.collapsed .sidebar-toggle i {
+        transform: rotate(180deg);
+    }
+
+    .sidebar-menu {
+        flex: 1;
+        padding: 20px 0;
+        overflow-y: auto;
+    }
+
+    .menu-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 12px 20px;
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+        margin: 0 10px;
+        border-radius: 10px;
+        outline: none;
+        white-space: nowrap;
+    }
+
+    .menu-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        transform: translateX(5px);
+        outline: none;
+    }
+
+    .menu-item:focus {
+        outline: none;
+    }
+
+    .menu-item.active {
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        color: white;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+    }
+
+    .menu-item i {
+        width: 24px;
+        font-size: 1.2em;
+        color: rgba(255, 255, 255, 0.6);
+        flex-shrink: 0;
+    }
+
+    .menu-item:hover i {
+        color: white;
+    }
+
+    .menu-item.active i {
+        color: white;
+    }
+
+    /* Футер с профилем и выходом */
+    .sidebar-footer {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .profile-button {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        text-decoration: none;
+        color: white;
+        transition: all 0.3s;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .profile-button:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+        border-color: var(--primary);
+    }
+
+    .profile-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .profile-info i {
+        font-size: 1.4em;
+        color: var(--primary);
+    }
+
+    .profile-name {
+        font-weight: 500;
+        font-size: 0.95em;
+        color: white;
+    }
+
+    .profile-arrow {
+        font-size: 0.9em;
+        color: rgba(255, 255, 255, 0.5);
+        transition: transform 0.3s;
+    }
+
+    .profile-button:hover .profile-arrow {
+        transform: translateX(3px);
+        color: var(--primary);
+    }
+
+    .logout-button {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        color: #ff8a8a;
+        text-decoration: none;
+        border-radius: 12px;
+        transition: all 0.3s;
+        background: rgba(255, 138, 138, 0.05);
+        border: 1px solid rgba(255, 138, 138, 0.2);
+    }
+
+    .logout-button:hover {
+        background: rgba(255, 138, 138, 0.1);
+        transform: translateY(-2px);
+        border-color: #ff8a8a;
+    }
+
+    .logout-button i {
+        font-size: 1.2em;
+        width: 24px;
+        color: #ff8a8a;
+    }
+
+    .logout-button span {
+        font-size: 0.95em;
+        font-weight: 500;
+    }
+
+    /* Основной контент с отступом для меню */
+    .main-content {
+        margin-left: 280px;
+        transition: margin-left 0.3s ease;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .main-content.expanded {
+        margin-left: 80px;
+    }
+
+    /* Кнопка для мобильного меню */
+    .mobile-menu-btn {
+        display: none;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1001;
+        width: 45px;
+        height: 45px;
+        background: var(--primary);
+        border: none;
+        border-radius: 12px;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2em;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        outline: none;
+    }
+
+    .mobile-menu-btn:focus {
+        outline: none;
+    }
+
+    /* Адаптация для мобильных */
+    @media (max-width: 768px) {
+        .sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.3s;
+        }
+        
+        .sidebar.active {
+            transform: translateX(0);
+        }
+        
+        .main-content {
+            margin-left: 0 !important;
+        }
+        
+        .main-content.expanded {
+            margin-left: 0 !important;
+        }
+        
+        .mobile-menu-btn {
+            display: flex;
+        }
+    }
+
+    /* Убираем outline со всех кнопок и ссылок */
+    button,
+    a,
+    .menu-item,
+    .sidebar-toggle,
+    .mobile-menu-btn,
+    .profile-button,
+    .logout-button {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-focus-ring-color: transparent;
+        outline: none;
+    }
+
+    button::-moz-focus-inner,
+    a::-moz-focus-inner {
+        border: 0;
+    }
+</style>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.querySelector('.main-content');
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            sidebar.classList.remove('collapsed');
+            if (mainContent) {
+                mainContent.classList.remove('expanded');
+            }
+        } else {
+            sidebar.classList.add('collapsed');
+            if (mainContent) {
+                mainContent.classList.add('expanded');
+            }
+        }
+        
+        // Сохраняем состояние в localStorage
+        localStorage.setItem('sidebar_collapsed', !isCollapsed);
+    }
+
+    function toggleMobileMenu() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('active');
+    }
+
+    // Загружаем состояние меню при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.querySelector('.main-content');
+        const savedState = localStorage.getItem('sidebar_collapsed');
+        
+        // Применяем сохранённое состояние
+        if (savedState === 'true') {
+            sidebar.classList.add('collapsed');
+            if (mainContent) {
+                mainContent.classList.add('expanded');
+            }
+        } else {
+            sidebar.classList.remove('collapsed');
+            if (mainContent) {
+                mainContent.classList.remove('expanded');
+            }
+        }
+        
+        // Добавляем кнопку для мобильного меню
+        if (window.innerWidth <= 768) {
+            if (!document.querySelector('.mobile-menu-btn')) {
+                const mobileBtn = document.createElement('button');
+                mobileBtn.className = 'mobile-menu-btn';
+                mobileBtn.innerHTML = '<i class="fas fa-bars"></i>';
+                mobileBtn.onclick = toggleMobileMenu;
+                document.body.appendChild(mobileBtn);
+            }
+            
+            // Закрываем меню при клике на ссылку
+            document.querySelectorAll('.menu-item, .profile-button, .logout-button').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.getElementById('sidebar').classList.remove('active');
+                });
+            });
+        }
+    });
+</script>

@@ -110,15 +110,17 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-# АДМИН-ПАНЕЛЬ
 @app.route('/admin')
 def admin_panel():
     if 'user_id' not in session or not session.get('is_admin'):
         return redirect(url_for('login'))
     
-    stats = database.get_admin_stats()  # Используем новую функцию
+    stats = database.get_admin_stats()
     users = database.get_all_users_with_passwords()
-    return render_template('admin_panel.html', stats=stats, users=users)
+    return render_template('admin_panel.html', 
+                         stats=stats, 
+                         users=users,
+                         is_admin=session.get('is_admin', 0))  # Добавь эту строку
 
 # Просмотр данных пользователя (для админа)
 @app.route('/admin/user/<int:user_id>')
@@ -127,8 +129,12 @@ def admin_user_details(user_id):
         return redirect(url_for('login'))
     
     user = database.get_user_with_password(user_id)
-    workouts = database.get_user_workouts_admin(user_id)
-    return render_template('admin_user_details.html', user=user, workouts=workouts)
+    if not user:
+        return redirect(url_for('admin_panel'))
+    
+    return render_template('admin_user_details.html', 
+                         user=user,
+                         is_admin=session.get('is_admin', 0))
 
 
 @app.route('/')
@@ -254,20 +260,18 @@ def exercises_library():
     return render_template('exercises_library.html', 
                          exercises=exercises, 
                          muscle_groups=muscle_groups,
-                         is_admin=session.get('is_admin', 0))
+                         is_admin=session.get('is_admin', 0))  # ДОБАВЬ ЭТО
     
     return render_template('exercises_library.html', 
                          exercises=exercises, 
                          muscle_groups=muscle_groups,
                          is_admin=session.get('is_admin', 0))
 
+# Добавление упражнения
 @app.route('/exercises/add', methods=['GET', 'POST'])
 def add_exercise():
     if 'user_id' not in session or not session.get('is_admin'):
         return redirect(url_for('login'))
-    
-    if request.method == 'GET':
-        return render_template('add_exercise.html')
     
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
@@ -275,41 +279,29 @@ def add_exercise():
         
         if not name or not muscle_group:
             return render_template('add_exercise.html', 
-                                 error='Заполните все обязательные поля')
+                                 error='Заполните все обязательные поля',
+                                 is_admin=session.get('is_admin', 0))
         
-        # Обработка загруженного изображения
-        image_path = None
+        # Обработка изображения
+        image = None
         if 'image' in request.files:
             file = request.files['image']
-            if file and file.filename and allowed_file(file.filename):
-                try:
-                    # Создаём безопасное имя файла
-                    filename = secure_filename(file.filename)
-                    # Добавляем уникальный суффикс
-                    filename = f"{int(time.time())}_{filename}"
-                    # Полный путь для сохранения
-                    full_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    # Сохраняем файл
-                    file.save(full_path)
-                    print(f"Файл сохранён: {full_path}")
-                    
-                    # 👇 ВОТ ЗДЕСЬ НУЖНО ДОБАВИТЬ ЭТИ СТРОКИ 👇
-                    # Сохраняем относительный путь для базы данных
-                    image_path = f"uploads/{filename}"
-                    print(f"Сохранён путь в БД: {image_path}")
-                    # 👆 КОНЕЦ ДОБАВЛЕНИЯ 👆
-                    
-                except Exception as e:
-                    print(f"Ошибка при сохранении файла: {e}")
+            if file and file.filename:
+                # ... код сохранения ...
+                pass
         
-        success = database.add_exercise(name, image_path, muscle_group, session['user_id'])
+        success = database.add_exercise(name, image, muscle_group, session['user_id'])
         if success:
             return redirect(url_for('exercises_library'))
         else:
             return render_template('add_exercise.html', 
-                                 error='Упражнение с таким названием уже существует')
+                                 error='Упражнение с таким названием уже существует',
+                                 is_admin=session.get('is_admin', 0))
+    
+    return render_template('add_exercise.html',
+                         is_admin=session.get('is_admin', 0))
 
-# Редактирование упражнения (только админ)
+# Редактирование упражнения
 @app.route('/exercises/edit/<int:exercise_id>', methods=['GET', 'POST'])
 def edit_exercise(exercise_id):
     if 'user_id' not in session or not session.get('is_admin'):
@@ -326,38 +318,23 @@ def edit_exercise(exercise_id):
         if not name or not muscle_group:
             return render_template('edit_exercise.html', 
                                  exercise=exercise,
-                                 error='Заполните все обязательные поля')
+                                 error='Заполните все обязательные поля',
+                                 is_admin=session.get('is_admin', 0))
         
-        # Обработка нового изображения
-        image_path = exercise['image']  # оставляем старое по умолчанию
+        # Обработка изображения
+        image = exercise['image']
         if 'image' in request.files:
             file = request.files['image']
-            if file and file.filename and allowed_file(file.filename):
-                try:
-                    # Создаём безопасное имя файла
-                    filename = secure_filename(file.filename)
-                    filename = f"{int(time.time())}_{filename}"
-                    full_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    file.save(full_path)
-                    print(f"Файл сохранён: {full_path}")
-                    image_path = f"uploads/{filename}"
-                    
-                    # Можно удалить старое изображение
-                    if exercise['image']:
-                        old_path = os.path.join(BASE_DIR, 'static', exercise['image'])
-                        if os.path.exists(old_path):
-                            try:
-                                os.remove(old_path)
-                                print(f"Старое изображение удалено: {old_path}")
-                            except:
-                                pass
-                except Exception as e:
-                    print(f"Ошибка при сохранении файла: {e}")
+            if file and file.filename:
+                # ... код сохранения ...
+                pass
         
-        database.update_exercise(exercise_id, name, image_path, muscle_group)
+        database.update_exercise(exercise_id, name, image, muscle_group)
         return redirect(url_for('exercises_library'))
     
-    return render_template('edit_exercise.html', exercise=exercise)
+    return render_template('edit_exercise.html', 
+                         exercise=exercise,
+                         is_admin=session.get('is_admin', 0))
 
 # Удаление упражнения (только админ)
 @app.route('/exercises/delete/<int:exercise_id>', methods=['POST'])
@@ -388,7 +365,7 @@ def my_workouts():
                          username=session['username'],
                          is_admin=session.get('is_admin', 0))
 
-# Создание новой тренировки (упрощённое)
+# Создание новой тренировки
 @app.route('/workout/create', methods=['GET', 'POST'])
 def create_workout():
     if 'user_id' not in session:
@@ -399,25 +376,25 @@ def create_workout():
         
         if not name:
             return render_template('create_workout.html', 
-                                 error='Введите название тренировки')
+                                 error='Введите название тренировки',
+                                 is_admin=session.get('is_admin', 0))
         
-        # Используем текущую дату автоматически
         from datetime import date
         today = date.today().isoformat()
         
         workout_id = database.create_workout_session(
-            session['user_id'], name, today, ""  # пустые заметки
+            session['user_id'], name, today, ""
         )
         
         if workout_id:
-            # ВОЗВРАЩАЕМСЯ К СПИСКУ ТРЕНИРОВОК, А НЕ В СОЗДАННУЮ
             return redirect(url_for('my_workouts'))
         else:
             return render_template('create_workout.html', 
-                                 error='Ошибка при создании тренировки')
+                                 error='Ошибка при создании тренировки',
+                                 is_admin=session.get('is_admin', 0))
     
-    return render_template('create_workout.html')
-
+    return render_template('create_workout.html',
+                         is_admin=session.get('is_admin', 0))
 # Просмотр тренировки
 @app.route('/workout/<int:workout_id>')
 def view_workout(workout_id):
@@ -435,7 +412,8 @@ def view_workout(workout_id):
                          workout=workout,
                          exercises=exercises,
                          all_exercises=all_exercises,
-                         username=session['username'])
+                         username=session['username'],
+                         is_admin=session.get('is_admin', 0))  # ДОБАВЬ ЭТО
 
 # Массовое добавление упражнений в тренировку
 @app.route('/workout/<int:workout_id>/add_exercises', methods=['POST'])
@@ -515,9 +493,37 @@ def delete_workout_exercise(exercise_id):
     
     return redirect(url_for('view_workout', workout_id=workout_id))
 
-# Редактировать тренировку (упрощённое)
+# Редактировать тренировку
 @app.route('/workout/<int:workout_id>/edit', methods=['GET', 'POST'])
 def edit_workout(workout_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    workout = database.get_workout_session(workout_id, session['user_id'])
+    if not workout:
+        return redirect(url_for('my_workouts'))
+    
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        
+        if not name:
+            return render_template('edit_workout.html', 
+                                 workout=workout,
+                                 error='Введите название тренировки',
+                                 is_admin=session.get('is_admin', 0))
+        
+        database.update_workout_session(
+            workout_id, 
+            session['user_id'], 
+            name, 
+            workout['date'],
+            workout['notes'] if workout['notes'] else ""
+        )
+        return redirect(url_for('view_workout', workout_id=workout_id))
+    
+    return render_template('edit_workout.html', 
+                         workout=workout,
+                         is_admin=session.get('is_admin', 0))
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
@@ -561,6 +567,10 @@ def delete_single_workout():
         return redirect(url_for('login'))
     
     workout_id = request.form.get('workout_id')
+    
+    # Удаляем данные из localStorage на сервере (по сути ничего не делаем, 
+    # но клиент сам почистит при следующем обновлении)
+    # Просто удаляем тренировку из БД
     database.delete_workout_session(workout_id, session['user_id'])
     
     return redirect(url_for('my_workouts'))
@@ -592,7 +602,9 @@ def start_workout(workout_id):
     
     return render_template('active_workout.html',
                          workout=workout,
-                         exercises=exercises)
+                         exercises=exercises,
+                         is_continuing=False,
+                         is_admin=session.get('is_admin', 0))  # ДОБАВЬ ЭТО
 
 # Продолжить тренировку
 @app.route('/workout/<int:workout_id>/continue')
@@ -609,7 +621,8 @@ def continue_workout(workout_id):
     return render_template('active_workout.html',
                          workout=workout,
                          exercises=exercises,
-                         is_continuing=True)  # Добавляем флаг
+                         is_continuing=True,
+                         is_admin=session.get('is_admin', 0))  # ДОБАВЬ ЭТО
 
 # Сохранение завершённой тренировки
 @app.route('/api/save_completed_workout', methods=['POST'])
@@ -683,6 +696,28 @@ def exercise_progress(exercise_id):
     return jsonify({'success': True, 'data': result})
 
 
+# API для проверки существования тренировки
+@app.route('/api/check_workout/<int:workout_id>')
+def check_workout_exists(workout_id):
+    if 'user_id' not in session:
+        return jsonify({'exists': False})
+    
+    workout = database.get_workout_session(workout_id, session['user_id'])
+    return jsonify({'exists': workout is not None})
+
+# Профиль пользователя
+@app.route('/profile')
+def profile():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    user = database.get_user_by_id(session['user_id'])
+    stats = database.get_user_stats(session['user_id'])
+    
+    return render_template('profile.html', 
+                         user=user, 
+                         stats=stats,
+                         is_admin=session.get('is_admin', 0))
 
 
 

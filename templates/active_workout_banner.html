@@ -25,24 +25,14 @@
         left: 20px;
         right: 20px;
         z-index: 9999;
-        animation: slideUp 0.3s ease-out;
-    }
-
-    @keyframes slideUp {
-        from {
-            transform: translateY(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateY(0);
-            opacity: 1;
-        }
+        display: none;
+        pointer-events: none;
     }
 
     .banner-content {
         max-width: 800px;
         margin: 0 auto;
-        background: linear-gradient(135deg, var(--success), #059669);
+        background: linear-gradient(135deg, #10b981, #059669);
         border-radius: 60px;
         padding: 12px 20px;
         box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
@@ -52,12 +42,14 @@
         color: white;
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.2);
+        pointer-events: none;
     }
 
     .banner-left {
         display: flex;
         align-items: center;
         gap: 15px;
+        pointer-events: none;
     }
 
     .banner-icon {
@@ -69,17 +61,20 @@
         align-items: center;
         justify-content: center;
         font-size: 1.2em;
+        pointer-events: none;
     }
 
     .banner-info {
         display: flex;
         flex-direction: column;
+        pointer-events: none;
     }
 
     .banner-title {
         font-weight: 600;
         font-size: 1em;
         opacity: 0.9;
+        pointer-events: none;
     }
 
     .banner-timer {
@@ -87,16 +82,18 @@
         font-weight: bold;
         font-family: monospace;
         letter-spacing: 2px;
+        pointer-events: none;
     }
 
     .banner-right {
         display: flex;
         align-items: center;
+        pointer-events: auto;
     }
 
     .banner-btn {
         background: white;
-        color: var(--success);
+        color: #10b981;
         border: none;
         padding: 10px 25px;
         border-radius: 50px;
@@ -108,11 +105,11 @@
         gap: 8px;
         transition: all 0.3s;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        pointer-events: auto;
     }
 
     .banner-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        filter: brightness(1.1);
     }
 
     .banner-btn i {
@@ -143,7 +140,6 @@
     // Функция для проверки существования тренировки на сервере
     async function checkWorkoutExists(workoutId) {
         try {
-            // Делаем запрос к API для проверки существования тренировки
             const response = await fetch(`/api/check_workout/${workoutId}`);
             const data = await response.json();
             return data.exists;
@@ -151,6 +147,36 @@
             console.error('Ошибка при проверке тренировки:', error);
             return false;
         }
+    }
+
+    // Функция для очистки данных удалённой тренировки
+    async function cleanupDeletedWorkouts() {
+        const userIdElement = document.getElementById('userId');
+        const currentUserId = userIdElement ? userIdElement.value : null;
+        
+        if (!currentUserId) return;
+        
+        const keysToRemove = [];
+        
+        // Собираем все ключи с активными тренировками
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            
+            if (key && key.startsWith(`workout_${currentUserId}_`) && key.endsWith('_active')) {
+                const workoutId = key.replace(`workout_${currentUserId}_`, '').replace('_active', '');
+                const exists = await checkWorkoutExists(workoutId);
+                
+                if (!exists) {
+                    console.log(`Тренировка ${workoutId} удалена, очищаем данные`);
+                    keysToRemove.push(`workout_${currentUserId}_${workoutId}_active`);
+                    keysToRemove.push(`workout_${currentUserId}_${workoutId}`);
+                    keysToRemove.push(`workout_${currentUserId}_${workoutId}_timer`);
+                }
+            }
+        }
+        
+        // Удаляем все ключи
+        keysToRemove.forEach(key => localStorage.removeItem(key));
     }
 
     // Функция для обновления плашки с активной тренировкой
@@ -162,78 +188,59 @@
         const workoutTimer = document.getElementById('activeWorkoutTimer');
         const continueBtn = document.getElementById('continueWorkoutBtn');
         
-        // Получаем текущего пользователя из сессии (передаём из шаблона)
-        const currentUserId = "{{ session['user_id'] }}";
+        // Получаем текущего пользователя из HTML (если есть)
+        const userIdElement = document.getElementById('userId');
+        const currentUserId = userIdElement ? userIdElement.value : null;
         
-        // Ищем активную тренировку ТОЛЬКО для текущего пользователя
+        console.log('Проверка баннера:', { currentUserId });
+        
+        if (!currentUserId) {
+            console.log('Нет ID пользователя');
+            banner.style.display = 'none';
+            return;
+        }
+        
+        // Сначала чистим данные удалённых тренировок
+        await cleanupDeletedWorkouts();
+        
+        // Ищем активную тренировку для текущего пользователя
         let activeWorkoutId = null;
         let activeWorkoutData = null;
         
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
             
-            // Ищем ключи вида workout_*_*_active для текущего пользователя
             if (key && key.startsWith(`workout_${currentUserId}_`) && key.endsWith('_active')) {
                 const isActive = localStorage.getItem(key) === 'true';
+                console.log('Найден ключ:', key, 'isActive:', isActive);
                 
                 if (isActive) {
-                    // Извлекаем ID тренировки
                     activeWorkoutId = key.replace(`workout_${currentUserId}_`, '').replace('_active', '');
                     
-                    // Проверяем, есть ли данные тренировки
                     const workoutData = localStorage.getItem(`workout_${currentUserId}_${activeWorkoutId}`);
+                    console.log('Данные тренировки:', workoutData);
+                    
                     if (workoutData) {
                         try {
                             activeWorkoutData = JSON.parse(workoutData);
-                            
-                            // Проверяем, есть ли упражнения в тренировке
-                            const hasExercises = activeWorkoutData.exercises && 
-                                               activeWorkoutData.exercises.length > 0;
-                            
-                            if (!hasExercises) {
-                                console.log('Тренировка без упражнений, очищаем данные');
-                                localStorage.removeItem(`workout_${currentUserId}_${activeWorkoutId}_active`);
-                                localStorage.removeItem(`workout_${currentUserId}_${activeWorkoutId}`);
-                                localStorage.removeItem(`workout_${currentUserId}_${activeWorkoutId}_timer`);
-                                activeWorkoutData = null;
-                                activeWorkoutId = null;
-                                continue;
-                            }
-                            
-                            // Проверяем на сервере, существует ли ещё эта тренировка
-                            const exists = await checkWorkoutExists(activeWorkoutId);
-                            if (!exists) {
-                                console.log(`Тренировка ${activeWorkoutId} удалена с сервера, очищаем localStorage`);
-                                localStorage.removeItem(`workout_${currentUserId}_${activeWorkoutId}_active`);
-                                localStorage.removeItem(`workout_${currentUserId}_${activeWorkoutId}`);
-                                localStorage.removeItem(`workout_${currentUserId}_${activeWorkoutId}_timer`);
-                                activeWorkoutData = null;
-                                activeWorkoutId = null;
-                                continue;
-                            }
-                            
                         } catch (e) {
                             console.error('Ошибка парсинга данных:', e);
                         }
                     } else {
-                        // Если нет данных, удаляем флаг активности
+                        // Если данных нет, удаляем флаг активности
                         localStorage.removeItem(`workout_${currentUserId}_${activeWorkoutId}_active`);
-                        activeWorkoutId = null;
                     }
                     break;
                 }
             }
         }
         
-        // Если есть активная тренировка И данные тренировки существуют
         if (activeWorkoutId && activeWorkoutData) {
-            // Получаем таймер
+            console.log('Показываем баннер для тренировки:', activeWorkoutId);
             const timerData = localStorage.getItem(`workout_${currentUserId}_${activeWorkoutId}_timer`);
             
-            // Название тренировки
             workoutName.textContent = activeWorkoutData.name || 'Активная тренировка';
             
-            // Таймер
             if (timerData) {
                 const seconds = parseInt(timerData);
                 const mins = Math.floor(seconds / 60);
@@ -243,13 +250,10 @@
                 workoutTimer.textContent = '00:00';
             }
             
-            // Устанавливаем ссылку
             continueBtn.href = `/workout/${activeWorkoutId}/continue`;
-            
-            // Показываем баннер
             banner.style.display = 'block';
         } else {
-            // Если нет активной тренировки, скрываем баннер
+            console.log('Нет активной тренировки, скрываем баннер');
             banner.style.display = 'none';
         }
     }

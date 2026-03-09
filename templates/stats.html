@@ -41,19 +41,10 @@
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 30px;
-            animation: slideUp 0.6s ease-out;
+           
         }
 
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+       
 
         /* Шапка */
         .header {
@@ -345,6 +336,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <input type="hidden" id="userId" value="{{ session['user_id'] }}">
+     {% include 'sidebar.html' %}
+    
     <div class="container">
         <!-- Шапка -->
         <div class="header">
@@ -353,32 +347,20 @@
                 <a href="{{ url_for('my_workouts') }}" class="btn btn-gray">
                     <i class="fas fa-arrow-left"></i> К тренировкам
                 </a>
-                {% if is_admin %}
-                <a href="{{ url_for('admin_panel') }}" class="btn btn-primary">
-                    <i class="fas fa-crown"></i> Админка
-                </a>
-                {% endif %}
+                
             </div>
         </div>
 
         <!-- Карточки статистики -->
         <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>Завершённые тренировки</h3>
-                    <div class="stat-number">{{ stats.workouts_count }}</div>
-                </div>
-            </div>
+            
             
             <div class="stat-card">
                 <div class="stat-icon">
                     <i class="fas fa-clock"></i>
                 </div>
                 <div class="stat-content">
-                    <h3>Общее время</h3>
+                    <h3>Общее время тренировок</h3>
                     <div class="stat-number">
                         {{ stats.total_duration }}
                         <span class="stat-unit">мин</span>
