@@ -639,6 +639,15 @@ def save_completed_workout():
     print("="*50)
     return jsonify({'success': success})
 
+# API для проверки существования тренировки
+@app.route('/api/check_workout/<int:workout_id>')
+def check_workout(workout_id):
+    if 'user_id' not in session:
+        return jsonify({'exists': False})
+    
+    workout = database.get_workout_session(workout_id, session['user_id'])
+    return jsonify({'exists': workout is not None})
+
 ## Страница статистики
 @app.route('/stats')
 def stats():

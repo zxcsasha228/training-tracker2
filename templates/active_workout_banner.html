@@ -140,8 +140,21 @@
 </style>
 
 <script>
+    // Функция для проверки существования тренировки на сервере
+    async function checkWorkoutExists(workoutId) {
+        try {
+            // Делаем запрос к API для проверки существования тренировки
+            const response = await fetch(`/api/check_workout/${workoutId}`);
+            const data = await response.json();
+            return data.exists;
+        } catch (error) {
+            console.error('Ошибка при проверке тренировки:', error);
+            return false;
+        }
+    }
+
     // Функция для обновления плашки с активной тренировкой
-    function updateActiveWorkoutBanner() {
+    async function updateActiveWorkoutBanner() {
         const banner = document.getElementById('activeWorkoutBanner');
         if (!banner) return;
         
@@ -164,7 +177,7 @@
                 const isActive = localStorage.getItem(key) === 'true';
                 
                 if (isActive) {
-                    // Извлекаем ID тренировки (убираем префикс workout_${userId}_ и суффикс _active)
+                    // Извлекаем ID тренировки
                     activeWorkoutId = key.replace(`workout_${currentUserId}_`, '').replace('_active', '');
                     
                     // Проверяем, есть ли данные тренировки
@@ -172,9 +185,40 @@
                     if (workoutData) {
                         try {
                             activeWorkoutData = JSON.parse(workoutData);
+                            
+                            // Проверяем, есть ли упражнения в тренировке
+                            const hasExercises = activeWorkoutData.exercises && 
+                                               activeWorkoutData.exercises.length > 0;
+                            
+                            if (!hasExercises) {
+                                console.log('Тренировка без упражнений, очищаем данные');
+                                localStorage.removeItem(`workout_${currentUserId}_${activeWorkoutId}_active`);
+                                localStorage.removeItem(`workout_${currentUserId}_${activeWorkoutId}`);
+                                localStorage.removeItem(`workout_${currentUserId}_${activeWorkoutId}_timer`);
+                                activeWorkoutData = null;
+                                activeWorkoutId = null;
+                                continue;
+                            }
+                            
+                            // Проверяем на сервере, существует ли ещё эта тренировка
+                            const exists = await checkWorkoutExists(activeWorkoutId);
+                            if (!exists) {
+                                console.log(`Тренировка ${activeWorkoutId} удалена с сервера, очищаем localStorage`);
+                                localStorage.removeItem(`workout_${currentUserId}_${activeWorkoutId}_active`);
+                                localStorage.removeItem(`workout_${currentUserId}_${activeWorkoutId}`);
+                                localStorage.removeItem(`workout_${currentUserId}_${activeWorkoutId}_timer`);
+                                activeWorkoutData = null;
+                                activeWorkoutId = null;
+                                continue;
+                            }
+                            
                         } catch (e) {
                             console.error('Ошибка парсинга данных:', e);
                         }
+                    } else {
+                        // Если нет данных, удаляем флаг активности
+                        localStorage.removeItem(`workout_${currentUserId}_${activeWorkoutId}_active`);
+                        activeWorkoutId = null;
                     }
                     break;
                 }
@@ -213,8 +257,8 @@
     // Обновляем баннер при загрузке страницы
     document.addEventListener('DOMContentLoaded', updateActiveWorkoutBanner);
     
-    // Обновляем баннер каждые 5 секунд (для таймера)
-    setInterval(updateActiveWorkoutBanner, 5000);
+    // Обновляем баннер каждые 3 секунды
+    setInterval(updateActiveWorkoutBanner, 3000);
     
     // Также обновляем при возврате на страницу
     window.addEventListener('pageshow', updateActiveWorkoutBanner);
