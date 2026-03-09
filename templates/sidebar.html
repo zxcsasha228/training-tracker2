@@ -11,10 +11,17 @@
     </div>
     
     <div class="sidebar-menu">
+        
+        <div class="theme-toggle" onclick="toggleTheme()">
+            <i class="fas fa-moon" id="themeIcon"></i>
+            <span>Тёмная тема</span>
+        </div>
+        
         <a href="{{ url_for('my_workouts') }}" class="menu-item {% if request.endpoint == 'my_workouts' %}active{% endif %}">
             <i class="fas fa-home"></i>
             <span>Мои тренировки</span>
         </a>
+        
         
         <a href="{{ url_for('stats') }}" class="menu-item {% if request.endpoint == 'stats' %}active{% endif %}">
             <i class="fas fa-chart-line"></i>
@@ -53,6 +60,90 @@
 </div>
 
 <style>
+/* Тёмная тема */
+body.dark-theme {
+    --primary: #818cf8;
+    --primary-dark: #6366f1;
+    --secondary: #a78bfa;
+    --success: #34d399;
+    --danger: #f87171;
+    --warning: #fbbf24;
+    --dark: #f3f4f6;
+    --light: #1f2937;
+    --gray: #9ca3af;
+    --gray-light: #4b5563;
+}
+
+body.dark-theme .container,
+body.dark-theme .content-container,
+body.dark-theme .modal-content,
+body.dark-theme .workout-card,
+body.dark-theme .exercise-card,
+body.dark-theme .stat-card {
+    background: rgba(31, 41, 55, 0.95);
+    backdrop-filter: blur(10px);
+    color: #f3f4f6;
+}
+
+body.dark-theme .sidebar {
+    background: linear-gradient(135deg, #0f172a, #020617);
+}
+
+body.dark-theme input,
+body.dark-theme select,
+body.dark-theme textarea {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f3f4f6;
+}
+
+body.dark-theme input:focus,
+body.dark-theme select:focus,
+body.dark-theme textarea:focus {
+    border-color: var(--primary);
+}
+
+
+   
+    .theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 20px;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: all 0.3s;
+    margin: 10px 10px 0;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.theme-toggle i {
+    width: 24px;
+    font-size: 1.2em;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.theme-toggle:hover i {
+    color: white;
+}
+
+.sidebar.collapsed .theme-toggle span {
+    display: none;
+}
+
+.sidebar.collapsed .theme-toggle {
+    justify-content: center;
+    padding: 12px;
+}
+
+
     .sidebar {
         position: fixed;
         left: 0;
@@ -407,6 +498,38 @@
         sidebar.classList.toggle('active');
     }
 
+    // Переключение тёмной темы
+function toggleTheme() {
+    const body = document.body;
+    const themeIcon = document.getElementById('themeIcon');
+    const isDark = body.classList.toggle('dark-theme');
+    
+    // Меняем иконку
+    if (isDark) {
+        themeIcon.classList.remove('fa-moon');
+        themeIcon.classList.add('fa-sun');
+    } else {
+        themeIcon.classList.remove('fa-sun');
+        themeIcon.classList.add('fa-moon');
+    }
+    
+    // Сохраняем выбор
+    localStorage.setItem('dark_theme', isDark);
+}
+
+// Загружаем сохранённую тему
+document.addEventListener('DOMContentLoaded', function() {
+    const savedTheme = localStorage.getItem('dark_theme') === 'true';
+    const themeIcon = document.getElementById('themeIcon');
+    
+    if (savedTheme) {
+        document.body.classList.add('dark-theme');
+        if (themeIcon) {
+            themeIcon.classList.remove('fa-moon');
+            themeIcon.classList.add('fa-sun');
+        }
+    }
+});
     // Загружаем состояние меню при загрузке страницы
     document.addEventListener('DOMContentLoaded', function() {
         const sidebar = document.getElementById('sidebar');

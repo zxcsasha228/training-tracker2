@@ -1,0 +1,1133 @@
+/* Тёмная тема - ПОЛНАЯ ВЕРСИЯ */
+body.dark-theme {
+    --primary: #818cf8;
+    --primary-dark: #6366f1;
+    --secondary: #a78bfa;
+    --success: #34d399;
+    --danger: #f87171;
+    --warning: #fbbf24;
+    --dark: #f3f4f6;
+    --light: #1f2937;
+    --gray: #9ca3af;
+    --gray-light: #4b5563;
+    --input-bg: #374151;
+    --card-bg: rgba(31, 41, 55, 0.95);
+    --hover-bg: rgba(255, 255, 255, 0.05);
+    --border-color: #4b5563;
+}
+
+/* ========== ОСНОВНЫЕ ЭЛЕМЕНТЫ ========== */
+
+/* Основной контент */
+body.dark-theme .main-content {
+    background: linear-gradient(135deg, #1e1b4b, #312e81);
+}
+
+/* Контейнеры */
+body.dark-theme .container,
+body.dark-theme .content-container,
+body.dark-theme .modal-content,
+body.dark-theme .workout-info,
+body.dark-theme .exercise-selector,
+body.dark-theme .chart-container,
+body.dark-theme .recent-table,
+body.dark-theme .user-card,
+body.dark-theme .profile-header,
+body.dark-theme .stats-section,
+body.dark-theme .info-card {
+    background: var(--card-bg);
+    color: var(--dark);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Шапка и заголовки */
+body.dark-theme .header h1,
+body.dark-theme h1,
+body.dark-theme h2,
+body.dark-theme h3,
+body.dark-theme .modal-header h2,
+body.dark-theme .chart-title,
+body.dark-theme .table-title,
+body.dark-theme .selector-title {
+    color: var(--dark);
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+body.dark-theme .header {
+    border-bottom-color: var(--border-color);
+}
+
+body.dark-theme .workout-info {
+    background: #2d3748;
+}
+
+body.dark-theme .info-item {
+    color: var(--gray);
+}
+
+body.dark-theme .info-item i {
+    color: var(--primary);
+}
+
+/* ========== АДМИН-ПАНЕЛЬ ========== */
+
+/* Карточки статистики в админке */
+body.dark-theme .stats-grid {
+    margin-bottom: 30px;
+}
+
+body.dark-theme .stats-grid .stat-card {
+    background: #2d3748;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+body.dark-theme .stats-grid .stat-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body.dark-theme .stats-grid .stat-icon i {
+    font-size: 1.5em;
+    color: white;
+}
+
+body.dark-theme .stats-grid .stat-content h3 {
+    color: var(--gray);
+    font-size: 0.9em;
+    margin-bottom: 5px;
+}
+
+body.dark-theme .stats-grid .stat-content .stat-number {
+    color: var(--dark);
+    font-size: 1.8em;
+    font-weight: bold;
+}
+
+/* Поиск в админке */
+body.dark-theme .search-section {
+    margin-bottom: 20px;
+}
+
+body.dark-theme .search-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+body.dark-theme .search-input {
+    flex: 1;
+    background: #374151;
+    border: 2px solid var(--border-color);
+    color: var(--dark);
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 1em;
+}
+
+body.dark-theme .search-input:focus {
+    border-color: var(--primary);
+    outline: none;
+}
+
+body.dark-theme .search-clear {
+    background: #4b5563;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+body.dark-theme .hint-text {
+    color: var(--gray);
+    font-size: 0.9em;
+    margin-top: 8px;
+}
+
+/* Таблица админ-панели */
+body.dark-theme .table-container {
+    background: #2d3748;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+}
+
+body.dark-theme table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+body.dark-theme th {
+    background: #374151;
+    color: var(--dark);
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid var(--border-color);
+}
+
+body.dark-theme td {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--gray);
+}
+
+body.dark-theme tr:hover td {
+    background: #374151;
+}
+
+/* Ячейка с паролем */
+body.dark-theme .password-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+body.dark-theme .password-hidden {
+    color: var(--gray);
+    font-family: monospace;
+    letter-spacing: 2px;
+    background: #374151;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+body.dark-theme .password-visible {
+    color: var(--primary);
+    font-family: monospace;
+    font-weight: 600;
+    background: rgba(129, 140, 248, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+body.dark-theme .password-toggle {
+    color: var(--gray);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+body.dark-theme .password-toggle:hover {
+    color: var(--primary);
+}
+
+/* Бейдж роли */
+body.dark-theme .role-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+body.dark-theme .role-badge.admin {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+}
+
+body.dark-theme .role-badge.user {
+    background: #4b5563;
+    color: var(--gray);
+}
+
+/* Кнопки действий в админке */
+body.dark-theme .action-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+body.dark-theme .action-btn {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: all 0.3s;
+    color: white;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+body.dark-theme .action-btn.view {
+    background: var(--primary);
+}
+
+body.dark-theme .action-btn.admin {
+    background: var(--success);
+}
+
+body.dark-theme .action-btn.admin-remove {
+    background: var(--warning);
+    color: var(--dark);
+}
+
+body.dark-theme .action-btn.delete {
+    background: var(--danger);
+}
+
+body.dark-theme .action-btn:hover {
+    filter: brightness(1.1);
+}
+
+/* Кнопка "Показать всех" */
+body.dark-theme .show-all-btn {
+    width: 100%;
+    padding: 15px;
+    background: #374151;
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    color: var(--gray);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 20px;
+}
+
+body.dark-theme .show-all-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(129, 140, 248, 0.1);
+}
+
+/* ========== ПРОФИЛЬ ========== */
+
+body.dark-theme .user-card {
+    background: #2d3748;
+    padding: 30px;
+    border-radius: 20px;
+}
+
+body.dark-theme .profile-avatar {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+body.dark-theme .profile-avatar i {
+    font-size: 3em;
+    color: white;
+}
+
+body.dark-theme .user-name {
+    color: var(--dark);
+    font-size: 1.8em;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+body.dark-theme .role-badge {
+    background: rgba(129, 140, 248, 0.2);
+    color: var(--primary);
+    display: inline-block;
+    padding: 8px 20px;
+    border-radius: 30px;
+    font-size: 0.9em;
+    font-weight: 600;
+    margin: 0 auto 30px;
+    width: fit-content;
+}
+
+body.dark-theme .role-badge.admin {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+}
+
+body.dark-theme .info-item {
+    background: #374151;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+body.dark-theme .info-label {
+    color: var(--gray);
+    font-size: 0.85em;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+body.dark-theme .info-label i {
+    color: var(--primary);
+}
+
+body.dark-theme .info-value {
+    color: var(--dark);
+    font-size: 1.2em;
+    font-weight: 600;
+}
+
+/* Поле пароля в профиле */
+body.dark-theme .password-field {
+    background: #374151;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 5px;
+}
+
+body.dark-theme .password-text {
+    color: var(--primary);
+    font-family: monospace;
+    font-size: 1.1em;
+    letter-spacing: 1px;
+}
+
+body.dark-theme .copy-btn {
+    background: none;
+    border: none;
+    color: var(--gray);
+    cursor: pointer;
+    font-size: 1.1em;
+    padding: 5px 10px;
+    transition: all 0.3s;
+}
+
+body.dark-theme .copy-btn:hover {
+    color: var(--primary);
+    transform: scale(1.1);
+}
+
+body.dark-theme .edit-profile-btn {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+    width: 100%;
+}
+
+/* ========== СТАТИСТИКА ========== */
+
+/* Карточки статистики */
+body.dark-theme .stats-grid .stat-card {
+    background: #2d3748;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+body.dark-theme .stats-grid .stat-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body.dark-theme .stats-grid .stat-icon i {
+    font-size: 1.5em;
+    color: white;
+}
+
+body.dark-theme .stats-grid .stat-content h3 {
+    color: var(--gray);
+    font-size: 0.9em;
+    margin-bottom: 5px;
+}
+
+body.dark-theme .stats-grid .stat-content .stat-number {
+    color: var(--dark);
+    font-size: 1.8em;
+    font-weight: bold;
+}
+
+/* Выбор упражнения */
+body.dark-theme .exercise-selector {
+    background: #2d3748;
+    border: 2px solid var(--primary);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+body.dark-theme .selector-title {
+    color: var(--dark);
+    font-size: 1.1em;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+body.dark-theme .selector-title i {
+    color: var(--primary);
+}
+
+body.dark-theme .exercise-select {
+    width: 100%;
+    padding: 12px 16px;
+    background: #374151;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--dark);
+    font-size: 1em;
+    cursor: pointer;
+}
+
+body.dark-theme .exercise-select:focus {
+    border-color: var(--primary);
+    outline: none;
+}
+
+body.dark-theme .exercise-select option {
+    background: #2d3748;
+    color: var(--dark);
+}
+
+/* Контейнер графика */
+body.dark-theme .chart-container {
+    background: #2d3748;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 20px;
+}
+
+body.dark-theme .chart-title {
+    color: var(--dark);
+    font-size: 1.1em;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+body.dark-theme .chart-title i {
+    color: var(--primary);
+}
+
+/* Элементы графика */
+body.dark-theme canvas {
+    background: transparent;
+}
+
+body.dark-theme .chartjs-datalabel,
+body.dark-theme .datalabels,
+body.dark-theme text.datalabels,
+body.dark-theme .chartjs-datalabel text,
+body.dark-theme .datalabels text {
+    color: var(--dark) !important;
+    fill: var(--dark) !important;
+    stroke: var(--dark) !important;
+    font-weight: bold !important;
+}
+
+body.dark-theme .chartjs-y-axis text,
+body.dark-theme .chartjs-axis text,
+body.dark-theme .chartjs-ticks text,
+body.dark-theme .chartjs-scale text {
+    fill: var(--gray) !important;
+    color: var(--gray) !important;
+}
+
+body.dark-theme .chartjs-x-axis text {
+    fill: var(--gray) !important;
+    color: var(--gray) !important;
+}
+
+body.dark-theme .chartjs-title text {
+    fill: var(--gray) !important;
+    color: var(--gray) !important;
+}
+
+/* ========== КАРТОЧКИ ТРЕНИРОВОК ========== */
+
+body.dark-theme .workout-card,
+body.dark-theme .exercise-card,
+body.dark-theme .stat-card,
+body.dark-theme .modal-exercise-card {
+    background: #2d3748;
+    border: 2px solid var(--border-color);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-theme .workout-card:hover,
+body.dark-theme .exercise-card:hover,
+body.dark-theme .stat-card:hover,
+body.dark-theme .modal-exercise-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 10px 25px rgba(129, 140, 248, 0.2);
+}
+
+body.dark-theme .workout-card.selected,
+body.dark-theme .exercise-card.selected,
+body.dark-theme .modal-exercise-card.selected {
+    border-color: var(--primary);
+    background: rgba(129, 140, 248, 0.1);
+}
+
+body.dark-theme .workout-name,
+body.dark-theme .exercise-name,
+body.dark-theme .modal-exercise-name {
+    color: var(--dark);
+}
+
+body.dark-theme .workout-date,
+body.dark-theme .workout-stats,
+body.dark-theme .exercise-details,
+body.dark-theme .modal-exercise-muscle,
+body.dark-theme .workout-notes {
+    color: var(--gray);
+}
+
+body.dark-theme .workout-stats i,
+body.dark-theme .exercise-details i,
+body.dark-theme .workout-date i {
+    color: var(--primary);
+}
+
+body.dark-theme .exercise-muscle {
+    background: rgba(129, 140, 248, 0.2);
+    color: var(--primary);
+}
+
+body.dark-theme .selection-checkbox {
+    background: #374151;
+    border-color: var(--border-color);
+    color: var(--dark);
+}
+
+body.dark-theme .workout-card.selected .selection-checkbox,
+body.dark-theme .exercise-card.selected .selection-checkbox,
+body.dark-theme .modal-exercise-card.selected .checkbox {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+/* ========== ТАБЛИЦЫ ========== */
+
+body.dark-theme table,
+body.dark-theme .exercises-table,
+body.dark-theme .recent-table {
+    background: #2d3748;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+body.dark-theme th {
+    background: #374151;
+    color: var(--dark);
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid var(--border-color);
+}
+
+body.dark-theme td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--gray);
+}
+
+body.dark-theme tr:hover td {
+    background: #374151;
+}
+
+body.dark-theme .table-title {
+    border-bottom-color: var(--border-color);
+}
+
+/* ========== ФОРМЫ И ИНПУТЫ ========== */
+
+body.dark-theme input,
+body.dark-theme select,
+body.dark-theme textarea,
+body.dark-theme .modal-search,
+body.dark-theme .custom-select,
+body.dark-theme .exercise-select {
+    background: var(--input-bg);
+    border: 2px solid var(--border-color);
+    color: var(--dark);
+    border-radius: 12px;
+}
+
+body.dark-theme input:focus,
+body.dark-theme select:focus,
+body.dark-theme textarea:focus,
+body.dark-theme .modal-search:focus,
+body.dark-theme .custom-select:focus,
+body.dark-theme .exercise-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+    outline: none;
+}
+
+body.dark-theme input::placeholder,
+body.dark-theme textarea::placeholder,
+body.dark-theme .modal-search::placeholder {
+    color: #6b7280;
+}
+
+body.dark-theme select option,
+body.dark-theme .custom-select option,
+body.dark-theme .exercise-select option {
+    background: #2d3748;
+    color: var(--dark);
+}
+
+body.dark-theme label {
+    color: var(--gray);
+}
+
+body.dark-theme label i {
+    color: var(--primary);
+}
+
+/* ========== КНОПКИ ========== */
+
+body.dark-theme .btn-gray {
+    background: #4b5563;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.95em;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+body.dark-theme .btn-gray:hover {
+    background: #6b7280;
+    filter: brightness(1.1);
+}
+
+body.dark-theme .btn-success,
+body.dark-theme .beautiful-add-btn,
+body.dark-theme .add-selected-btn {
+    background: linear-gradient(135deg, #059669, #047857);
+    color: white;
+}
+
+body.dark-theme .btn-warning {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    color: white;
+}
+
+body.dark-theme .btn-primary,
+body.dark-theme .workout-action-btn,
+body.dark-theme .start-workout-btn {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+}
+
+body.dark-theme .btn-danger,
+body.dark-theme .delete-group-btn,
+body.dark-theme .delete-btn {
+    background: #dc2626;
+    color: white;
+}
+
+body.dark-theme .btn:hover,
+body.dark-theme .beautiful-add-btn:hover,
+body.dark-theme .workout-action-btn:hover,
+body.dark-theme .start-workout-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+}
+
+/* Кнопка начать тренировку - исправление текста */
+body.dark-theme .workout-action-btn span,
+body.dark-theme .start-workout-btn span,
+body.dark-theme .beautiful-add-btn span,
+body.dark-theme .btn-primary span,
+body.dark-theme .btn-success span,
+body.dark-theme .btn-warning span,
+body.dark-theme .btn-danger span {
+    color: white;
+}
+
+body.dark-theme .workout-action-btn .btn-icon,
+body.dark-theme .start-workout-btn .btn-icon,
+body.dark-theme .beautiful-add-btn .btn-icon {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ========== ПАНЕЛЬ ДЕЙСТВИЙ ========== */
+
+body.dark-theme .action-bar {
+    background: #2d3748;
+    border: 1px solid var(--border-color);
+}
+
+body.dark-theme .selection-count {
+    color: var(--dark);
+}
+
+body.dark-theme .action-group-btn {
+    background: #4b5563;
+    color: white;
+}
+
+/* ========== МОДАЛЬНЫЕ ОКНА ========== */
+
+body.dark-theme .modal-content {
+    background: #2d3748;
+}
+
+body.dark-theme .modal-header {
+    background: linear-gradient(135deg, #0f172a, #1e1b4b);
+    border-bottom: 1px solid var(--border-color);
+}
+
+body.dark-theme .modal-header h2 {
+    color: white;
+    -webkit-text-fill-color: white;
+    background: none;
+}
+
+body.dark-theme .close-btn {
+    color: white;
+}
+
+body.dark-theme .close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+body.dark-theme .modal-body {
+    background: #2d3748;
+}
+
+body.dark-theme .checkbox {
+    background: #4b5563;
+    border: 2px solid var(--border-color);
+}
+
+body.dark-theme .modal-exercise-card.selected .checkbox {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+/* ========== ПАНЕЛЬ ВЫБРАННЫХ ========== */
+
+body.dark-theme .selected-panel {
+    background: #2d3748;
+    border-top: 2px solid var(--border-color);
+}
+
+body.dark-theme .selected-count {
+    color: var(--dark);
+}
+
+body.dark-theme .selected-tag {
+    background: rgba(129, 140, 248, 0.2);
+    border: 1px solid var(--primary);
+    color: var(--primary);
+}
+
+body.dark-theme .selected-tag i:hover {
+    color: var(--danger);
+}
+
+/* ========== АКТИВНАЯ ТРЕНИРОВКА ========== */
+
+body.dark-theme .set-card {
+    background: #2d3748;
+    border: 2px solid var(--border-color);
+}
+
+body.dark-theme .set-card.completed {
+    background: rgba(52, 211, 153, 0.15);
+    border-color: var(--success);
+}
+
+body.dark-theme .set-number {
+    color: var(--dark);
+}
+
+body.dark-theme .input-field {
+    background: #374151;
+    border: 2px solid var(--border-color);
+}
+
+body.dark-theme .input-field input {
+    background: transparent;
+    color: var(--dark);
+}
+
+body.dark-theme .input-field:focus-within {
+    border-color: var(--primary);
+}
+
+body.dark-theme .input-label {
+    color: var(--gray);
+}
+
+body.dark-theme .set-card.completed .input-field {
+    background: #374151;
+    border-color: var(--success);
+}
+
+body.dark-theme .set-card.completed .input-field input {
+    color: var(--success);
+}
+
+body.dark-theme .set-card.completed .input-label {
+    color: var(--success);
+}
+
+body.dark-theme .complete-btn {
+    background: #4b5563;
+    border: none;
+    color: var(--gray);
+}
+
+body.dark-theme .complete-btn:hover {
+    background: rgba(52, 211, 153, 0.2);
+    color: var(--success);
+}
+
+body.dark-theme .complete-btn.completed {
+    background: var(--success);
+    color: white;
+}
+
+body.dark-theme .delete-set-btn {
+    background: #4b5563;
+    color: var(--gray);
+}
+
+body.dark-theme .delete-set-btn:hover {
+    background: rgba(248, 113, 113, 0.2);
+    color: var(--danger);
+}
+
+body.dark-theme .add-set-btn {
+    border: 2px dashed var(--primary);
+    color: var(--primary);
+}
+
+body.dark-theme .add-set-btn:hover {
+    background: rgba(129, 140, 248, 0.1);
+}
+
+body.dark-theme .sets-stats {
+    color: var(--gray);
+}
+
+body.dark-theme .sets-stats i {
+    color: var(--success);
+}
+
+/* Таймер */
+body.dark-theme .timer-section {
+    background: #2d3748;
+    border: 1px solid var(--border-color);
+}
+
+body.dark-theme .timer-display {
+    color: var(--dark);
+}
+
+/* ========== БИБЛИОТЕКА УПРАЖНЕНИЙ ========== */
+
+body.dark-theme .exercise-card .admin-actions {
+    border-top-color: var(--border-color);
+}
+
+body.dark-theme .admin-btn.edit {
+    background: var(--warning);
+    color: var(--dark);
+}
+
+body.dark-theme .admin-btn.delete {
+    background: var(--danger);
+    color: white;
+}
+
+/* Карточки в библиотеке */
+body.dark-theme .exercise-card-image {
+    background: #374151;
+    border: 3px solid var(--border-color);
+}
+
+body.dark-theme .exercise-card-image i {
+    color: var(--gray);
+}
+
+body.dark-theme .exercise-card-muscle {
+    color: var(--gray);
+    font-size: 0.85em;
+}
+
+/* Фильтры в библиотеке */
+body.dark-theme .filter-btn {
+    background: #374151;
+    border: 2px solid var(--border-color);
+    color: var(--gray);
+}
+
+body.dark-theme .filter-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+body.dark-theme .filter-btn.active {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    border-color: transparent;
+}
+
+/* Поиск в библиотеке */
+body.dark-theme .search-box {
+    background: #374151;
+    border: 2px solid var(--border-color);
+    color: var(--dark);
+}
+
+body.dark-theme .search-box:focus {
+    border-color: var(--primary);
+}
+
+/* ========== ЗАГРУЗКА ФАЙЛОВ ========== */
+
+body.dark-theme .file-upload {
+    background: #374151;
+    border: 2px dashed var(--border-color);
+}
+
+body.dark-theme .file-upload:hover {
+    border-color: var(--primary);
+    background: rgba(129, 140, 248, 0.1);
+}
+
+body.dark-theme .file-upload i {
+    color: var(--gray);
+}
+
+body.dark-theme .file-upload p {
+    color: var(--gray);
+}
+
+body.dark-theme .file-name {
+    background: #2d3748;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+}
+
+body.dark-theme .image-preview {
+    border: 3px solid var(--primary);
+}
+
+body.dark-theme .current-image img {
+    border-color: var(--primary);
+}
+
+/* ========== ССЫЛКИ ========== */
+
+body.dark-theme a:not(.btn):not(.menu-item):not(.banner-btn) {
+    color: var(--primary);
+}
+
+body.dark-theme a:not(.btn):not(.menu-item):not(.banner-btn):hover {
+    color: var(--secondary);
+}
+
+/* ========== СКРОЛЛБАР ========== */
+
+body.dark-theme::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+body.dark-theme::-webkit-scrollbar-track {
+    background: #1f2937;
+}
+
+body.dark-theme::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border-radius: 6px;
+    border: 2px solid #1f2937;
+}
+
+body.dark-theme::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+}
+
+body.dark-theme::-webkit-scrollbar-corner {
+    background: #1f2937;
+}
+
+/* ========== РАЗНОЕ ========== */
+
+body.dark-theme .workout-notes {
+    color: var(--gray);
+    border-top-color: var(--border-color);
+}
+
+body.dark-theme .delete-overlay {
+    background: var(--danger);
+}
+
+body.dark-theme .delete-overlay i {
+    color: white;
+}
+
+body.dark-theme .swiping {
+    background: rgba(248, 113, 113, 0.1);
+}
+
+/* Плашка активной тренировки (оставляем светлой) */
+body.dark-theme .banner-content {
+    background: linear-gradient(135deg, #059669, #047857);
+}
+
+body.dark-theme .banner-btn {
+    background: white;
+    color: #059669;
+}
+
+body.dark-theme .banner-btn:hover {
+    background: #f3f4f6;
+}
+
+/* Уведомления */
+body.dark-theme .copy-notification {
+    background: var(--success);
+    color: white;
+}
+
+body.dark-theme .error-message {
+    background: rgba(248, 113, 113, 0.2);
+    color: var(--danger);
+    border-left-color: var(--danger);
+}
