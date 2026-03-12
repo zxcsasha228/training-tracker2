@@ -117,10 +117,15 @@ def admin_panel():
     
     stats = database.get_admin_stats()
     users = database.get_all_users_with_passwords()
-    return render_template('admin_panel.html', 
+    users_chart = database.get_users_chart_data()
+    workouts_chart = database.get_workouts_chart_data()
+    
+    return render_template('admin_panel_enhanced.html', 
                          stats=stats, 
                          users=users,
-                         is_admin=session.get('is_admin', 0))  # Добавь эту строку
+                         users_chart=users_chart,
+                         workouts_chart=workouts_chart,
+                         is_admin=session.get('is_admin', 0))
 
 # Просмотр данных пользователя (для админа)
 @app.route('/admin/user/<int:user_id>')
@@ -135,6 +140,7 @@ def admin_user_details(user_id):
     return render_template('admin_user_details.html', 
                          user=user,
                          is_admin=session.get('is_admin', 0))
+
 
 
 @app.route('/')
@@ -223,7 +229,6 @@ def toggle_admin(user_id):
 
 # Удаление пользователя (обновленная версия)
 @app.route('/admin/delete_user/<int:user_id>', methods=['POST'])
-
 def admin_delete_user(user_id):
 
     if 'user_id' not in session or not session.get('is_admin'):
@@ -236,6 +241,22 @@ def admin_delete_user(user_id):
     database.delete_user_admin(user_id)
     return redirect(url_for('admin_panel'))
    
+# Профиль пользователя
+@app.route('/profile')
+def profile():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    user = database.get_user_by_id(session['user_id'])
+    stats = database.get_user_stats(session['user_id'])
+    
+    return render_template('profile.html', 
+                         user=user, 
+                         stats=stats,
+                         is_admin=session.get('is_admin', 0))
+
+
+#region---------------------БИБЛИОТЕКА УПРАЖНЕНИЙ---------------------
 # ================ БИБЛИОТЕКА УПРАЖНЕНИЙ ================
 
 # Страница библиотеки упражнений (доступна всем)
@@ -350,7 +371,10 @@ def delete_exercise(exercise_id):
     database.delete_exercise(exercise_id)
     return redirect(url_for('exercises_library'))
 
+#endregion
 
+
+#region-----------------------------------ТРЕНИРОВКИ------------------------------------
 # ================ ТРЕНИРОВКИ ================
 
 # Главная страница со списком тренировок
@@ -705,26 +729,209 @@ def check_workout_exists(workout_id):
     workout = database.get_workout_session(workout_id, session['user_id'])
     return jsonify({'exists': workout is not None})
 
-# Профиль пользователя
-@app.route('/profile')
-def profile():
-    if 'user_id' not in session:
+#endregion
+
+    #region --------------------------------УПРАВЛЕНИЕ ТАБЛИЦАМИ АДМИН ПАНЕЛЬ-------------------------
+@app.route('/admin/tables')
+def table_manager():
+    if 'user_id' not in session or not session.get('is_admin'):
         return redirect(url_for('login'))
     
-    user = database.get_user_by_id(session['user_id'])
-    stats = database.get_user_stats(session['user_id'])
+    stats = database.get_admin_stats()
     
-    return render_template('profile.html', 
-                         user=user, 
+    # Получаем последние записи для предпросмотра
+    with database.get_db() as conn:
+        cursor = conn.cursor()
+        
+        # Получаем всех пользователей (для таблицы)
+        cursor.execute('SELECT id, username, is_admin FROM users ORDER BY id DESC LIMIT 5')
+        users = cursor.fetchall()
+        
+        # Получаем последние тренировки
+        cursor.execute('SELECT id, name, date FROM workout_sessions ORDER BY id DESC LIMIT 3')
+        recent_workouts = cursor.fetchall()
+        
+        # Получаем последние упражнения
+        cursor.execute('SELECT id, name, muscle_group FROM exercises ORDER BY id DESC LIMIT 3')
+        recent_exercises = cursor.fetchall()
+        
+        # Получаем последние записи статистики
+        cursor.execute('''
+            SELECT cw.id, cw.workout_name, cw.date 
+            FROM completed_workouts cw 
+            ORDER BY cw.id DESC LIMIT 3
+        ''')
+        recent_stats = cursor.fetchall()
+    
+    return render_template('table_manager.html',
                          stats=stats,
+                         users=users,  # Добавили users
+                         recent_workouts=recent_workouts,
+                         recent_exercises=recent_exercises,
+                         recent_stats=recent_stats,
                          is_admin=session.get('is_admin', 0))
 
+# API для получения данных графиков (если нужно обновлять в реальном времени)
+@app.route('/api/chart_data')
+def chart_data():
+    if 'user_id' not in session or not session.get('is_admin'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    return jsonify({
+        'users': database.get_users_chart_data(),
+        'workouts': database.get_workouts_chart_data()
+    })
+
+# API для получения данных таблиц
+@app.route('/api/table_data/<table_name>')
+def get_table_data(table_name):
+    if 'user_id' not in session or not session.get('is_admin'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    allowed_tables = ['users', 'workouts', 'exercises', 'completed_workouts', 'completed_sets']
+    if table_name not in allowed_tables:
+        return jsonify({'error': 'Invalid table'}), 400
+    
+    try:
+        with database.get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute(f'SELECT * FROM {table_name} ORDER BY id DESC')
+            rows = cursor.fetchall()
+            
+            # Преобразуем в список словарей
+            result = []
+            for row in rows:
+                result.append(dict(row))
+            
+            return jsonify(result)
+    except Exception as e:
+        print(f"Ошибка при получении данных таблицы {table_name}: {e}")
+        return jsonify([])
 
 
+# API для обновления ячейки
+@app.route('/api/update_cell/<table_name>/<int:row_id>', methods=['POST'])
+def update_cell(table_name, row_id):
+    if 'user_id' not in session or not session.get('is_admin'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    data = request.get_json()
+    column = data.get('column')
+    value = data.get('value')
+    
+    allowed_tables = ['users', 'workouts', 'exercises', 'completed_workouts', 'completed_sets']
+    if table_name not in allowed_tables:
+        return jsonify({'success': False, 'error': 'Invalid table'}), 400
+    
+    try:
+        with database.get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute(f'UPDATE {table_name} SET {column} = ? WHERE id = ?', (value, row_id))
+            conn.commit()
+            return jsonify({'success': True})
+    except Exception as e:
+        print(f"Ошибка при обновлении ячейки: {e}")
+        return jsonify({'success': False, 'error': str(e)})
 
+# API для удаления строки
+@app.route('/api/delete_row/<table_name>/<int:row_id>', methods=['POST'])
+def delete_row(table_name, row_id):
+    if 'user_id' not in session or not session.get('is_admin'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    allowed_tables = ['users', 'workouts', 'exercises', 'completed_workouts', 'completed_sets']
+    if table_name not in allowed_tables:
+        return jsonify({'success': False, 'error': 'Invalid table'}), 400
+    
+    try:
+        with database.get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute(f'DELETE FROM {table_name} WHERE id = ?', (row_id,))
+            conn.commit()
+            return jsonify({'success': True})
+    except Exception as e:
+        print(f"Ошибка при удалении строки: {e}")
+        return jsonify({'success': False, 'error': str(e)})
 
+# API для массового удаления
+@app.route('/api/bulk_delete/<table_name>', methods=['POST'])
+def bulk_delete(table_name):
+    if 'user_id' not in session or not session.get('is_admin'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    data = request.get_json()
+    ids = data.get('ids', [])
+    
+    allowed_tables = ['users', 'workouts', 'exercises', 'completed_workouts', 'completed_sets']
+    if table_name not in allowed_tables:
+        return jsonify({'success': False, 'error': 'Invalid table'}), 400
+    
+    try:
+        with database.get_db() as conn:
+            cursor = conn.cursor()
+            placeholders = ','.join(['?'] * len(ids))
+            cursor.execute(f'DELETE FROM {table_name} WHERE id IN ({placeholders})', ids)
+            conn.commit()
+            return jsonify({'success': True})
+    except Exception as e:
+        print(f"Ошибка при массовом удалении: {e}")
+        return jsonify({'success': False, 'error': str(e)})
 
+# API для добавления строки
+@app.route('/api/add_row/<table_name>', methods=['POST'])
+def add_row(table_name):
+    if 'user_id' not in session or not session.get('is_admin'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    data = request.get_json()
+    
+    allowed_tables = ['users', 'workouts', 'exercises', 'completed_workouts', 'completed_sets']
+    if table_name not in allowed_tables:
+        return jsonify({'success': False, 'error': 'Invalid table'}), 400
+    
+    try:
+        with database.get_db() as conn:
+            cursor = conn.cursor()
+            
+            columns = ','.join(data.keys())
+            placeholders = ','.join(['?'] * len(data))
+            values = list(data.values())
+            
+            cursor.execute(f'INSERT INTO {table_name} ({columns}) VALUES ({placeholders})', values)
+            conn.commit()
+            return jsonify({'success': True, 'id': cursor.lastrowid})
+    except Exception as e:
+        print(f"Ошибка при добавлении строки: {e}")
+        return jsonify({'success': False, 'error': str(e)})
 
+# API для обновления строки
+@app.route('/api/update_row/<table_name>/<int:row_id>', methods=['POST'])
+def update_row(table_name, row_id):
+    if 'user_id' not in session or not session.get('is_admin'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    data = request.get_json()
+    
+    allowed_tables = ['users', 'workouts', 'exercises', 'completed_workouts', 'completed_sets']
+    if table_name not in allowed_tables:
+        return jsonify({'success': False, 'error': 'Invalid table'}), 400
+    
+    try:
+        with database.get_db() as conn:
+            cursor = conn.cursor()
+            
+            set_clause = ','.join([f"{k} = ?" for k in data.keys() if k != 'id'])
+            values = [v for k, v in data.items() if k != 'id']
+            values.append(row_id)
+            
+            cursor.execute(f'UPDATE {table_name} SET {set_clause} WHERE id = ?', values)
+            conn.commit()
+            return jsonify({'success': True})
+    except Exception as e:
+        print(f"Ошибка при обновлении строки: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+#endregion
 
 
 

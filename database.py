@@ -201,6 +201,8 @@ def get_user_stats():
             'recent_workouts': recent_workouts
         }
 
+
+
 # Функции для работы с тренировками (обычные пользователи)
 def add_workout(user_id, date, exercise, sets, reps, weight):
     with get_db() as conn:
@@ -843,7 +845,7 @@ def get_recent_workouts(user_id, limit=10):
         return []   
 
 def get_admin_stats():
-    """Получить общую статистику для админ-панели"""
+    """Получить расширенную статистику для админ-панели"""
     try:
         with get_db() as conn:
             cursor = conn.cursor()
@@ -856,7 +858,7 @@ def get_admin_stats():
             cursor.execute('SELECT COUNT(*) as count FROM users WHERE is_admin = 1')
             total_admins = cursor.fetchone()['count']
             
-            # Общее количество тренировок
+            # Общее количество тренировок (workout_sessions)
             cursor.execute('SELECT COUNT(*) as count FROM workout_sessions')
             total_workouts = cursor.fetchone()['count']
             
@@ -864,11 +866,59 @@ def get_admin_stats():
             cursor.execute('SELECT COUNT(*) as count FROM exercises')
             total_exercises = cursor.fetchone()['count']
             
+            # Общее количество часов тренировок (из completed_workouts)
+            cursor.execute('SELECT SUM(duration) as total FROM completed_workouts')
+            total_seconds = cursor.fetchone()['total'] or 0
+            total_hours = round(total_seconds / 3600, 1)
+            
+            # Активные сегодня (пользователи, которые тренировались сегодня или вчера)
+            from datetime import datetime, timedelta
+            today = datetime.now().strftime('%Y-%m-%d')
+            yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+            
+            cursor.execute('''
+                SELECT COUNT(DISTINCT user_id) as count 
+                FROM completed_workouts 
+                WHERE date = ? OR date = ?
+            ''', (today, yesterday))
+            active_today = cursor.fetchone()['count']
+            
+            # Процент роста пользователей за месяц
+            month_ago = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d %H:%M:%S')
+            cursor.execute('''
+                SELECT COUNT(*) as count FROM users 
+                WHERE created_at >= ?
+            ''', (month_ago,))
+            new_users_month = cursor.fetchone()['count']
+            user_growth = round((new_users_month / max(total_users, 1)) * 100) if total_users > 0 else 0
+            
+            # Процент роста тренировок за неделю
+            week_ago = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+            cursor.execute('''
+                SELECT COUNT(*) as count FROM completed_workouts 
+                WHERE date >= ?
+            ''', (week_ago,))
+            new_workouts_week = cursor.fetchone()['count']
+            workout_growth = round((new_workouts_week / max(total_workouts, 1)) * 100) if total_workouts > 0 else 0
+            
+            # Новые упражнения
+            cursor.execute('''
+                SELECT COUNT(*) as count FROM exercises 
+                WHERE created_at >= ?
+            ''', (week_ago,))
+            new_exercises = cursor.fetchone()['count']
+            
             return {
                 'total_users': total_users,
                 'total_admins': total_admins,
                 'total_workouts': total_workouts,
-                'total_exercises': total_exercises
+                'total_exercises': total_exercises,
+                'total_hours': total_hours,
+                'active_today': active_today,
+                'user_growth': user_growth,
+                'workout_growth': workout_growth,
+                'new_exercises': new_exercises,
+                'new_workouts_week': new_workouts_week
             }
     except Exception as e:
         print(f"Ошибка при получении админ-статистики: {e}")
@@ -876,5 +926,100 @@ def get_admin_stats():
             'total_users': 0,
             'total_admins': 0,
             'total_workouts': 0,
-            'total_exercises': 0
+            'total_exercises': 0,
+            'total_hours': 0,
+            'active_today': 0,
+            'user_growth': 0,
+            'workout_growth': 0,
+            'new_exercises': 0,
+            'new_workouts_week': 0
         }
+
+def get_users_chart_data():
+    """Получить данные для графика новых пользователей за последние 7 дней"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            
+            from datetime import datetime, timedelta
+            dates = []
+            users_data = []
+            
+            for i in range(6, -1, -1):
+                date = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
+                next_date = (datetime.now() - timedelta(days=i-1)).strftime('%Y-%m-%d')
+                
+                cursor.execute('''
+                    SELECT COUNT(*) as count FROM users 
+                    WHERE date(created_at) >= ? AND date(created_at) < ?
+                ''', (date, next_date))
+                
+                count = cursor.fetchone()['count']
+                dates.append(date[-5:])  # Берем только день-месяц
+                users_data.append(count)
+            
+            return {
+                'labels': dates,
+                'data': users_data
+            }
+    except Exception as e:
+        print(f"Ошибка при получении данных графика пользователей: {e}")
+        return {'labels': [], 'data': []}
+
+def get_workouts_chart_data():
+    """Получить данные для графика тренировок за последние 7 дней"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            
+            from datetime import datetime, timedelta
+            dates = []
+            workouts_data = []
+            
+            for i in range(6, -1, -1):
+                date = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
+                
+                cursor.execute('''
+                    SELECT COUNT(*) as count FROM completed_workouts 
+                    WHERE date = ?
+                ''', (date,))
+                
+                count = cursor.fetchone()['count']
+                dates.append(date[-5:])  # Берем только день-месяц
+                workouts_data.append(count)
+            
+            return {
+                'labels': dates,
+                'data': workouts_data
+            }
+    except Exception as e:
+        print(f"Ошибка при получении данных графика тренировок: {e}")
+        return {'labels': [], 'data': []}
+    """Получить данные для графика тренировок за последние 7 дней"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            
+            from datetime import datetime, timedelta
+            dates = []
+            workouts_data = []
+            
+            for i in range(6, -1, -1):
+                date = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
+                
+                cursor.execute('''
+                    SELECT COUNT(*) as count FROM completed_workouts 
+                    WHERE date = ?
+                ''', (date,))
+                
+                count = cursor.fetchone()['count']
+                dates.append(date[-5:])  # Берем только день-месяц
+                workouts_data.append(count)
+            
+            return {
+                'labels': dates,
+                'data': workouts_data
+            }
+    except Exception as e:
+        print(f"Ошибка при получении данных графика тренировок: {e}")
+        return {'labels': [], 'data': []}

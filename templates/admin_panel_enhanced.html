@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Админ-панель</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #9ca3af;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+
+        .content-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header h1 i {
+            margin-right: 10px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-gray {
+            background: var(--gray);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+        }
+
+        .btn:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+
+        /* Расширенная статистика */
+        .stats-grid-enhanced {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card-large {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s;
+            border-left: 5px solid var(--primary);
+        }
+
+        .stat-card-large:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.2);
+        }
+
+        .stat-icon-large {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-icon-large i {
+            font-size: 2.2em;
+            color: white;
+        }
+
+        .stat-content-large h3 {
+            color: var(--gray);
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .stat-number-large {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--dark);
+            line-height: 1;
+        }
+
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+
+        .stat-trend.up {
+            color: var(--success);
+        }
+
+        .stat-trend.down {
+            color: var(--danger);
+        }
+
+        /* Графики */
+        .charts-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+
+        .chart-card h3 {
+            color: var(--dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-card h3 i {
+            color: var(--primary);
+        }
+
+        .chart-wrapper {
+            height: 250px;
+            position: relative;
+        }
+
+        /* Кнопка управления таблицами */
+        .table-manager-btn {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+
+        /* Таблица (старый вид) */
+        .table-container {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+            color: var(--dark);
+        }
+
+        tr:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .password-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .password-hidden {
+            color: var(--gray);
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+
+        .password-visible {
+            color: var(--primary);
+            font-family: monospace;
+            font-weight: 600;
+        }
+
+        .password-toggle {
+            color: var(--gray);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary);
+        }
+
+        .role-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .role-badge.admin {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .role-badge.user {
+            background: #f3f4f6;
+            color: var(--dark);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .action-btn {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .action-btn.view {
+            background: var(--primary);
+        }
+
+        .action-btn.admin {
+            background: var(--success);
+        }
+
+        .action-btn.admin-remove {
+            background: var(--warning);
+            color: var(--dark);
+        }
+
+        .action-btn.delete {
+            background: var(--danger);
+        }
+
+        .action-btn:hover {
+            filter: brightness(1.1);
+        }
+
+        .show-all-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--light);
+            border: 2px dashed var(--gray);
+            border-radius: 15px;
+            color: var(--dark);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .show-all-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .hidden-row {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 60px 20px 20px;
+            }
+            
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid-enhanced {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% include 'sidebar.html' %}
+    
+    <div class="main-content" id="mainContent">
+        <div class="content-container">
+            <div class="header">
+                <h1><i class="fas fa-crown"></i> Админ-панель</h1>
+                <div class="header-actions">
+                    <a href="{{ url_for('exercises_library') }}" class="btn btn-success">
+                        <i class="fas fa-dumbbell"></i> Упражнения
+                    </a>
+                    <a href="{{ url_for('my_workouts') }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left"></i> На главную
+                    </a>
+                </div>
+            </div>
+
+           <!-- Расширенная статистика -->
+<div class="stats-grid-enhanced">
+    <div class="stat-card-large">
+        <div class="stat-icon-large">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-content-large">
+            <h3>Всего пользователей</h3>
+            <div class="stat-number-large">{{ stats.total_users }}</div>
+            <div class="stat-trend up">
+                <i class="fas fa-arrow-up"></i> +{{ stats.user_growth }}% за месяц
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card-large">
+        <div class="stat-icon-large">
+            <i class="fas fa-crown"></i>
+        </div>
+        <div class="stat-content-large">
+            <h3>Администраторов</h3>
+            <div class="stat-number-large">{{ stats.total_admins }}</div>
+            <div class="stat-trend">
+                <i class="fas fa-minus"></i> без изменений
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card-large">
+        <div class="stat-icon-large">
+            <i class="fas fa-dumbbell"></i>
+        </div>
+        <div class="stat-content-large">
+            <h3>Всего тренировок</h3>
+            <div class="stat-number-large">{{ stats.total_workouts }}</div>
+            <div class="stat-trend up">
+                <i class="fas fa-arrow-up"></i> +{{ stats.workout_growth }}% за неделю
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card-large">
+        <div class="stat-icon-large">
+            <i class="fas fa-book"></i>
+        </div>
+        <div class="stat-content-large">
+            <h3>Упражнений в библиотеке</h3>
+            <div class="stat-number-large">{{ stats.total_exercises }}</div>
+            <div class="stat-trend up">
+                <i class="fas fa-arrow-up"></i> +{{ stats.new_exercises }} новых
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card-large">
+        <div class="stat-icon-large">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-content-large">
+            <h3>Часов тренировок</h3>
+            <div class="stat-number-large">{{ stats.total_hours }}</div>
+            <div class="stat-trend up">
+                <i class="fas fa-arrow-up"></i> +{{ stats.new_workouts_week }} за неделю
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card-large">
+        <div class="stat-icon-large">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="stat-content-large">
+            <h3>Активных сегодня</h3>
+            <div class="stat-number-large">{{ stats.active_today }}</div>
+            <div class="stat-trend up">
+                <i class="fas fa-arrow-up"></i> пик активности
+            </div>
+        </div>
+    </div>
+</div>
+
+            <!-- Графики с реальными данными -->
+            <div class="charts-row">
+                <div class="chart-card">
+                    <h3><i class="fas fa-user-plus"></i> Новые пользователи за неделю</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="usersChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3><i class="fas fa-dumbbell"></i> Тренировки за неделю</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="workoutsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кнопка управления таблицами -->
+            <div class="table-manager-btn">
+                <a href="{{ url_for('table_manager') }}" class="btn btn-primary">
+                    <i class="fas fa-database"></i> Управление таблицами
+                </a>
+            </div>
+
+            <!-- Поиск -->
+            <div style="margin: 20px 0;">
+                <input type="text" id="searchInput" placeholder="🔍 Поиск по имени или ID..." 
+                       style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 12px;">
+            </div>
+
+            <!-- Таблица пользователей (старый вид) -->
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Пользователь</th>
+                            <th>Пароль</th>
+                            <th>Роль</th>
+                            <th>Дата регистрации</th>
+                            <th>Тренировок</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        {% for user in users %}
+                        <tr class="user-row {% if loop.index > 5 %}hidden-row{% endif %}" 
+                            data-username="{{ user.username|lower }}"
+                            data-id="{{ user.id }}">
+                            <td><strong>#{{ user.id }}</strong></td>
+                            <td>
+                                <i class="fas fa-user-circle" style="color: var(--primary);"></i>
+                                {{ user.username }}
+                            </td>
+                            <td class="password-cell">
+                                <span class="password-hidden" id="password-{{ user.id }}">••••••••</span>
+                                <span class="password-visible" id="password-visible-{{ user.id }}" style="display: none;">
+                                    {{ user.password }}
+                                </span>
+                                <i class="fas fa-eye password-toggle" onclick="togglePassword({{ user.id }})"></i>
+                            </td>
+                            <td>
+                                {% if user.is_admin %}
+                                    <span class="role-badge admin">
+                                        <i class="fas fa-crown"></i> Админ
+                                    </span>
+                                {% else %}
+                                    <span class="role-badge user">
+                                        <i class="fas fa-user"></i> Пользователь
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.created_at }}</td>
+                            <td>{{ user.workouts_count or 0 }}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{{ url_for('admin_user_details', user_id=user.id) }}" 
+                                       class="action-btn view" title="Просмотр профиля">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    
+                                    {% if user.id != session.user_id %}
+                                        {% if user.is_admin %}
+                                            <a href="{{ url_for('toggle_admin', user_id=user.id) }}" 
+                                               class="action-btn admin-remove" 
+                                               title="Забрать права администратора">
+                                                <i class="fas fa-crown"></i>
+                                            </a>
+                                        {% else %}
+                                            <a href="{{ url_for('toggle_admin', user_id=user.id) }}" 
+                                               class="action-btn admin" 
+                                               title="Сделать администратором">
+                                                <i class="fas fa-crown"></i>
+                                            </a>
+                                        {% endif %}
+                                        
+                                        <a href="#" class="action-btn delete" 
+                                           onclick="deleteUser({{ user.id }})" title="Удалить">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Кнопка "Показать всех" -->
+            {% if users|length > 5 %}
+            <button class="show-all-btn" onclick="toggleAllUsers()" id="showAllBtn">
+                <i class="fas fa-chevron-down"></i> 
+                Показать всех пользователей ({{ users|length - 5 }} скрыто)
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    {% include 'active_workout_banner.html' %}
+
+    <script>
+        // ========== ГРАФИКИ ==========
+       
+    // Графики с реальными данными
+    document.addEventListener('DOMContentLoaded', function() {
+        // График пользователей
+        const usersCtx = document.getElementById('usersChart').getContext('2d');
+        new Chart(usersCtx, {
+            type: 'line',
+            data: {
+                labels: {{ users_chart.labels|tojson }},
+                datasets: [{
+                    label: 'Новые пользователи',
+                    data: {{ users_chart.data|tojson }},
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.raw} новых пользователей`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            callback: function(value) {
+                                return value + ' чел';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // График тренировок
+        const workoutsCtx = document.getElementById('workoutsChart').getContext('2d');
+        new Chart(workoutsCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ workouts_chart.labels|tojson }},
+                datasets: [{
+                    label: 'Тренировки',
+                    data: {{ workouts_chart.data|tojson }},
+                    backgroundColor: '#10b981',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.raw} тренировок`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            callback: function(value) {
+                                return value + ' трен';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+
+
+        // ========== ПОИСК ==========
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            const searchText = this.value.toLowerCase();
+            const rows = document.querySelectorAll('.user-row');
+            
+            rows.forEach(row => {
+                const username = row.getAttribute('data-username');
+                const id = row.getAttribute('data-id');
+                
+                if (username.includes(searchText) || id.includes(searchText)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        // ========== ПОКАЗ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ ==========
+        let showingAll = false;
+
+        function toggleAllUsers() {
+            const rows = document.querySelectorAll('.user-row');
+            const btn = document.getElementById('showAllBtn');
+            
+            showingAll = !showingAll;
+            
+            rows.forEach((row, index) => {
+                if (index >= 5) {
+                    if (showingAll) {
+                        row.classList.remove('hidden-row');
+                    } else {
+                        row.classList.add('hidden-row');
+                    }
+                }
+            });
+            
+            if (showingAll) {
+                btn.innerHTML = '<i class="fas fa-chevron-up"></i> Скрыть лишних';
+            } else {
+                const hiddenCount = rows.length - 5;
+                btn.innerHTML = `<i class="fas fa-chevron-down"></i> Показать всех пользователей (${hiddenCount} скрыто)`;
+            }
+        }
+
+        // ========== ПОКАЗ ПАРОЛЯ ==========
+        function togglePassword(id) {
+            const hidden = document.getElementById(`password-${id}`);
+            const visible = document.getElementById(`password-visible-${id}`);
+            const icon = event.target;
+            
+            if (hidden.style.display === 'none') {
+                hidden.style.display = 'inline';
+                visible.style.display = 'none';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            } else {
+                hidden.style.display = 'none';
+                visible.style.display = 'inline';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            }
+        }
+
+        // ========== УДАЛЕНИЕ ПОЛЬЗОВАТЕЛЯ ==========
+        function deleteUser(id) {
+            if (confirm('Удалить пользователя?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/delete_user/${id}`;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // ========== СОСТОЯНИЕ САЙДБАРА ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            const mainContent = document.getElementById('mainContent');
+            const savedState = localStorage.getItem('sidebar_collapsed');
+            
+            if (savedState === 'true') {
+                mainContent.classList.add('expanded');
+            }
+        });
+    </script>
+</body>
+</html>

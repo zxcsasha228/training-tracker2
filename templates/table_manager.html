@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Управление таблицами</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #9ca3af;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-gray {
+            background: var(--gray);
+            color: white;
+        }
+
+        .btn:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+
+        /* Панель управления */
+        .control-panel {
+            background: #f9fafb;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            border: 2px solid #e5e7eb;
+        }
+
+        .table-selector {
+            flex: 2;
+            min-width: 250px;
+        }
+
+        .table-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1em;
+            background: white;
+        }
+
+        .action-group {
+            flex: 3;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .search-box {
+            flex: 2;
+            min-width: 250px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1em;
+        }
+
+        /* Статистика таблицы */
+        .table-stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+        }
+
+        .stat-item .label {
+            color: var(--gray);
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .stat-item .value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* Таблица */
+        .table-wrapper {
+            background: white;
+            border-radius: 16px;
+            overflow: auto;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            max-height: 500px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e5e7eb;
+            color: var(--dark);
+        }
+
+        .data-table tr:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .data-table tr.selected {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        /* Чекбоксы */
+        .checkbox-cell {
+            width: 40px;
+            text-align: center;
+        }
+
+        .row-checkbox, .select-all {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        /* Ячейки с данными */
+        .editable-cell {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .editable-cell:hover {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .editable-cell.editing {
+            padding: 0;
+        }
+
+        .editable-cell input, .editable-cell select {
+            width: 100%;
+            height: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            font-size: 1em;
+            background: white;
+        }
+
+        /* Панель массовых действий */
+        .bulk-actions {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .bulk-actions select {
+            padding: 8px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            min-width: 200px;
+        }
+
+        .selection-info {
+            color: var(--gray);
+            font-size: 0.95em;
+        }
+
+        .selection-info span {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* Пагинация */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .page-btn {
+            padding: 8px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .page-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .page-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-color: transparent;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow: auto;
+            padding: 30px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: var(--dark);
+        }
+
+        .close-btn {
+            font-size: 1.5em;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1em;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 60px 20px 20px;
+            }
+            
+            .control-panel {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% include 'sidebar.html' %}
+    
+    <div class="main-content" id="mainContent">
+        <div class="container">
+            <div class="header">
+                <h1><i class="fas fa-database"></i> Управление таблицами</h1>
+                <div>
+                    <a href="{{ url_for('admin_panel') }}" class="btn btn-gray">
+                        <i class="fas fa-arrow-left"></i> Назад в админку
+                    </a>
+                </div>
+            </div>
+
+            <!-- Панель управления -->
+            <div class="control-panel">
+                <div class="table-selector">
+                    <select id="tableSelect" onchange="changeTable()">
+                        <option value="users">👥 Пользователи</option>
+                        <option value="workouts">🏋️ Тренировки</option>
+                        <option value="exercises">📚 Упражнения</option>
+                        <option value="completed_workouts">📊 Завершённые тренировки</option>
+                        <option value="completed_sets">📝 Выполненные подходы</option>
+                    </select>
+                </div>
+                
+                <div class="action-group">
+                    <button class="btn btn-success" onclick="openAddModal()">
+                        <i class="fas fa-plus"></i> Добавить
+                    </button>
+                    <button class="btn btn-primary" onclick="refreshTable()">
+                        <i class="fas fa-sync-alt"></i> Обновить
+                    </button>
+                    <button class="btn btn-danger" onclick="deleteSelected()">
+                        <i class="fas fa-trash"></i> Удалить
+                    </button>
+                </div>
+                
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 Поиск..." onkeyup="searchTable()">
+                </div>
+            </div>
+
+            <!-- Статистика таблицы -->
+            <div class="table-stats-bar" id="tableStats">
+                <div class="stat-item">
+                    <div class="label">Всего записей</div>
+                    <div class="value" id="totalRecords">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">На странице</div>
+                    <div class="value" id="pageRecords">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">Выбрано</div>
+                    <div class="value" id="selectedRecords">0</div>
+                </div>
+            </div>
+
+            <!-- Массовые действия -->
+            <div class="bulk-actions" id="bulkActions" style="display: none;">
+                <div class="selection-info">
+                    Выбрано: <span id="selectedCount">0</span> записей
+                </div>
+                <select id="bulkAction">
+                    <option value="delete">Удалить выбранные</option>
+                    <option value="export">Экспортировать</option>
+                    <option value="duplicate">Дублировать</option>
+                </select>
+                <button class="btn btn-primary" onclick="executeBulkAction()">Применить</button>
+                <button class="btn btn-gray" onclick="clearSelection()">Отмена</button>
+            </div>
+
+            <!-- Таблица данных -->
+            <div class="table-wrapper">
+                <table class="data-table" id="dataTable">
+                    <thead id="tableHeader">
+                        <!-- Заголовки будут загружаться динамически -->
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Данные будут загружаться динамически -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Пагинация -->
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </div>
+
+    <!-- Модальное окно добавления/редактирования -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Добавить запись</h2>
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="modalForm">
+                <!-- Форма будет загружаться динамически -->
+            </div>
+        </div>
+    </div>
+
+    {% include 'active_workout_banner.html' %}
+
+    <script>
+        let currentTable = 'users';
+        let currentPage = 1;
+        let pageSize = 10;
+        let totalPages = 1;
+        let allData = [];
+        let filteredData = [];
+        let selectedRows = new Set();
+        let editingCell = null;
+
+        // Загрузка данных при старте
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTableData();
+            
+            // Состояние сайдбара
+            const mainContent = document.getElementById('mainContent');
+            const savedState = localStorage.getItem('sidebar_collapsed');
+            if (savedState === 'true') {
+                mainContent.classList.add('expanded');
+            }
+        });
+
+        // Смена таблицы
+        function changeTable() {
+            currentTable = document.getElementById('tableSelect').value;
+            currentPage = 1;
+            selectedRows.clear();
+            loadTableData();
+        }
+
+        // Загрузка данных из базы
+        function loadTableData() {
+            fetch(`/api/table_data/${currentTable}`)
+                .then(response => response.json())
+                .then(data => {
+                    allData = data;
+                    filterData();
+                    renderTable();
+                    updateStats();
+                })
+                .catch(error => console.error('Ошибка загрузки:', error));
+        }
+
+        // Фильтрация данных
+        function filterData() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (!searchTerm) {
+                filteredData = allData;
+            } else {
+                filteredData = allData.filter(row => {
+                    return Object.values(row).some(value => 
+                        String(value).toLowerCase().includes(searchTerm)
+                    );
+                });
+            }
+            
+            totalPages = Math.ceil(filteredData.length / pageSize);
+            renderPagination();
+        }
+
+        // Поиск
+        function searchTable() {
+            filterData();
+            renderTable();
+        }
+
+        // Отрисовка таблицы
+        function renderTable() {
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pageData = filteredData.slice(start, end);
+            
+            renderHeader();
+            renderBody(pageData);
+            updateStats();
+        }
+
+        // Отрисовка заголовков
+        function renderHeader() {
+            const header = document.getElementById('tableHeader');
+            
+            if (allData.length === 0) {
+                header.innerHTML = '<tr><th>Нет данных</th></tr>';
+                return;
+            }
+            
+            const columns = Object.keys(allData[0]);
+            let html = '<tr><th class="checkbox-cell"><input type="checkbox" class="select-all" onclick="toggleAll()"></th>';
+            
+            columns.forEach(col => {
+                html += `<th onclick="sortBy('${col}')">${col} <i class="fas fa-sort"></i></th>`;
+            });
+            
+            html += '<th>Действия</th></tr>';
+            header.innerHTML = html;
+        }
+
+        // Отрисовка тела таблицы
+        function renderBody(data) {
+            const tbody = document.getElementById('tableBody');
+            
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="100" style="text-align: center; padding: 50px;">Нет данных</td></tr>';
+                return;
+            }
+            
+            const columns = Object.keys(allData[0]);
+            let html = '';
+            
+            data.forEach((row, index) => {
+                const rowId = row.id || index;
+                const isSelected = selectedRows.has(rowId);
+                
+                html += `<tr data-id="${rowId}" class="${isSelected ? 'selected' : ''}">`;
+                html += `<td class="checkbox-cell"><input type="checkbox" class="row-checkbox" value="${rowId}" ${isSelected ? 'checked' : ''} onchange="toggleRow(this)"></td>`;
+                
+                columns.forEach(col => {
+                    const value = row[col] || '';
+                    html += `<td class="editable-cell" onclick="startEdit(this, '${col}', ${rowId})">${value}</td>`;
+                });
+                
+                html += `<td>
+                    <button class="btn btn-primary" style="padding: 5px 10px;" onclick="editRow(${rowId})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-danger" style="padding: 5px 10px;" onclick="deleteRow(${rowId})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>`;
+                
+                html += '</tr>';
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        // Начало редактирования ячейки
+        function startEdit(cell, column, rowId) {
+            if (editingCell) return;
+            
+            const value = cell.innerText;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = value;
+            input.style.width = '100%';
+            input.style.padding = '12px 15px';
+            input.style.border = '2px solid var(--primary)';
+            input.style.borderRadius = '8px';
+            
+            cell.innerHTML = '';
+            cell.appendChild(input);
+            cell.classList.add('editing');
+            input.focus();
+            
+            editingCell = { cell, column, rowId, originalValue: value };
+            
+            input.onblur = () => saveEdit(input.value);
+            input.onkeypress = (e) => {
+                if (e.key === 'Enter') saveEdit(input.value);
+                if (e.key === 'Escape') cancelEdit();
+            };
+        }
+
+        // Сохранение редактирования
+        function saveEdit(newValue) {
+            if (!editingCell) return;
+            
+            const { column, rowId, originalValue } = editingCell;
+            
+            if (newValue !== originalValue) {
+                // Отправляем на сервер
+                fetch(`/api/update_cell/${currentTable}/${rowId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        column: column,
+                        value: newValue
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        editingCell.cell.innerHTML = newValue;
+                        loadTableData(); // Обновляем данные
+                    } else {
+                        alert('Ошибка сохранения');
+                        editingCell.cell.innerHTML = originalValue;
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    editingCell.cell.innerHTML = originalValue;
+                });
+            } else {
+                editingCell.cell.innerHTML = originalValue;
+            }
+            
+            editingCell.cell.classList.remove('editing');
+            editingCell = null;
+        }
+
+        // Отмена редактирования
+        function cancelEdit() {
+            if (editingCell) {
+                editingCell.cell.innerHTML = editingCell.originalValue;
+                editingCell.cell.classList.remove('editing');
+                editingCell = null;
+            }
+        }
+
+        // Сортировка
+        let sortColumn = null;
+        let sortDirection = 'asc';
+
+        function sortBy(column) {
+            if (sortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = column;
+                sortDirection = 'asc';
+            }
+            
+            filteredData.sort((a, b) => {
+                let aVal = a[column];
+                let bVal = b[column];
+                
+                if (typeof aVal === 'number') {
+                    return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+                } else {
+                    aVal = String(aVal).toLowerCase();
+                    bVal = String(bVal).toLowerCase();
+                    return sortDirection === 'asc' ? 
+                        aVal.localeCompare(bVal) : 
+                        bVal.localeCompare(aVal);
+                }
+            });
+            
+            renderTable();
+        }
+
+        // Выделение строк
+        function toggleRow(checkbox) {
+            const rowId = checkbox.value;
+            
+            if (checkbox.checked) {
+                selectedRows.add(rowId);
+            } else {
+                selectedRows.delete(rowId);
+            }
+            
+            updateSelection();
+        }
+
+        function toggleAll() {
+            const checkAll = document.querySelector('.select-all').checked;
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            
+            checkboxes.forEach(cb => {
+                cb.checked = checkAll;
+                const rowId = cb.value;
+                
+                if (checkAll) {
+                    selectedRows.add(rowId);
+                } else {
+                    selectedRows.delete(rowId);
+                }
+            });
+            
+            updateSelection();
+        }
+
+        function updateSelection() {
+            document.querySelectorAll('tr').forEach(tr => {
+                const checkbox = tr.querySelector('.row-checkbox');
+                if (checkbox) {
+                    const rowId = checkbox.value;
+                    if (selectedRows.has(rowId)) {
+                        tr.classList.add('selected');
+                    } else {
+                        tr.classList.remove('selected');
+                    }
+                }
+            });
+            
+            const selectedCount = selectedRows.size;
+            document.getElementById('selectedRecords').textContent = selectedCount;
+            
+            const bulkDiv = document.getElementById('bulkActions');
+            if (selectedCount > 0) {
+                bulkDiv.style.display = 'flex';
+                document.getElementById('selectedCount').textContent = selectedCount;
+            } else {
+                bulkDiv.style.display = 'none';
+            }
+        }
+
+        function clearSelection() {
+            selectedRows.clear();
+            document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+            document.querySelector('.select-all').checked = false;
+            updateSelection();
+        }
+
+        // Массовые действия
+        function executeBulkAction() {
+            const action = document.getElementById('bulkAction').value;
+            
+            if (selectedRows.size === 0) {
+                alert('Выберите записи');
+                return;
+            }
+            
+            const ids = Array.from(selectedRows);
+            
+            if (action === 'delete') {
+                if (confirm(`Удалить ${ids.length} записей?`)) {
+                    fetch(`/api/bulk_delete/${currentTable}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ ids: ids })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            selectedRows.clear();
+                            loadTableData();
+                        } else {
+                            alert('Ошибка удаления');
+                        }
+                    });
+                }
+            } else if (action === 'export') {
+                const selectedData = allData.filter(row => ids.includes(String(row.id)));
+                const blob = new Blob([JSON.stringify(selectedData, null, 2)], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${currentTable}_export.json`;
+                a.click();
+            } else if (action === 'duplicate') {
+                // Дублирование записей
+                alert('Дублирование записей (в разработке)');
+            }
+        }
+
+        // Удаление одной записи
+        function deleteRow(id) {
+            if (confirm('Удалить запись?')) {
+                fetch(`/api/delete_row/${currentTable}/${id}`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        loadTableData();
+                    } else {
+                        alert('Ошибка удаления');
+                    }
+                });
+            }
+        }
+
+        // Редактирование строки
+        function editRow(id) {
+            const rowData = allData.find(row => row.id == id);
+            if (!rowData) return;
+            
+            openEditModal(rowData);
+        }
+
+        // Модальное окно добавления
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = 'Добавить запись';
+            
+            const columns = allData.length > 0 ? Object.keys(allData[0]) : [];
+            let formHtml = '';
+            
+            columns.forEach(col => {
+                if (col !== 'id') {
+                    formHtml += `
+                        <div class="form-group">
+                            <label>${col}</label>
+                            <input type="text" name="${col}" placeholder="Введите ${col}">
+                        </div>
+                    `;
+                }
+            });
+            
+            formHtml += `
+                <div class="modal-actions">
+                    <button class="btn btn-success" onclick="saveNewRecord()">Сохранить</button>
+                    <button class="btn btn-gray" onclick="closeModal()">Отмена</button>
+                </div>
+            `;
+            
+            document.getElementById('modalForm').innerHTML = formHtml;
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        // Сохранение новой записи
+        function saveNewRecord() {
+            const form = document.getElementById('modalForm');
+            const inputs = form.querySelectorAll('input');
+            const data = {};
+            
+            inputs.forEach(input => {
+                data[input.name] = input.value;
+            });
+            
+            fetch(`/api/add_row/${currentTable}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    closeModal();
+                    loadTableData();
+                } else {
+                    alert('Ошибка добавления');
+                }
+            });
+        }
+
+        // Открытие модального окна редактирования
+        function openEditModal(rowData) {
+            document.getElementById('modalTitle').textContent = 'Редактировать запись';
+            
+            let formHtml = '';
+            for (let [key, value] of Object.entries(rowData)) {
+                formHtml += `
+                    <div class="form-group">
+                        <label>${key}</label>
+                        <input type="text" name="${key}" value="${value || ''}">
+                    </div>
+                `;
+            }
+            
+            formHtml += `
+                <div class="modal-actions">
+                    <button class="btn btn-success" onclick="updateRecord()">Обновить</button>
+                    <button class="btn btn-gray" onclick="closeModal()">Отмена</button>
+                </div>
+            `;
+            
+            document.getElementById('modalForm').innerHTML = formHtml;
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        // Обновление записи
+        function updateRecord() {
+            const form = document.getElementById('modalForm');
+            const inputs = form.querySelectorAll('input');
+            const data = {};
+            
+            inputs.forEach(input => {
+                data[input.name] = input.value;
+            });
+            
+            fetch(`/api/update_row/${currentTable}/${data.id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    closeModal();
+                    loadTableData();
+                } else {
+                    alert('Ошибка обновления');
+                }
+            });
+        }
+
+        // Закрытие модального окна
+        function closeModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+
+        // Обновление статистики
+        function updateStats() {
+            document.getElementById('totalRecords').textContent = allData.length;
+            document.getElementById('pageRecords').textContent = filteredData.length;
+            document.getElementById('selectedRecords').textContent = selectedRows.size;
+        }
+
+        // Пагинация
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            let html = '';
+            
+            html += `<button class="page-btn" onclick="changePage(1)" ${currentPage === 1 ? 'disabled' : ''}>«</button>`;
+            html += `<button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹</button>`;
+            
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage || 
+                    (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+                }
+            }
+            
+            html += `<button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>›</button>`;
+            html += `<button class="page-btn" onclick="changePage(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''}>»</button>`;
+            
+            pagination.innerHTML = html;
+        }
+
+        function changePage(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            renderTable();
+        }
+
+        // Обновление таблицы
+        function refreshTable() {
+            loadTableData();
+        }
+    </script>
+</body>
+</html>
