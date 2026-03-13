@@ -305,21 +305,8 @@ def init_exercises_table():
             if count == 0:
                 # Добавляем базовые упражнения
                 base_exercises = [
-                    ('Жим штанги лежа', None, 'Грудные'),
-                    ('Приседания со штангой', None, 'Ноги'),
-                    ('Становая тяга', None, 'Спина'),
-                    ('Подтягивания', None, 'Спина'),
-                    ('Отжимания на брусьях', None, 'Грудные'),
-                    ('Жим гантелей сидя', None, 'Плечи'),
-                    ('Тяга штанги в наклоне', None, 'Спина'),
-                    ('Сгибание рук со штангой', None, 'Бицепс'),
-                    ('Французский жим', None, 'Трицепс'),
-                    ('Выпады с гантелями', None, 'Ноги'),
-                    ('Скручивания', None, 'Пресс'),
-                    ('Молотки с гантелями', None, 'Бицепс'),
-                    ('Разгибание рук на блоке', None, 'Трицепс'),
-                    ('Махи гантелями в стороны', None, 'Плечи'),
-                    ('Тяга верхнего блока', None, 'Спина')
+                    ('Жим штанги лежа', None, 'Грудные')
+                   
                 ]
                 
                 for ex in base_exercises:
@@ -347,13 +334,24 @@ def get_all_exercises():
     except Exception as e:
         print(f"Ошибка при получении упражнений: {e}")
         return []
+
 def get_exercise(exercise_id):
     """Получить упражнение по ID"""
     try:
         with get_db() as conn:
             cursor = conn.cursor()
             cursor.execute('SELECT * FROM exercises WHERE id = ?', (exercise_id,))
-            return cursor.fetchone()
+            exercise = cursor.fetchone()
+            if exercise:
+                # Преобразуем в dict для удобства
+                result = dict(exercise)
+                # Проверяем путь к картинке
+                if result.get('image'):
+                    # Убеждаемся, что путь начинается с 'uploads/'
+                    if not result['image'].startswith('uploads/'):
+                        result['image'] = f"uploads/{result['image']}"
+                return result
+            return None
     except Exception as e:
         print(f"Ошибка при получении упражнения: {e}")
         return None

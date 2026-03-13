@@ -563,11 +563,12 @@
      data-exercise-id="{{ ex.id }}"
      data-exercise-lib-id="{{ ex.exercise_lib_id }}">
     <div class="exercise-header" onclick="toggleExercise({{ ex.id }})">
-        {% if ex.image %}
-            <img src="{{ url_for('static', filename=ex.image) }}" alt="{{ ex.name }}">
-        {% else %}
-            <i class="fas fa-dumbbell"></i>
-        {% endif %}
+        <!-- Картинка упражнения в активной тренировке -->
+{% if ex.image %}
+    <img src="/{{ ex.image }}" alt="{{ ex.name }}">
+{% else %}
+    <i class="fas fa-dumbbell"></i>
+{% endif %}
         <div class="exercise-header-info">
             <div class="exercise-name">{{ ex.name }}</div>
             <div class="exercise-muscle">{{ ex.muscle_group }}</div>

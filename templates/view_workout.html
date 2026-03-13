@@ -885,12 +885,12 @@
                     <i class="fas fa-check"></i>
                 </div>
                 <div class="exercise-image">
-                    {% if ex.image %}
-                        <img src="{{ url_for('static', filename=ex.image) }}" alt="{{ ex.name }}">
-                    {% else %}
-                        <i class="fas fa-dumbbell"></i>
-                    {% endif %}
-                </div>
+    {% if ex.image %}
+        <img src="/{{ ex.image }}" alt="{{ ex.name }}">
+    {% else %}
+        <i class="fas fa-dumbbell"></i>
+    {% endif %}
+</div>
                 <div class="exercise-content">
                     <div class="exercise-header">
                         <span class="exercise-name">{{ ex.name }}</span>

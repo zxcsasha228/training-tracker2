@@ -29,9 +29,9 @@ print(f"Static folder: {app.static_folder}")
 print(f"Static URL path: {app.static_url_path}")
 
 # Создаём нужные папки
-UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
+# Явно указываем папки для статических файлов
 STATIC_FOLDER = os.path.join(BASE_DIR, 'static')
-
+UPLOAD_FOLDER = os.path.join(STATIC_FOLDER, 'uploads')
 # Создаём папки если их нет
 try:
     if not os.path.exists(STATIC_FOLDER):
@@ -44,6 +44,9 @@ try:
 except Exception as e:
     print(f"Ошибка при создании папок: {e}")
 
+# Настраиваем Flask
+app.static_folder = STATIC_FOLDER
+app.static_url_path = '/static'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
 
@@ -57,6 +60,15 @@ def allowed_file(filename):
 def custom_static(filename):
     return send_from_directory(app.static_folder, filename)
 
+# Важно! Явный маршрут для раздачи статических файлов
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    return send_from_directory(STATIC_FOLDER, filename)
+
+# Маршрут для загруженных файлов
+@app.route('/uploads/<path:filename>')
+def serve_upload(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
 
 
 # Страница входа
@@ -288,7 +300,7 @@ def exercises_library():
                          muscle_groups=muscle_groups,
                          is_admin=session.get('is_admin', 0))
 
-# Добавление упражнения
+# Добавление упражнения (только админ)
 @app.route('/exercises/add', methods=['GET', 'POST'])
 def add_exercise():
     if 'user_id' not in session or not session.get('is_admin'):
@@ -303,15 +315,32 @@ def add_exercise():
                                  error='Заполните все обязательные поля',
                                  is_admin=session.get('is_admin', 0))
         
-        # Обработка изображения
-        image = None
+        # Обработка загруженного изображения
+        image_path = None
         if 'image' in request.files:
             file = request.files['image']
-            if file and file.filename:
-                # ... код сохранения ...
-                pass
+            if file and file.filename and allowed_file(file.filename):
+                try:
+                    # Создаём безопасное имя файла
+                    filename = secure_filename(file.filename)
+                    # Добавляем временную метку для уникальности
+                    import time
+                    filename = f"{int(time.time())}_{filename}"
+                    # Полный путь для сохранения
+                    full_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    # Сохраняем файл
+                    file.save(full_path)
+                    print(f"Файл сохранён: {full_path}")
+                    
+                    # Сохраняем ОТНОСИТЕЛЬНЫЙ путь для базы данных
+                    # Важно! Используем прямой путь без url_for
+                    image_path = f"uploads/{filename}"
+                    print(f"Сохранён путь в БД: {image_path}")
+                    
+                except Exception as e:
+                    print(f"Ошибка при сохранении файла: {e}")
         
-        success = database.add_exercise(name, image, muscle_group, session['user_id'])
+        success = database.add_exercise(name, image_path, muscle_group, session['user_id'])
         if success:
             return redirect(url_for('exercises_library'))
         else:
@@ -322,7 +351,7 @@ def add_exercise():
     return render_template('add_exercise.html',
                          is_admin=session.get('is_admin', 0))
 
-# Редактирование упражнения
+# Редактирование упражнения (только админ)
 @app.route('/exercises/edit/<int:exercise_id>', methods=['GET', 'POST'])
 def edit_exercise(exercise_id):
     if 'user_id' not in session or not session.get('is_admin'):
@@ -342,15 +371,37 @@ def edit_exercise(exercise_id):
                                  error='Заполните все обязательные поля',
                                  is_admin=session.get('is_admin', 0))
         
-        # Обработка изображения
-        image = exercise['image']
+        # Обработка нового изображения
+        image_path = exercise['image']  # оставляем старое по умолчанию
         if 'image' in request.files:
             file = request.files['image']
-            if file and file.filename:
-                # ... код сохранения ...
-                pass
+            if file and file.filename and allowed_file(file.filename):
+                try:
+                    # Создаём безопасное имя файла
+                    filename = secure_filename(file.filename)
+                    import time
+                    filename = f"{int(time.time())}_{filename}"
+                    full_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    file.save(full_path)
+                    print(f"Файл сохранён: {full_path}")
+                    
+                    # Сохраняем относительный путь
+                    image_path = f"uploads/{filename}"
+                    print(f"Сохранён путь в БД: {image_path}")
+                    
+                    # Удаляем старое изображение (опционально)
+                    if exercise['image']:
+                        old_path = os.path.join(BASE_DIR, 'static', exercise['image'])
+                        if os.path.exists(old_path):
+                            try:
+                                os.remove(old_path)
+                                print(f"Старое изображение удалено: {old_path}")
+                            except:
+                                pass
+                except Exception as e:
+                    print(f"Ошибка при сохранении файла: {e}")
         
-        database.update_exercise(exercise_id, name, image, muscle_group)
+        database.update_exercise(exercise_id, name, image_path, muscle_group)
         return redirect(url_for('exercises_library'))
     
     return render_template('edit_exercise.html', 
@@ -782,13 +833,17 @@ def chart_data():
         'workouts': database.get_workouts_chart_data()
     })
 
-# API для получения данных таблиц
+
+
+
+#region ========== API ДЛЯ УПРАВЛЕНИЯ ТАБЛИЦАМИ ==========
+# Получить данные таблицы
 @app.route('/api/table_data/<table_name>')
 def get_table_data(table_name):
     if 'user_id' not in session or not session.get('is_admin'):
         return jsonify({'error': 'Unauthorized'}), 401
     
-    allowed_tables = ['users', 'workouts', 'exercises', 'completed_workouts', 'completed_sets']
+    allowed_tables = ['users', 'workout_sessions', 'exercises', 'completed_workouts', 'completed_sets']
     if table_name not in allowed_tables:
         return jsonify({'error': 'Invalid table'}), 400
     
@@ -808,8 +863,7 @@ def get_table_data(table_name):
         print(f"Ошибка при получении данных таблицы {table_name}: {e}")
         return jsonify([])
 
-
-# API для обновления ячейки
+# Обновить ячейку
 @app.route('/api/update_cell/<table_name>/<int:row_id>', methods=['POST'])
 def update_cell(table_name, row_id):
     if 'user_id' not in session or not session.get('is_admin'):
@@ -819,7 +873,7 @@ def update_cell(table_name, row_id):
     column = data.get('column')
     value = data.get('value')
     
-    allowed_tables = ['users', 'workouts', 'exercises', 'completed_workouts', 'completed_sets']
+    allowed_tables = ['users', 'workout_sessions', 'exercises', 'completed_workouts', 'completed_sets']
     if table_name not in allowed_tables:
         return jsonify({'success': False, 'error': 'Invalid table'}), 400
     
@@ -832,14 +886,13 @@ def update_cell(table_name, row_id):
     except Exception as e:
         print(f"Ошибка при обновлении ячейки: {e}")
         return jsonify({'success': False, 'error': str(e)})
-
-# API для удаления строки
+# Удалить строку
 @app.route('/api/delete_row/<table_name>/<int:row_id>', methods=['POST'])
 def delete_row(table_name, row_id):
     if 'user_id' not in session or not session.get('is_admin'):
         return jsonify({'success': False, 'error': 'Unauthorized'}), 401
     
-    allowed_tables = ['users', 'workouts', 'exercises', 'completed_workouts', 'completed_sets']
+    allowed_tables = ['users', 'workout_sessions', 'exercises', 'completed_workouts', 'completed_sets']
     if table_name not in allowed_tables:
         return jsonify({'success': False, 'error': 'Invalid table'}), 400
     
@@ -853,7 +906,7 @@ def delete_row(table_name, row_id):
         print(f"Ошибка при удалении строки: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
-# API для массового удаления
+# Массовое удаление
 @app.route('/api/bulk_delete/<table_name>', methods=['POST'])
 def bulk_delete(table_name):
     if 'user_id' not in session or not session.get('is_admin'):
@@ -862,7 +915,7 @@ def bulk_delete(table_name):
     data = request.get_json()
     ids = data.get('ids', [])
     
-    allowed_tables = ['users', 'workouts', 'exercises', 'completed_workouts', 'completed_sets']
+    allowed_tables = ['users', 'workout_sessions', 'exercises', 'completed_workouts', 'completed_sets']
     if table_name not in allowed_tables:
         return jsonify({'success': False, 'error': 'Invalid table'}), 400
     
@@ -877,7 +930,7 @@ def bulk_delete(table_name):
         print(f"Ошибка при массовом удалении: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
-# API для добавления строки
+# Добавить строку
 @app.route('/api/add_row/<table_name>', methods=['POST'])
 def add_row(table_name):
     if 'user_id' not in session or not session.get('is_admin'):
@@ -885,7 +938,7 @@ def add_row(table_name):
     
     data = request.get_json()
     
-    allowed_tables = ['users', 'workouts', 'exercises', 'completed_workouts', 'completed_sets']
+    allowed_tables = ['users', 'workout_sessions', 'exercises', 'completed_workouts', 'completed_sets']
     if table_name not in allowed_tables:
         return jsonify({'success': False, 'error': 'Invalid table'}), 400
     
@@ -904,7 +957,7 @@ def add_row(table_name):
         print(f"Ошибка при добавлении строки: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
-# API для обновления строки
+# Обновить строку
 @app.route('/api/update_row/<table_name>/<int:row_id>', methods=['POST'])
 def update_row(table_name, row_id):
     if 'user_id' not in session or not session.get('is_admin'):
@@ -912,7 +965,7 @@ def update_row(table_name, row_id):
     
     data = request.get_json()
     
-    allowed_tables = ['users', 'workouts', 'exercises', 'completed_workouts', 'completed_sets']
+    allowed_tables = ['users', 'workout_sessions', 'exercises', 'completed_workouts', 'completed_sets']
     if table_name not in allowed_tables:
         return jsonify({'success': False, 'error': 'Invalid table'}), 400
     
@@ -930,6 +983,98 @@ def update_row(table_name, row_id):
     except Exception as e:
         print(f"Ошибка при обновлении строки: {e}")
         return jsonify({'success': False, 'error': str(e)})
+#endregion
+
+
+#region========== API ДЛЯ УПРАВЛЕНИЯ УПРАЖНЕНИЯМИ ТРЕНИРОВКИ ==========
+
+# Получить упражнения тренировки
+@app.route('/api/workout_exercises/<int:workout_id>')
+def get_workout_exercises_api(workout_id):
+    if 'user_id' not in session or not session.get('is_admin'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        with database.get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT 
+                    we.id as workout_exercise_id,
+                    we.exercise_id,
+                    e.name,
+                    e.muscle_group
+                FROM workout_exercises we
+                JOIN exercises e ON we.exercise_id = e.id
+                WHERE we.workout_id = ?
+                ORDER BY we.order_num
+            ''', (workout_id,))
+            
+            rows = cursor.fetchall()
+            result = [dict(row) for row in rows]
+            
+            return jsonify(result)
+    except Exception as e:
+        print(f"Ошибка при получении упражнений тренировки: {e}")
+        return jsonify([])
+
+# Получить все упражнения из библиотеки
+@app.route('/api/all_exercises')
+def get_all_exercises_api():
+    if 'user_id' not in session or not session.get('is_admin'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        with database.get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT id, name, muscle_group FROM exercises ORDER BY name')
+            rows = cursor.fetchall()
+            return jsonify([dict(row) for row in rows])
+    except Exception as e:
+        print(f"Ошибка при получении списка упражнений: {e}")
+        return jsonify([])
+
+# Добавить упражнение в тренировку
+@app.route('/api/add_exercise_to_workout/<int:workout_id>/<int:exercise_id>', methods=['POST'])
+def add_exercise_to_workout_api(workout_id, exercise_id):
+    if 'user_id' not in session or not session.get('is_admin'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    try:
+        with database.get_db() as conn:
+            cursor = conn.cursor()
+            
+            # Получаем следующий порядковый номер
+            cursor.execute('SELECT MAX(order_num) as max FROM workout_exercises WHERE workout_id = ?', (workout_id,))
+            max_order = cursor.fetchone()['max'] or 0
+            order_num = max_order + 1
+            
+            # Добавляем упражнение
+            cursor.execute('''
+                INSERT INTO workout_exercises (workout_id, exercise_id, sets, reps, weight, order_num, notes)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (workout_id, exercise_id, 3, 10, 0, order_num, ''))
+            
+            conn.commit()
+            return jsonify({'success': True})
+    except Exception as e:
+        print(f"Ошибка при добавлении упражнения в тренировку: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+# Удалить упражнение из тренировки
+@app.route('/api/remove_exercise_from_workout/<int:workout_exercise_id>', methods=['POST'])
+def remove_exercise_from_workout_api(workout_exercise_id):
+    if 'user_id' not in session or not session.get('is_admin'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    try:
+        with database.get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM workout_exercises WHERE id = ?', (workout_exercise_id,))
+            conn.commit()
+            return jsonify({'success': True})
+    except Exception as e:
+        print(f"Ошибка при удалении упражнения из тренировки: {e}")
+        return jsonify({'success': False, 'error': str(e)})
 
 #endregion
 
@@ -940,12 +1085,9 @@ def update_row(table_name, row_id):
 
 
 
-
-
-
-
-
-
+@app.route('/test')
+def test():
+    return render_template('test.html')
 
 
 

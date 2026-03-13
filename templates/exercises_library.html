@@ -354,9 +354,10 @@
                  data-muscle="{{ exercise.muscle_group }}">
                 
                 <!-- Картинка упражнения -->
+<!-- Картинка упражнения -->
 <div class="exercise-image">
     {% if exercise.image %}
-        <img src="{{ url_for('static', filename=exercise.image) }}" alt="{{ exercise.name }}">
+        <img src="/{{ exercise.image }}" alt="{{ exercise.name }}">
     {% else %}
         <i class="fas fa-dumbbell"></i>
     {% endif %}
