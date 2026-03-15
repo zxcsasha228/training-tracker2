@@ -50,19 +50,10 @@
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 40px;
-            animation: slideUp 0.6s ease-out;
+           
         }
 
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+       
 
         .header {
             text-align: center;
@@ -311,6 +302,7 @@
 </head>
 <body>
     {% include 'sidebar.html' %}
+      <input type="hidden" id="userId" value="{{ session['user_id'] }}">
     
     <div class="main-content" id="mainContent">
         <div class="container">
@@ -429,7 +421,7 @@
         </div>
     </div>
 
-    {% include 'active_workout_banner.html' %}
+  
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -440,5 +432,6 @@
             }
         });
     </script>
+{% include 'active_workout_banner.html' %}
 </body>
 </html>

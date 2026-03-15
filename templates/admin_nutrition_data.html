@@ -324,6 +324,7 @@
     </style>
 </head>
 <body>
+    <input type="hidden" id="userId" value="{{ session['user_id'] }}">
     {% include 'sidebar.html' %}
     
     <div class="main-content" id="mainContent">
@@ -754,5 +755,6 @@
             }
         });
     </script>
+    {% include 'active_workout_banner.html' %}
 </body>
 </html>

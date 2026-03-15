@@ -51,20 +51,10 @@
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 30px;
-            animation: slideUp 0.6s ease-out;
+           
         }
 
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
+        
         .header {
             display: flex;
             justify-content: space-between;
@@ -209,237 +199,6 @@
             position: relative;
         }
 
-        /* Калькулятор БЖУ со сворачиванием */
-.bju-calculator {
-    background: white;
-    border-radius: 20px;
-    padding: 25px;
-    margin-bottom: 30px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-    border: 1px solid rgba(0,0,0,0.05);
-    transition: all 0.3s;
-}
-
-.bju-calculator.collapsed .calculator-body {
-    display: none;
-}
-
-.bju-calculator.collapsed {
-    padding-bottom: 15px;
-}
-
-.calculator-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-.calculator-header-left {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.calculator-toggle {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
-}
-
-.calculator-toggle:hover {
-    transform: scale(1.1) rotate(10deg);
-    box-shadow: 0 6px 15px rgba(99, 102, 241, 0.5);
-}
-
-.calculator-toggle i {
-    font-size: 1.1em;
-}
-
-.calculator-title {
-    font-size: 1.3em;
-    color: var(--dark);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.calculator-title i {
-    color: var(--primary);
-}
-
-.calculator-tabs {
-    display: flex;
-    gap: 10px;
-    background: var(--light);
-    padding: 5px;
-    border-radius: 12px;
-}
-
-.tab-btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s;
-    background: transparent;
-    color: var(--gray);
-    white-space: nowrap;
-}
-
-.tab-btn:hover {
-    background: rgba(99, 102, 241, 0.1);
-    color: var(--primary);
-}
-
-.tab-btn.active {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
-}
-
-/* Остальные стили калькулятора без изменений */
-.current-weight-info {
-    background: var(--light);
-    padding: 12px 15px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    font-size: 1.1em;
-}
-
-.weight-warning {
-    color: var(--warning);
-    font-size: 0.9em;
-    margin-left: 10px;
-}
-
-.bju-results {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 25px;
-}
-
-.result-card {
-    background: var(--light);
-    border-radius: 16px;
-    padding: 15px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    transition: all 0.3s;
-    border: 1px solid rgba(0,0,0,0.05);
-}
-
-.result-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-}
-
-.result-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.result-icon i {
-    font-size: 1.5em;
-    color: white;
-}
-
-.result-content {
-    flex: 1;
-}
-
-.result-label {
-    color: var(--gray);
-    font-size: 0.85em;
-    margin-bottom: 3px;
-}
-
-.result-value {
-    font-size: 1.8em;
-    font-weight: bold;
-    color: var(--dark);
-    line-height: 1.2;
-}
-
-.result-unit {
-    color: var(--gray);
-    font-size: 0.8em;
-}
-
-.calculator-settings {
-    background: var(--light);
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 15px;
-}
-
-.settings-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-}
-
-.setting-item {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.setting-item label {
-    color: var(--gray);
-    font-size: 0.9em;
-}
-
-.setting-item select,
-.setting-item input {
-    padding: 10px;
-    border: 2px solid #e5e7eb;
-    border-radius: 10px;
-    font-size: 1em;
-    background: white;
-    transition: all 0.3s;
-}
-
-.setting-item select:focus,
-.setting-item input:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-.calculator-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--gray);
-    font-size: 0.9em;
-    padding: 10px;
-    background: #f0f9ff;
-    border-radius: 10px;
-    color: #0369a1;
-}
-
-.calculator-info i {
-    color: var(--primary);
-}
-
         /* Калькулятор БЖУ */
         .bju-calculator {
             background: white;
@@ -457,6 +216,36 @@
             margin-bottom: 20px;
             flex-wrap: wrap;
             gap: 15px;
+        }
+
+        .calculator-header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .calculator-toggle {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+        }
+
+        .calculator-toggle:hover {
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.5);
+        }
+
+        .calculator-toggle i {
+            font-size: 1.1em;
         }
 
         .calculator-title {
@@ -629,6 +418,18 @@
 
         .calculator-info i {
             color: var(--primary);
+        }
+
+        .calculator-body {
+            transition: all 0.3s;
+        }
+
+        .bju-calculator.collapsed .calculator-body {
+            display: none;
+        }
+
+        .bju-calculator.collapsed {
+            padding-bottom: 15px;
         }
 
         /* Компактный календарь */
@@ -931,6 +732,11 @@
     </style>
 </head>
 <body>
+    <!-- Скрытые поля с данными для выпадающих списков -->
+<input type="hidden" id="gendersData" value='{{ genders|tojson }}'>
+<input type="hidden" id="activitiesData" value='{{ activities|tojson }}'>
+<input type="hidden" id="goalsData" value='{{ goals|tojson }}'>
+<input type="hidden" id="userId" value="{{ session['user_id'] }}">
     {% include 'sidebar.html' %}
     
     <div class="main-content" id="mainContent">
@@ -993,119 +799,110 @@
                 </div>
             </div>
 
-            <!-- Калькулятор БЖУ (со сворачиванием) -->
-<div class="bju-calculator" id="bjuCalculator">
-    <div class="calculator-header">
-        <div class="calculator-header-left">
-            <button type="button" class="calculator-toggle" onclick="toggleCalculator()" id="calculatorToggle">
-                <i class="fas fa-chevron-up" id="calculatorToggleIcon"></i>
-            </button>
-            <div class="calculator-title">
-                <i class="fas fa-calculator"></i>
-                Калькулятор БЖУ
-            </div>
+            <!-- Калькулятор БЖУ -->
+            <div class="bju-calculator" id="bjuCalculator">
+                <div class="calculator-header">
+                    <div class="calculator-header-left">
+                        <button type="button" class="calculator-toggle" onclick="toggleCalculator()" id="calculatorToggle">
+                            <i class="fas fa-chevron-up" id="calculatorToggleIcon"></i>
+                        </button>
+                        <div class="calculator-title">
+                            <i class="fas fa-calculator"></i>
+                            Калькулятор БЖУ
+                        </div>
+                    </div>
+                    <div class="calculator-tabs">
+                        <button class="tab-btn active" onclick="setGoal('maintain')" id="tabMaintain">🏋️ Поддержание</button>
+                        <button class="tab-btn" onclick="setGoal('lose')" id="tabLose">📉 Похудение</button>
+                        <button class="tab-btn" onclick="setGoal('gain')" id="tabGain">📈 Набор массы</button>
+                    </div>
+                </div>
+
+                <div class="calculator-body" id="calculatorBody">
+                    <div class="current-weight-info">
+                        <span>Текущий вес: <strong id="currentWeight">{{ stats.last_weight|default('—', true) }} кг</strong></span>
+                        {% if not stats.last_weight %}
+                        <span class="weight-warning">(нет данных, используется 70 кг)</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="bju-results">
+                        <div class="result-card">
+                            <div class="result-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                                <i class="fas fa-fire"></i>
+                            </div>
+                            <div class="result-content">
+                                <div class="result-label">Калории</div>
+                                <div class="result-value" id="calories">0</div>
+                                <div class="result-unit">ккал/день</div>
+                            </div>
+                        </div>
+
+                        <div class="result-card">
+                            <div class="result-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                                <i class="fas fa-drumstick-bite"></i>
+                            </div>
+                            <div class="result-content">
+                                <div class="result-label">Белки</div>
+                                <div class="result-value" id="protein">0</div>
+                                <div class="result-unit">г/день</div>
+                            </div>
+                        </div>
+
+                        <div class="result-card">
+                            <div class="result-icon" style="background: linear-gradient(135deg, #eab308, #ca8a04);">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div class="result-content">
+                                <div class="result-label">Жиры</div>
+                                <div class="result-value" id="fat">0</div>
+                                <div class="result-unit">г/день</div>
+                            </div>
+                        </div>
+
+                        <div class="result-card">
+                            <div class="result-icon" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                                <i class="fas fa-bread-slice"></i>
+                            </div>
+                            <div class="result-content">
+                                <div class="result-label">Углеводы</div>
+                                <div class="result-value" id="carbs">0</div>
+                                <div class="result-unit">г/день</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="calculator-settings">
+    <div class="settings-row">
+        <div class="setting-item">
+            <label>Активность</label>
+            <select id="activityLevel" onchange="saveSettings()">
+                <!-- Будет заполняться из справочника -->
+            </select>
         </div>
-        <div class="calculator-tabs">
-            <button class="tab-btn active" onclick="setGoal('maintain')" id="tabMaintain">🏋️ Поддержание</button>
-            <button class="tab-btn" onclick="setGoal('lose')" id="tabLose">📉 Похудение</button>
-            <button class="tab-btn" onclick="setGoal('gain')" id="tabGain">📈 Набор массы</button>
+        <div class="setting-item">
+            <label>Возраст</label>
+            <input type="number" id="age" value="30" min="15" max="100" onchange="saveSettings()">
         </div>
-    </div>
-
-    <div class="calculator-body" id="calculatorBody">
-        <!-- Текущий вес -->
-        <div class="current-weight-info">
-            <span>Текущий вес: <strong id="currentWeight">{{ stats.last_weight|default('—', true) }} кг</strong></span>
-            {% if not stats.last_weight %}
-            <span class="weight-warning">(нет данных, используется 70 кг)</span>
-            {% endif %}
+        <div class="setting-item">
+            <label>Рост (см)</label>
+            <input type="number" id="height" value="175" min="140" max="220" onchange="saveSettings()">
         </div>
-
-        <!-- Результаты -->
-        <div class="bju-results">
-            <div class="result-card">
-                <div class="result-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
-                    <i class="fas fa-fire"></i>
-                </div>
-                <div class="result-content">
-                    <div class="result-label">Калории</div>
-                    <div class="result-value" id="calories">0</div>
-                    <div class="result-unit">ккал/день</div>
-                </div>
-            </div>
-
-            <div class="result-card">
-                <div class="result-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
-                    <i class="fas fa-drumstick-bite"></i>
-                </div>
-                <div class="result-content">
-                    <div class="result-label">Белки</div>
-                    <div class="result-value" id="protein">0</div>
-                    <div class="result-unit">г/день</div>
-                </div>
-            </div>
-
-            <div class="result-card">
-                <div class="result-icon" style="background: linear-gradient(135deg, #eab308, #ca8a04);">
-                    <i class="fas fa-bolt"></i>
-                </div>
-                <div class="result-content">
-                    <div class="result-label">Жиры</div>
-                    <div class="result-value" id="fat">0</div>
-                    <div class="result-unit">г/день</div>
-                </div>
-            </div>
-
-            <div class="result-card">
-                <div class="result-icon" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
-                    <i class="fas fa-bread-slice"></i>
-                </div>
-                <div class="result-content">
-                    <div class="result-label">Углеводы</div>
-                    <div class="result-value" id="carbs">0</div>
-                    <div class="result-unit">г/день</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Дополнительные настройки -->
-        <div class="calculator-settings">
-            <div class="settings-row">
-                <div class="setting-item">
-                    <label>Активность</label>
-                    <select id="activityLevel" onchange="calculateBJU()">
-                        <option value="1.2">🪑 Минимальная (сидячая работа)</option>
-                        <option value="1.375">🚶 Лёгкая (1-3 тренировки в неделю)</option>
-                        <option value="1.55" selected>🏃 Средняя (3-5 тренировок)</option>
-                        <option value="1.725">💪 Высокая (6-7 тренировок)</option>
-                        <option value="1.9">🏆 Очень высокая (спортсмены)</option>
-                    </select>
-                </div>
-                <div class="setting-item">
-                    <label>Возраст</label>
-                    <input type="number" id="age" value="30" min="15" max="100" onchange="calculateBJU()">
-                </div>
-                <div class="setting-item">
-                    <label>Рост (см)</label>
-                    <input type="number" id="height" value="175" min="140" max="220" onchange="calculateBJU()">
-                </div>
-                <div class="setting-item">
-                    <label>Пол</label>
-                    <select id="gender" onchange="calculateBJU()">
-                        <option value="male">👨 Мужской</option>
-                        <option value="female" selected>👩 Женский</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <!-- Пояснения -->
-        <div class="calculator-info" id="bjuDescription">
-            <i class="fas fa-info-circle"></i>
-            <span>Для поддержания текущего веса</span>
+        <div class="setting-item">
+            <label>Пол</label>
+            <select id="gender" onchange="saveSettings()">
+                <!-- Будет заполняться из справочника -->
+            </select>
         </div>
     </div>
 </div>
+
+                    <div class="calculator-info" id="bjuDescription">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Для поддержания текущего веса</span>
+                    </div>
+                </div>
+            </div>
 
             <!-- График -->
             <div class="chart-container">
@@ -1125,7 +922,6 @@
                     Добавить запись веса
                 </div>
                 
-                <!-- Компактный календарь (изначально свёрнут) -->
                 <div class="calendar-container collapsed" id="calendarContainer">
                     <div class="calendar-header">
                         <div class="calendar-header-left">
@@ -1149,10 +945,8 @@
                     <div class="calendar-days" id="calendarDays"></div>
                 </div>
                 
-                <!-- Скрытое поле для выбранной даты -->
                 <input type="hidden" name="date" id="selectedDate" value="{{ today }}">
                 
-                <!-- Форма (появляется после выбора даты) -->
                 <div class="weight-entry-form" id="weightEntryForm" style="display: none;">
                     <div class="selected-date-display" id="selectedDateDisplay"></div>
                     <div class="form-row">
@@ -1169,7 +963,6 @@
                 </div>
             </div>
 
-            <!-- История записей -->
             <div class="history-table">
                 <div class="table-title">
                     <i class="fas fa-history"></i>
@@ -1233,8 +1026,9 @@
         let currentDate = new Date();
         let selectedDate = '{{ today }}';
         let weightChart = null;
-        let currentGoal = 'maintain'; // maintain, lose, gain
-        
+        let currentGoal = 'maintain';
+        let settingsLoaded = false;
+
         // Форматирование даты
         function formatDate(date) {
             const year = date.getFullYear();
@@ -1259,20 +1053,17 @@
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
             
-            // Начинаем с понедельника
             let startDay = firstDay.getDay() - 1;
             if (startDay < 0) startDay = 6;
             
             const daysHtml = [];
             
-            // Добавляем дни предыдущего месяца
             const prevMonthLastDay = new Date(year, month, 0).getDate();
             for (let i = 0; i < startDay; i++) {
                 const day = prevMonthLastDay - startDay + i + 1;
                 daysHtml.push(`<div class="calendar-day other-month">${day}</div>`);
             }
             
-            // Добавляем дни текущего месяца
             const today = formatDate(new Date());
             
             for (let i = 1; i <= lastDay.getDate(); i++) {
@@ -1289,7 +1080,6 @@
                 daysHtml.push(`<div class="${classes}" onclick="selectDate('${dateStr}')">${i}</div>`);
             }
             
-            // Добавляем дни следующего месяца
             const totalCells = 42;
             const remainingCells = totalCells - daysHtml.length;
             for (let i = 1; i <= remainingCells; i++) {
@@ -1310,7 +1100,6 @@
             document.getElementById('selectedDateDisplay').textContent = formatDisplayDate(dateStr);
             document.getElementById('weightEntryForm').style.display = 'block';
             
-            // Очищаем поля
             document.getElementById('weightInput').value = '';
             document.getElementById('notesInput').value = '';
             
@@ -1324,6 +1113,19 @@
             container.classList.toggle('collapsed');
             
             if (container.classList.contains('collapsed')) {
+                icon.className = 'fas fa-chevron-down';
+            } else {
+                icon.className = 'fas fa-chevron-up';
+            }
+        }
+        
+        function toggleCalculator() {
+            const calculator = document.getElementById('bjuCalculator');
+            const icon = document.getElementById('calculatorToggleIcon');
+            
+            calculator.classList.toggle('collapsed');
+            
+            if (calculator.classList.contains('collapsed')) {
                 icon.className = 'fas fa-chevron-down';
             } else {
                 icon.className = 'fas fa-chevron-up';
@@ -1367,76 +1169,166 @@
             form.submit();
         }
         
-        // Расчёт БЖУ
-        function calculateBJU() {
-            let weight = parseFloat('{{ stats.last_weight|default(70) }}');
-            if (isNaN(weight) || weight === 0) weight = 70;
-            
-            const age = parseInt(document.getElementById('age').value);
-            const height = parseInt(document.getElementById('height').value);
-            const gender = document.getElementById('gender').value;
-            const activity = parseFloat(document.getElementById('activityLevel').value);
-            
-            // Расчёт базового метаболизма (формула Миффлина-Сан Жеора)
-            let bmr;
-            if (gender === 'male') {
-                bmr = 10 * weight + 6.25 * height - 5 * age + 5;
-            } else {
-                bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+        // Загрузка настроек с сервера
+function loadSettings() {
+    fetch('/api/get_user_bju_settings')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('age').value = data.age;
+                document.getElementById('height').value = data.height;
+                
+                // Устанавливаем пол из справочника
+                const genderSelect = document.getElementById('gender');
+                const genders = JSON.parse(document.getElementById('gendersData').value);
+                genderSelect.innerHTML = '';
+                genders.forEach(g => {
+                    const option = document.createElement('option');
+                    option.value = g.id;
+                    option.textContent = g.display_name;
+                    if (g.id == data.gender_id) option.selected = true;
+                    genderSelect.appendChild(option);
+                });
+                
+                // Устанавливаем активность из справочника
+                const activitySelect = document.getElementById('activityLevel');
+                const activities = JSON.parse(document.getElementById('activitiesData').value);
+                activitySelect.innerHTML = '';
+                activities.forEach(a => {
+                    const option = document.createElement('option');
+                    option.value = a.id;
+                    option.textContent = a.display_name;
+                    if (a.id == data.activity_id) option.selected = true;
+                    activitySelect.appendChild(option);
+                });
+                
+                // Устанавливаем цель из справочника
+                const goalTabs = document.querySelectorAll('.tab-btn');
+                const goals = JSON.parse(document.getElementById('goalsData').value);
+                
+                // Очищаем старые вкладки и создаём новые из справочника
+                const tabsContainer = document.querySelector('.calculator-tabs');
+                tabsContainer.innerHTML = '';
+                
+                goals.forEach(g => {
+                    const button = document.createElement('button');
+                    button.className = 'tab-btn';
+                    button.id = `tab-${g.id}`;
+                    button.onclick = () => setGoal(g.id);
+                    button.innerHTML = g.display_name;
+                    if (g.id == data.goal_id) {
+                        button.classList.add('active');
+                        currentGoal = g.id;
+                    }
+                    tabsContainer.appendChild(button);
+                });
+                
+                settingsLoaded = true;
+                calculateBJUFromSettings();
             }
-            
-            // Расчёт калорий с учётом активности
-            let calories = Math.round(bmr * activity);
-            
-            // Корректировка в зависимости от цели
-            let proteinMultiplier, fatMultiplier;
-            let caloriesText = '';
-            
-            switch(currentGoal) {
-                case 'lose':
-                    calories = Math.round(calories * 0.85); // -15%
-                    proteinMultiplier = 2.2; // 2.2г на кг веса
-                    fatMultiplier = 0.8;      // 0.8г на кг веса
-                    caloriesText = 'Для похудения рекомендуется';
-                    break;
-                case 'gain':
-                    calories = Math.round(calories * 1.15); // +15%
-                    proteinMultiplier = 2.0; // 2.0г на кг веса
-                    fatMultiplier = 1.0;      // 1.0г на кг веса
-                    caloriesText = 'Для набора массы рекомендуется';
-                    break;
-                default: // maintain
-                    proteinMultiplier = 1.8; // 1.8г на кг веса
-                    fatMultiplier = 0.9;      // 0.9г на кг веса
-                    caloriesText = 'Для поддержания веса рекомендуется';
-            }
-            
-            // Расчёт БЖУ
-            const protein = Math.round(weight * proteinMultiplier);
-            const fat = Math.round(weight * fatMultiplier);
-            const carbs = Math.round((calories - (protein * 4) - (fat * 9)) / 4);
-            
-            // Обновляем отображение
-            document.getElementById('calories').textContent = calories;
-            document.getElementById('protein').textContent = protein;
-            document.getElementById('fat').textContent = fat;
-            document.getElementById('carbs').textContent = carbs;
-            document.getElementById('bjuDescription').innerHTML = `<i class="fas fa-info-circle"></i> ${caloriesText} ${calories} ккал/день (Б:${protein}г, Ж:${fat}г, У:${carbs}г)`;
-        }
+        });
+}
+        // Сохранение настроек на сервере
+function saveSettings() {
+    if (!settingsLoaded) return;
+    
+    const settings = {
+        age: parseInt(document.getElementById('age').value),
+        height: parseInt(document.getElementById('height').value),
+        gender_id: parseInt(document.getElementById('gender').value),
+        activity_id: parseInt(document.getElementById('activityLevel').value),
+        goal_id: currentGoal
+    };
 
-        // Установка цели
-        function setGoal(goal) {
-            currentGoal = goal;
-            
-            // Обновляем активную вкладку
+    fetch('/api/update_bju_settings', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(settings)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            calculateBJUFromSettings();
+        }
+    });
+}
+        // Расчёт БЖУ из текущих настроек
+function calculateBJUFromSettings() {
+    const weight = parseFloat('{{ stats.last_weight|default(70) }}') || 70;
+    const age = parseInt(document.getElementById('age').value);
+    const height = parseInt(document.getElementById('height').value);
+    const genderSelect = document.getElementById('gender');
+    const gender = genderSelect.options[genderSelect.selectedIndex]?.text || '👨 Мужской';
+    const activitySelect = document.getElementById('activityLevel');
+    const activityId = parseInt(activitySelect.value);
+    
+    // Получаем коэффициент активности из справочника
+    const activities = JSON.parse(document.getElementById('activitiesData').value);
+    const activity = activities.find(a => a.id === activityId) || { value: 1.55 };
+    const activityValue = activity.value;
+    
+    let bmr;
+    if (gender.includes('Мужской')) {
+        bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+    } else {
+        bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+    }
+    
+    let calories = Math.round(bmr * activityValue);
+    
+    let proteinMultiplier, fatMultiplier;
+    let goalText = '';
+    
+    // Получаем цель из справочника
+    const goals = JSON.parse(document.getElementById('goalsData').value);
+    const currentGoalObj = goals.find(g => g.id === currentGoal) || { display_name: 'Поддержание' };
+    
+    if (currentGoal == 2) { // lose
+        calories = Math.round(calories * 0.85);
+        proteinMultiplier = 2.2;
+        fatMultiplier = 0.8;
+        goalText = 'Для похудения рекомендуется';
+    } else if (currentGoal == 3) { // gain
+        calories = Math.round(calories * 1.15);
+        proteinMultiplier = 2.0;
+        fatMultiplier = 1.0;
+        goalText = 'Для набора массы рекомендуется';
+    } else { // maintain
+        proteinMultiplier = 1.8;
+        fatMultiplier = 0.9;
+        goalText = 'Для поддержания веса рекомендуется';
+    }
+    
+    const protein = Math.round(weight * proteinMultiplier);
+    const fat = Math.round(weight * fatMultiplier);
+    const carbs = Math.round((calories - (protein * 4) - (fat * 9)) / 4);
+    
+    document.getElementById('calories').textContent = calories;
+    document.getElementById('protein').textContent = protein;
+    document.getElementById('fat').textContent = fat;
+    document.getElementById('carbs').textContent = carbs;
+    document.getElementById('bjuDescription').innerHTML = `<i class="fas fa-info-circle"></i> ${goalText} ${calories} ккал/день (Б:${protein}г, Ж:${fat}г, У:${carbs}г)`;
+}
+        // Обновление вкладок цели
+        function updateGoalTabs(goal) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             if (goal === 'maintain') document.getElementById('tabMaintain').classList.add('active');
             if (goal === 'lose') document.getElementById('tabLose').classList.add('active');
             if (goal === 'gain') document.getElementById('tabGain').classList.add('active');
-            
-            calculateBJU();
         }
-        
+
+        // Установка цели
+function setGoal(goalId) {
+    currentGoal = goalId;
+    
+    // Обновляем активную вкладку
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`tab-${goalId}`).classList.add('active');
+    
+    saveSettings();
+}
         // Отрисовка графика
         function renderChart() {
             const ctx = document.getElementById('weightChart').getContext('2d');
@@ -1533,7 +1425,6 @@
                     }
                 });
             } else {
-                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                 ctx.font = '16px Arial';
                 ctx.fillStyle = '#9ca3af';
                 ctx.textAlign = 'center';
@@ -1541,37 +1432,37 @@
             }
         }
         
+        // Проверка обновлений
+        function checkForUpdates() {
+            fetch('/api/check_bju_updates')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.changed) {
+                        loadSettings();
+                    }
+                })
+                .catch(error => console.error('Ошибка при проверке обновлений:', error));
+        }
+        
         // Инициализация
-        document.addEventListener('DOMContentLoaded', function() {
-            const mainContent = document.getElementById('mainContent');
-            const savedState = localStorage.getItem('sidebar_collapsed');
-            if (savedState === 'true') {
-                mainContent.classList.add('expanded');
-            }
-            
-            renderCalendar();
-            renderChart();
-            calculateBJU();
-            
-            // Если есть записи, показываем форму для сегодняшней даты
-            if ('{{ today }}') {
-                selectDate('{{ today }}');
-            }
-        });
-
-        // Сворачивание калькулятора
-function toggleCalculator() {
-    const calculator = document.getElementById('bjuCalculator');
-    const icon = document.getElementById('calculatorToggleIcon');
-    
-    calculator.classList.toggle('collapsed');
-    
-    if (calculator.classList.contains('collapsed')) {
-        icon.className = 'fas fa-chevron-down';
-    } else {
-        icon.className = 'fas fa-chevron-up';
+document.addEventListener('DOMContentLoaded', function() {
+    const mainContent = document.getElementById('mainContent');
+    const savedState = localStorage.getItem('sidebar_collapsed');
+    if (savedState === 'true') {
+        mainContent.classList.add('expanded');
     }
-}
+    
+    renderCalendar();
+    renderChart();
+    loadSettings();
+    
+    if ('{{ today }}') {
+        selectDate('{{ today }}');
+    }
+    
+    setInterval(checkForUpdates, 30000);
+});
     </script>
+    {% include 'active_workout_banner.html' %}
 </body>
 </html>

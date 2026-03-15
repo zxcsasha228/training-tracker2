@@ -108,20 +108,25 @@ def login():
 def register():
     if request.method == 'POST':
         username = request.form['username']
+        full_name = request.form['full_name']  # НОВОЕ
         password = request.form['password']
         confirm = request.form['confirm_password']
         
         if password != confirm:
             return render_template('register.html', error='Пароли не совпадают')
         
-        user_id = database.create_user(username, password, is_admin=0)  # Обычный пользователь
+        if not full_name:
+            return render_template('register.html', error='Введите ФИО')
+        
+        user_id = database.create_user(username, password, full_name)
         if user_id:
             session['user_id'] = user_id
             session['username'] = username
+            session['full_name'] = full_name
             session['is_admin'] = 0
             return redirect(url_for('index'))
         else:
-            return render_template('register.html', error='Пользователь с таким именем уже существует')
+            return render_template('register.html', error='Пользователь с таким логином уже существует')
     
     return render_template('register.html')
 
@@ -805,15 +810,27 @@ def table_manager():
         
         # Получаем всех пользователей (для таблицы)
         cursor.execute('SELECT id, username, is_admin FROM users ORDER BY id DESC LIMIT 5')
-        users = cursor.fetchall()
+        users = [dict(row) for row in cursor.fetchall()]
         
         # Получаем последние тренировки
         cursor.execute('SELECT id, name, date FROM workout_sessions ORDER BY id DESC LIMIT 3')
-        recent_workouts = cursor.fetchall()
+        recent_workouts = [dict(row) for row in cursor.fetchall()]
         
         # Получаем последние упражнения
         cursor.execute('SELECT id, name, muscle_group FROM exercises ORDER BY id DESC LIMIT 3')
-        recent_exercises = cursor.fetchall()
+        recent_exercises = [dict(row) for row in cursor.fetchall()]
+        
+        # Получаем типы пола для выпадающих списков
+        cursor.execute('SELECT id, display_name FROM gender_types ORDER BY sort_order')
+        genders = [dict(row) for row in cursor.fetchall()]
+        
+        # Получаем уровни активности для выпадающих списков
+        cursor.execute('SELECT id, display_name, value FROM activity_levels ORDER BY sort_order')
+        activities = [dict(row) for row in cursor.fetchall()]
+        
+        # Получаем цели для выпадающих списков
+        cursor.execute('SELECT id, display_name FROM goal_types ORDER BY sort_order')
+        goals = [dict(row) for row in cursor.fetchall()]
         
         # Получаем последние записи статистики
         cursor.execute('''
@@ -821,16 +838,18 @@ def table_manager():
             FROM completed_workouts cw 
             ORDER BY cw.id DESC LIMIT 3
         ''')
-        recent_stats = cursor.fetchall()
+        recent_stats = [dict(row) for row in cursor.fetchall()]
     
     return render_template('table_manager.html',
                          stats=stats,
-                         users=users,  # Добавили users
+                         users=users,
                          recent_workouts=recent_workouts,
                          recent_exercises=recent_exercises,
                          recent_stats=recent_stats,
+                         genders=genders,
+                         activities=activities,
+                         goals=goals,
                          is_admin=session.get('is_admin', 0))
-
 # API для получения данных графиков (если нужно обновлять в реальном времени)
 @app.route('/api/chart_data')
 def chart_data():
@@ -846,13 +865,26 @@ def chart_data():
 
 
 #region ========== API ДЛЯ УПРАВЛЕНИЯ ТАБЛИЦАМИ ==========
+
 # Получить данные таблицы
 @app.route('/api/table_data/<table_name>')
 def get_table_data(table_name):
     if 'user_id' not in session or not session.get('is_admin'):
         return jsonify({'error': 'Unauthorized'}), 401
     
-    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'about_content', 'completed_workouts', 'completed_sets']
+    allowed_tables = [
+    'users', 
+    'workout_sessions', 
+    'exercises', 
+    'weight_tracking', 
+    'bju_settings', 
+    'gender_types',          # новое
+    'activity_levels',       # новое
+    'goal_types',            # новое
+    'about_content', 
+    'completed_workouts', 
+    'completed_sets'
+]
     if table_name not in allowed_tables:
         return jsonify({'error': 'Invalid table'}), 400
     
@@ -860,21 +892,59 @@ def get_table_data(table_name):
         with database.get_db() as conn:
             cursor = conn.cursor()
             
-            # Для таблиц с внешними ключами добавим JOIN чтобы видеть имена пользователей
-            if table_name == 'weight_tracking':
+            # СПЕЦИАЛЬНО ДЛЯ ТАБЛИЦЫ ТРЕНИРОВОК
+            if table_name == 'workout_sessions':
                 cursor.execute('''
-                    SELECT wt.*, u.username 
+                    SELECT 
+                        ws.*,
+                        u.full_name,
+                        u.username
+                    FROM workout_sessions ws
+                    JOIN users u ON ws.user_id = u.id
+                    ORDER BY ws.id DESC
+                ''')
+            
+            elif table_name == 'completed_sets':
+                cursor.execute('''
+                    SELECT 
+                        cs.*,
+                        u.full_name,
+                        u.username
+                    FROM completed_sets cs
+                    JOIN users u ON cs.user_id = u.id
+                    ORDER BY cs.completed_at DESC
+                ''')
+
+            elif table_name == 'weight_tracking':
+                cursor.execute('''
+                    SELECT wt.*, u.username, u.full_name
                     FROM weight_tracking wt
                     JOIN users u ON wt.user_id = u.id
                     ORDER BY wt.date DESC
                 ''')
             elif table_name == 'bju_settings':
                 cursor.execute('''
-                    SELECT bs.*, u.username 
+                    SELECT bs.*, u.username, u.full_name
                     FROM bju_settings bs
                     JOIN users u ON bs.user_id = u.id
                     ORDER BY u.username
                 ''')
+            elif table_name == 'completed_workouts':
+                cursor.execute('''
+                    SELECT 
+                        cw.id,
+                        cw.user_id,
+                        cw.workout_name,
+                        cw.date,
+                        cw.duration,
+                        cw.completed_at,
+                        u.full_name,
+                        u.username
+                    FROM completed_workouts cw
+                    JOIN users u ON cw.user_id = u.id
+                    ORDER BY cw.completed_at DESC
+            ''')
+                
             else:
                 cursor.execute(f'SELECT * FROM {table_name} ORDER BY id DESC')
             
@@ -887,6 +957,7 @@ def get_table_data(table_name):
     except Exception as e:
         print(f"Ошибка при получении данных таблицы {table_name}: {e}")
         return jsonify([])
+    
 # Обновить ячейку
 @app.route('/api/update_cell/<table_name>/<int:row_id>', methods=['POST'])
 def update_cell(table_name, row_id):
@@ -897,7 +968,19 @@ def update_cell(table_name, row_id):
     column = data.get('column')
     value = data.get('value')
     
-    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'about_content', 'completed_workouts', 'completed_sets']
+    allowed_tables = [
+    'users', 
+    'workout_sessions', 
+    'exercises', 
+    'weight_tracking', 
+    'bju_settings', 
+    'gender_types',          # новое
+    'activity_levels',       # новое
+    'goal_types',            # новое
+    'about_content', 
+    'completed_workouts', 
+    'completed_sets'
+]
     if table_name not in allowed_tables:
         return jsonify({'success': False, 'error': 'Invalid table'}), 400
     
@@ -916,7 +999,19 @@ def delete_row(table_name, row_id):
     if 'user_id' not in session or not session.get('is_admin'):
         return jsonify({'success': False, 'error': 'Unauthorized'}), 401
     
-    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'about_content', 'completed_workouts', 'completed_sets']
+    allowed_tables = [
+    'users', 
+    'workout_sessions', 
+    'exercises', 
+    'weight_tracking', 
+    'bju_settings', 
+    'gender_types',          # новое
+    'activity_levels',       # новое
+    'goal_types',            # новое
+    'about_content', 
+    'completed_workouts', 
+    'completed_sets'
+]
     if table_name not in allowed_tables:
         return jsonify({'success': False, 'error': 'Invalid table'}), 400
     
@@ -939,7 +1034,19 @@ def bulk_delete(table_name):
     data = request.get_json()
     ids = data.get('ids', [])
     
-    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'about_content', 'completed_workouts', 'completed_sets']
+    allowed_tables = [
+    'users', 
+    'workout_sessions', 
+    'exercises', 
+    'weight_tracking', 
+    'bju_settings', 
+    'gender_types',          # новое
+    'activity_levels',       # новое
+    'goal_types',            # новое
+    'about_content', 
+    'completed_workouts', 
+    'completed_sets'
+]
     if table_name not in allowed_tables:
         return jsonify({'success': False, 'error': 'Invalid table'}), 400
     
@@ -962,7 +1069,19 @@ def add_row(table_name):
     
     data = request.get_json()
     
-    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'about_content', 'completed_workouts', 'completed_sets']
+    allowed_tables = [
+    'users', 
+    'workout_sessions', 
+    'exercises', 
+    'weight_tracking', 
+    'bju_settings', 
+    'gender_types',          # новое
+    'activity_levels',       # новое
+    'goal_types',            # новое
+    'about_content', 
+    'completed_workouts', 
+    'completed_sets'
+]
     if table_name not in allowed_tables:
         return jsonify({'success': False, 'error': 'Invalid table'}), 400
     
@@ -989,7 +1108,19 @@ def update_row(table_name, row_id):
     
     data = request.get_json()
     
-    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'about_content', 'completed_workouts', 'completed_sets']
+    allowed_tables = [
+    'users', 
+    'workout_sessions', 
+    'exercises', 
+    'weight_tracking', 
+    'bju_settings', 
+    'gender_types',          # новое
+    'activity_levels',       # новое
+    'goal_types',            # новое
+    'about_content', 
+    'completed_workouts', 
+    'completed_sets'
+]
     if table_name not in allowed_tables:
         return jsonify({'success': False, 'error': 'Invalid table'}), 400
     
@@ -1161,6 +1292,121 @@ def check_video():
 
 #region================ УПРАВЛЕНИЕ ДАННЫМИ ПИТАНИЯ ДЛЯ АДМИНА ================
 
+@app.route('/api/get_user_bju_settings')
+def get_user_bju_settings():
+    if 'user_id' not in session:
+        return jsonify({'success': False})
+    
+    with database.get_db() as conn:
+        cursor = conn.cursor()
+        
+        # Читаем данные из новых колонок
+        cursor.execute('''
+            SELECT age, height, gender_id, activity_id, goal_id 
+            FROM bju_settings 
+            WHERE user_id = ?
+        ''', (session['user_id'],))
+        
+        settings = cursor.fetchone()
+        
+        if settings:
+            return jsonify({
+                'success': True,
+                'age': settings['age'],
+                'height': settings['height'],
+                'gender_id': settings['gender_id'],
+                'activity_id': settings['activity_id'],
+                'goal_id': settings['goal_id']
+            })
+    
+    return jsonify({'success': False})
+
+@app.route('/api/update_bju_settings', methods=['POST'])
+def update_bju_settings():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Not logged in'})
+    
+    data = request.get_json()
+    print("="*50)
+    print("Получен запрос на обновление БЖУ")
+    print("Данные от клиента:", data)
+    print("User ID:", session['user_id'])
+    
+    try:
+        with database.get_db() as conn:
+            cursor = conn.cursor()
+            
+            # Проверяем, есть ли запись для этого пользователя
+            cursor.execute('SELECT id FROM bju_settings WHERE user_id = ?', (session['user_id'],))
+            existing = cursor.fetchone()
+            
+            if existing:
+                # Обновляем существующую запись
+                cursor.execute('''
+                    UPDATE bju_settings 
+                    SET age = ?, height = ?, gender_id = ?, activity_id = ?, goal_id = ?, updated_at = CURRENT_TIMESTAMP
+                    WHERE user_id = ?
+                ''', (
+                    data['age'],
+                    data['height'],
+                    data['gender_id'],
+                    data['activity_id'],
+                    data['goal_id'],
+                    session['user_id']
+                ))
+                print("Обновлена существующая запись")
+            else:
+                # Создаём новую запись
+                cursor.execute('''
+                    INSERT INTO bju_settings (user_id, age, height, gender_id, activity_id, goal_id)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', (
+                    session['user_id'],
+                    data['age'],
+                    data['height'],
+                    data['gender_id'],
+                    data['activity_id'],
+                    data['goal_id']
+                ))
+                print("Создана новая запись")
+            
+            conn.commit()
+            
+            # Проверяем, что сохранилось
+            cursor.execute('SELECT * FROM bju_settings WHERE user_id = ?', (session['user_id'],))
+            saved = cursor.fetchone()
+            print("Сохранённые данные:", dict(saved) if saved else None)
+            
+        return jsonify({'success': True})
+    except Exception as e:
+        print("ОШИБКА:", str(e))
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/check_bju_updates')
+def check_bju_updates():
+    if 'user_id' not in session:
+        return jsonify({'changed': False})
+    
+    with database.get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT updated_at FROM bju_settings 
+            WHERE user_id = ?
+        ''', (session['user_id'],))
+        row = cursor.fetchone()
+        
+        if row:
+            last_check = session.get('last_bju_update', '')
+            current = row['updated_at']
+            
+            if last_check != current:
+                session['last_bju_update'] = current
+                return jsonify({'changed': True})
+    
+    return jsonify({'changed': False})
+
 # Страница управления данными питания
 @app.route('/admin/nutrition-data')
 def admin_nutrition_data():
@@ -1240,7 +1486,25 @@ def admin_reset_bju():
     return jsonify({'success': success})
 
 
-# Страница питания
+@app.route('/api/update_bju_goal', methods=['POST'])
+def update_bju_goal():
+    if 'user_id' not in session:
+        return jsonify({'success': False})
+    
+    data = request.get_json()
+    goal = data.get('goal')
+    
+    with database.get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE bju_settings 
+            SET goal = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE user_id = ?
+        ''', (goal, session['user_id']))
+        conn.commit()
+    
+    return jsonify({'success': True})
+
 @app.route('/nutrition')
 def nutrition():
     if 'user_id' not in session:
@@ -1250,12 +1514,30 @@ def nutrition():
     stats = database.get_weight_stats(session['user_id'])
     today = datetime.now().strftime('%Y-%m-%d')
     
-    return render_template('nutrition.html', 
-                         entries=entries, 
-                         stats=stats, 
+    # Получаем справочные данные для выпадающих списков
+    with database.get_db() as conn:
+        cursor = conn.cursor()
+        
+        # Получаем типы пола
+        cursor.execute('SELECT id, display_name FROM gender_types ORDER BY sort_order')
+        genders = [dict(row) for row in cursor.fetchall()]
+        
+        # Получаем уровни активности
+        cursor.execute('SELECT id, display_name, value FROM activity_levels ORDER BY sort_order')
+        activities = [dict(row) for row in cursor.fetchall()]
+        
+        # Получаем цели
+        cursor.execute('SELECT id, display_name FROM goal_types ORDER BY sort_order')
+        goals = [dict(row) for row in cursor.fetchall()]
+    
+    return render_template('nutrition.html',
+                         entries=entries,
+                         stats=stats,
                          today=today,
+                         genders=genders,
+                         activities=activities,
+                         goals=goals,
                          is_admin=session.get('is_admin', 0))
-
 # Добавление записи веса
 @app.route('/add_weight', methods=['POST'])
 def add_weight():
@@ -1312,19 +1594,28 @@ def about():
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+@app.route('/admin/lookups')
+def lookup_tables():
+    if 'user_id' not in session or not session.get('is_admin'):
+        return redirect(url_for('login'))
+    
+    with database.get_db() as conn:
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT COUNT(*) as count FROM gender_types')
+        gender_count = cursor.fetchone()['count']
+        
+        cursor.execute('SELECT COUNT(*) as count FROM activity_levels')
+        activity_count = cursor.fetchone()['count']
+        
+        cursor.execute('SELECT COUNT(*) as count FROM goal_types')
+        goal_count = cursor.fetchone()['count']
+    
+    return render_template('lookup_tables.html',
+                         gender_count=gender_count,
+                         activity_count=activity_count,
+                         goal_count=goal_count,
+                         is_admin=session.get('is_admin', 0))
 
 
 
@@ -1334,49 +1625,14 @@ def open_browser():
     time.sleep(1)
     webbrowser.open('http://127.0.0.1:5000')
 
-
 if __name__ == '__main__':
     database.init_db()
     try:
-        database.init_exercises_table()
-        print("Таблица упражнений инициализирована")
+        database.init_lookup_tables()
+        print("Справочные таблицы инициализированы")
     except Exception as e:
-        print(f"Ошибка при инициализации упражнений: {e}")
+        print(f"Ошибка при инициализации справочных таблиц: {e}")
     
-    try:
-        database.init_workouts_table()
-        print("Таблицы тренировок инициализированы")
-    except Exception as e:
-        print(f"Ошибка при инициализации тренировок: {e}")
-    
-    try:
-        database.init_stats_table()
-        print("Таблицы статистики инициализированы")
-    except Exception as e:
-        print(f"Ошибка при инициализации статистики: {e}")
-    
-    try:
-        database.init_nutrition_tables()
-        print("Таблицы питания инициализированы")
-    except Exception as e:
-        print(f"Ошибка при инициализации питания: {e}")
-    
-    try:
-        database.init_bju_settings_table()
-        print("Таблица настроек БЖУ инициализирована")
-    except Exception as e:
-        print(f"Ошибка при инициализации БЖУ: {e}")
-    
-    # НОВОЕ: инициализация таблицы О нас
-    try:
-        database.init_about_table()
-        print("Таблица контента О нас инициализирована")
-    except Exception as e:
-        print(f"Ошибка при инициализации контента О нас: {e}")
-    
-    threading.Thread(target=open_browser).start()
-    app.run(host='127.0.0.1', port=5000, debug=False)
-    database.init_db()
     try:
         database.init_exercises_table()
         print("Таблица упражнений инициализирована")

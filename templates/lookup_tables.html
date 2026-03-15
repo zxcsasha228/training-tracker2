@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Справочники</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #9ca3af;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-gray {
+            background: var(--gray);
+            color: white;
+        }
+
+        .btn:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .lookup-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            border: 1px solid rgba(0,0,0,0.05);
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .lookup-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.2);
+            border-color: var(--primary);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-icon i {
+            font-size: 1.5em;
+            color: white;
+        }
+
+        .card-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .card-description {
+            color: var(--gray);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .card-stats {
+            display: flex;
+            justify-content: space-between;
+            color: var(--gray);
+            font-size: 0.9em;
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .stat-count {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 60px 20px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <input type="hidden" id="userId" value="{{ session['user_id'] }}">
+    {% include 'sidebar.html' %}
+    
+    <div class="main-content" id="mainContent">
+        <div class="container">
+            <div class="header">
+                <h1><i class="fas fa-book-open"></i> Справочники</h1>
+                <a href="{{ url_for('admin_panel') }}" class="btn btn-gray">
+                    <i class="fas fa-arrow-left"></i> Назад в админку
+                </a>
+            </div>
+
+            <div class="cards-grid">
+                <!-- Типы пола -->
+                <a href="{{ url_for('table_manager') }}?table=gender_types" class="lookup-card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-venus-mars"></i>
+                        </div>
+                        <div class="card-title">Типы пола</div>
+                    </div>
+                    <div class="card-description">
+                        Управление вариантами пола для калькулятора БЖУ
+                    </div>
+                    <div class="card-stats">
+                        <span>Записей: <span class="stat-count">{{ gender_count }}</span></span>
+                        <span><i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+
+                <!-- Уровни активности -->
+                <a href="{{ url_for('table_manager') }}?table=activity_levels" class="lookup-card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="card-title">Уровни активности</div>
+                    </div>
+                    <div class="card-description">
+                        Коэффициенты активности для расчёта калорий
+                    </div>
+                    <div class="card-stats">
+                        <span>Записей: <span class="stat-count">{{ activity_count }}</span></span>
+                        <span><i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+
+                <!-- Цели -->
+                <a href="{{ url_for('table_manager') }}?table=goal_types" class="lookup-card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <div class="card-title">Цели</div>
+                    </div>
+                    <div class="card-description">
+                        Цели для расчёта БЖУ (похудение, набор, поддержание)
+                    </div>
+                    <div class="card-stats">
+                        <span>Записей: <span class="stat-count">{{ goal_count }}</span></span>
+                        <span><i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% include 'active_workout_banner.html' %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mainContent = document.getElementById('mainContent');
+            const savedState = localStorage.getItem('sidebar_collapsed');
+            if (savedState === 'true') {
+                mainContent.classList.add('expanded');
+            }
+        });
+    </script>
+</body>
+</html>

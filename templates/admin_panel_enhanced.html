@@ -380,6 +380,7 @@
     </style>
 </head>
 <body>
+    <input type="hidden" id="userId" value="{{ session['user_id'] }}">
     {% include 'sidebar.html' %}
     
     <div class="main-content" id="mainContent">
@@ -387,6 +388,7 @@
             <div class="header">
                 <h1><i class="fas fa-crown"></i> Админ-панель</h1>
                 <div class="header-actions">
+                    
 
                      <a href="{{ url_for('easter_egg_admin') }}" class="btn btn-warning">
         <i class="fas fa-egg"></i> Пасхалка
@@ -431,17 +433,17 @@
     </div>
 
     <div class="stat-card-large">
-        <div class="stat-icon-large">
-            <i class="fas fa-dumbbell"></i>
-        </div>
-        <div class="stat-content-large">
-            <h3>Всего тренировок</h3>
-            <div class="stat-number-large">{{ stats.total_workouts }}</div>
-            <div class="stat-trend up">
-                <i class="fas fa-arrow-up"></i> +{{ stats.workout_growth }}% за неделю
-            </div>
+    <div class="stat-icon-large">
+        <i class="fas fa-dumbbell"></i>
+    </div>
+    <div class="stat-content-large">
+        <h3>Всего тренировок</h3>
+        <div class="stat-number-large">{{ stats.total_workouts }}</div>
+        <div class="stat-trend up">
+            <i class="fas fa-arrow-up"></i> +{{ stats.workout_growth }}% за неделю
         </div>
     </div>
+</div>
 
     <div class="stat-card-large">
         <div class="stat-icon-large">
@@ -534,7 +536,7 @@
                             <td><strong>#{{ user.id }}</strong></td>
                             <td>
                                 <i class="fas fa-user-circle" style="color: var(--primary);"></i>
-                                {{ user.username }}
+                                  {{ user.full_name or user.username }}
                             </td>
                             <td class="password-cell">
                                 <span class="password-hidden" id="password-{{ user.id }}">••••••••</span>
@@ -780,5 +782,7 @@
             }
         });
     </script>
+    {% include 'active_workout_banner.html' %}
 </body>
+ 
 </html>

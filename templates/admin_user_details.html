@@ -294,7 +294,7 @@
                 </div>
 
                 <!-- Имя пользователя -->
-                <div class="user-name">{{ user.username }}</div>
+                <div class="user-name">{{ user.full_name or user.username }}</div>
 
                 <!-- Бейдж роли -->
                 <div class="role-badge {% if user.is_admin %}admin{% else %}user{% endif %}">

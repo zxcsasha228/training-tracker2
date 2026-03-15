@@ -104,19 +104,19 @@ def init_db():
         print("База данных найдена.")
 
 #region Функции для работы с пользователями
-def create_user(username, password, is_admin=0):
-    """Создать нового пользователя"""
+def create_user(username, password, full_name):
+    """Создать нового пользователя с ФИО"""
     try:
         with get_db() as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                INSERT INTO users (username, password, is_admin)
+                INSERT INTO users (username, password, full_name)
                 VALUES (?, ?, ?)
-            ''', (username, password, is_admin))
+            ''', (username, password, full_name))
             return cursor.lastrowid
     except sqlite3.IntegrityError:
         return None
-
+        
 def check_user(username, password):
     """Проверить логин и пароль"""
     with get_db() as conn:
@@ -225,13 +225,14 @@ def get_user_with_password(user_id):
         return cursor.fetchone()
 
 def get_all_users_with_passwords():
-    """Получить всех пользователей с паролями (только для админа) - БЕЗ подсчета тренировок"""
+    """Получить всех пользователей с паролями и ФИО (для админа)"""
     with get_db() as conn:
         cursor = conn.cursor()
         cursor.execute('''
             SELECT 
                 id, 
                 username, 
+                full_name,
                 password, 
                 is_admin, 
                 created_at
@@ -862,20 +863,20 @@ def get_admin_stats():
             cursor.execute('SELECT COUNT(*) as count FROM users WHERE is_admin = 1')
             total_admins = cursor.fetchone()['count']
             
-            # Общее количество тренировок (workout_sessions)
-            cursor.execute('SELECT COUNT(*) as count FROM workout_sessions')
+            # Количество ЗАВЕРШЁННЫХ тренировок (исправлено!)
+            cursor.execute('SELECT COUNT(*) as count FROM completed_workouts')
             total_workouts = cursor.fetchone()['count']
             
             # Общее количество упражнений в библиотеке
             cursor.execute('SELECT COUNT(*) as count FROM exercises')
             total_exercises = cursor.fetchone()['count']
             
-            # Общее количество часов тренировок (из completed_workouts)
+            # Общее количество часов тренировок
             cursor.execute('SELECT SUM(duration) as total FROM completed_workouts')
             total_seconds = cursor.fetchone()['total'] or 0
             total_hours = round(total_seconds / 3600, 1)
             
-            # Активные сегодня (пользователи, которые тренировались сегодня или вчера)
+            # Активные сегодня
             from datetime import datetime, timedelta
             today = datetime.now().strftime('%Y-%m-%d')
             yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
@@ -915,7 +916,7 @@ def get_admin_stats():
             return {
                 'total_users': total_users,
                 'total_admins': total_admins,
-                'total_workouts': total_workouts,
+                'total_workouts': total_workouts,  # Теперь это завершённые тренировки
                 'total_exercises': total_exercises,
                 'total_hours': total_hours,
                 'active_today': active_today,
@@ -938,7 +939,6 @@ def get_admin_stats():
             'new_exercises': 0,
             'new_workouts_week': 0
         }
-
 def get_users_chart_data():
     """Получить данные для графика новых пользователей за последние 7 дней"""
     try:
@@ -1287,6 +1287,28 @@ def get_weight_stats(user_id):
         print(f"Ошибка при получении статистики веса: {e}")
         return {}
     
+def get_user_bju_settings(user_id):
+    """Получить настройки БЖУ пользователя с расшифровкой"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT 
+                bs.*,
+                g.display_name as gender_display,
+                g.icon as gender_icon,
+                a.display_name as activity_display,
+                a.icon as activity_icon,
+                a.value as activity_value,
+                go.display_name as goal_display,
+                go.icon as goal_icon
+            FROM bju_settings bs
+            LEFT JOIN gender_types g ON bs.gender_id = g.id
+            LEFT JOIN activity_levels a ON bs.activity_id = a.id
+            LEFT JOIN goal_types go ON bs.goal_id = go.id
+            WHERE bs.user_id = ?
+        ''', (user_id,))
+        return cursor.fetchone()
+    
 #endregion
 
 
@@ -1383,3 +1405,109 @@ def add_about_content(section_key, section_title, section_content, icon, sort_or
         return False
     
 #endregion
+
+
+def init_lookup_tables():
+    """Создать справочные таблицы для пола, активности и цели"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            
+            # Таблица для пола
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS gender_types (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT UNIQUE NOT NULL,
+                    display_name TEXT NOT NULL,
+                    icon TEXT,
+                    sort_order INTEGER DEFAULT 0
+                )
+            ''')
+            
+            # Таблица для уровней активности
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS activity_levels (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT UNIQUE NOT NULL,
+                    display_name TEXT NOT NULL,
+                    value REAL NOT NULL,
+                    icon TEXT,
+                    description TEXT,
+                    sort_order INTEGER DEFAULT 0
+                )
+            ''')
+            
+            # Таблица для целей
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS goal_types (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT UNIQUE NOT NULL,
+                    display_name TEXT NOT NULL,
+                    icon TEXT,
+                    description TEXT,
+                    sort_order INTEGER DEFAULT 0
+                )
+            ''')
+            
+            # Заполняем таблицы начальными данными
+            # Пол
+            genders = [
+                ('male', '👨 Мужской', 'fa-mars', 1),
+                ('female', '👩 Женский', 'fa-venus', 2)
+            ]
+            for name, display_name, icon, sort in genders:
+                cursor.execute('''
+                    INSERT OR IGNORE INTO gender_types (name, display_name, icon, sort_order)
+                    VALUES (?, ?, ?, ?)
+                ''', (name, display_name, icon, sort))
+            
+            # Активность
+            activities = [
+                ('minimal', '🪑 Минимальная', 1.2, 'fa-chair', 'Сидячая работа, нет тренировок', 1),
+                ('light', '🚶 Лёгкая', 1.375, 'fa-walking', '1-3 тренировки в неделю', 2),
+                ('moderate', '🏃 Средняя', 1.55, 'fa-running', '3-5 тренировок в неделю', 3),
+                ('high', '💪 Высокая', 1.725, 'fa-dumbbell', '6-7 тренировок в неделю', 4),
+                ('extreme', '🏆 Очень высокая', 1.9, 'fa-trophy', 'Спортсмены, физическая работа', 5)
+            ]
+            for name, display_name, value, icon, desc, sort in activities:
+                cursor.execute('''
+                    INSERT OR IGNORE INTO activity_levels (name, display_name, value, icon, description, sort_order)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', (name, display_name, value, icon, desc, sort))
+            
+            # Цели
+            goals = [
+                ('maintain', '🏋️ Поддержание', 'fa-balance-scale', 'Сохранить текущий вес', 1),
+                ('lose', '📉 Похудение', 'fa-arrow-down', 'Снизить вес', 2),
+                ('gain', '📈 Набор массы', 'fa-arrow-up', 'Увеличить мышечную массу', 3)
+            ]
+            for name, display_name, icon, desc, sort in goals:
+                cursor.execute('''
+                    INSERT OR IGNORE INTO goal_types (name, display_name, icon, description, sort_order)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (name, display_name, icon, desc, sort))
+            
+            conn.commit()
+            print("Справочные таблицы инициализированы")
+    except Exception as e:
+        print(f"Ошибка при создании справочных таблиц: {e}")
+
+
+# Функции для получения данных из справочников
+def get_gender_types():
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM gender_types ORDER BY sort_order')
+        return cursor.fetchall()
+
+def get_activity_levels():
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM activity_levels ORDER BY sort_order')
+        return cursor.fetchall()
+
+def get_goal_types():
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM goal_types ORDER BY sort_order')
+        return cursor.fetchall()

@@ -51,10 +51,19 @@
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 40px;
-            
+            animation: slideUp 0.6s ease-out;
         }
 
-       
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
         /* Шапка профиля */
         .profile-header {
@@ -89,6 +98,12 @@
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .profile-title .username {
+            color: var(--gray);
+            font-size: 1.1em;
             margin-bottom: 5px;
         }
 
@@ -248,9 +263,6 @@
     </style>
 </head>
 <body>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark_theme.css') }}">
-    <input type="hidden" id="userId" value="{{ session['user_id'] }}">
     {% include 'sidebar.html' %}
     
     <div class="main-content" id="mainContent">
@@ -261,7 +273,8 @@
                     <i class="fas fa-user"></i>
                 </div>
                 <div class="profile-title">
-                    <h1>{{ user.username }}</h1>
+                    <h1>{{ user.full_name or user.username }}</h1>
+                    <div class="username">@{{ user.username }}</div>
                     {% if user.is_admin %}
                         <span class="role-badge">
                             <i class="fas fa-crown"></i> Администратор
@@ -297,9 +310,37 @@
                 </div>
 
                 
+
+                <!-- Новая карточка с логином для информации -->
+                <div class="info-card">
+                    <div class="info-icon">
+                        <i class="fas fa-user-tag"></i>
+                    </div>
+                    <div class="info-content">
+                        <h3>Логин</h3>
+                        <p>{{ user.username }}</p>
+                    </div>
+                </div>
             </div>
 
-            
+            <!-- Статистика -->
+            <div class="stats-section">
+                <div class="section-title">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Моя статистика</span>
+                </div>
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <div class="stat-value">{{ stats.workouts_count }}</div>
+                        <div class="stat-label">Тренировок</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ stats.total_duration }}</div>
+                        <div class="stat-label">Минут</div>
+                    </div>
+                    
+                </div>
+            </div>
 
             <!-- Кнопка редактирования (пока неактивна) -->
             <div style="text-align: center;">
@@ -324,5 +365,6 @@
             }
         });
     </script>
+{% include 'active_workout_banner.html' %}
 </body>
 </html>
