@@ -11,6 +11,14 @@ from flask import jsonify
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here-change-this'
 
+# Добавляем фильтр float для Jinja2
+@app.template_filter('float')
+def float_filter(value):
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return 0.0
+
 # Определяем базовую папку где лежит exe-файл
 if getattr(sys, 'frozen', False):
     # Запущены из exe
@@ -1079,21 +1087,148 @@ def remove_exercise_from_workout_api(workout_exercise_id):
 #endregion
 
 
-
-
-
-
-
-
 @app.route('/test')
 def test():
     return render_template('test.html')
+
+@app.route('/easter-egg')
+def easter_egg():
+    media = database.get_easter_egg_media()
+    return render_template('easter_egg.html', media=media)
+
+@app.route('/admin/easter-egg')
+def easter_egg_admin():
+    if 'user_id' not in session or not session.get('is_admin'):
+        return redirect(url_for('login'))
+    
+    media = database.get_easter_egg_media()
+    return render_template('easter_egg_admin.html', 
+                         media=media,
+                         is_admin=session.get('is_admin', 0))
+
+@app.route('/api/save_easter_egg', methods=['POST'])
+def save_easter_egg():
+    if 'user_id' not in session or not session.get('is_admin'):
+        return jsonify({'success': False}), 401
+    
+    if 'media' not in request.files:
+        return jsonify({'success': False}), 400
+    
+    file = request.files['media']
+    if file.filename == '':
+        return jsonify({'success': False}), 400
+    
+    # Определяем тип
+    ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+    media_type = 'video' if ext in ['mp4', 'webm', 'ogg', 'mov'] else 'image'
+    
+    # Сохраняем с уникальным именем
+    filename = secure_filename(f"easter_{int(time.time())}.{ext}")
+    file.save(os.path.join(UPLOAD_FOLDER, filename))
+    
+    # Обновляем в БД
+    database.update_easter_egg_media(f'uploads/{filename}', media_type)
+    
+    return jsonify({'success': True})
+# API для проверки наличия видео
+@app.route('/api/check_video')
+def check_video():
+    settings = database.get_easter_egg_settings()
+    video_path = settings.get('video_path', '')
+    full_path = os.path.join(UPLOAD_FOLDER, os.path.basename(video_path))
+    return jsonify({'has_video': os.path.exists(full_path)})
+
+
+
+
+
+
+
+from datetime import datetime
+
+# Страница питания
+@app.route('/nutrition')
+def nutrition():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    entries = database.get_weight_entries(session['user_id'])
+    stats = database.get_weight_stats(session['user_id'])
+    today = datetime.now().strftime('%Y-%m-%d')
+    
+    return render_template('nutrition.html', 
+                         entries=entries, 
+                         stats=stats, 
+                         today=today,
+                         is_admin=session.get('is_admin', 0))
+
+# Добавление записи веса
+@app.route('/add_weight', methods=['POST'])
+def add_weight():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    date = request.form.get('date')
+    weight = request.form.get('weight')
+    notes = request.form.get('notes', '')
+    
+    if not date or not weight:
+        return redirect(url_for('nutrition'))
+    
+    database.add_weight_entry(session['user_id'], date, float(weight), notes)
+    return redirect(url_for('nutrition'))
+
+# Удаление записи веса
+@app.route('/delete_weight/<int:entry_id>', methods=['POST'])
+def delete_weight(entry_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    # Здесь нужно добавить функцию удаления в database.py
+    try:
+        with database.get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM weight_tracking WHERE id = ? AND user_id = ?', 
+                         (entry_id, session['user_id']))
+            conn.commit()
+    except Exception as e:
+        print(f"Ошибка при удалении: {e}")
+    
+    return redirect(url_for('nutrition'))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 def open_browser():
     time.sleep(1)
     webbrowser.open('http://127.0.0.1:5000')
+
 
 if __name__ == '__main__':
     database.init_db()
@@ -1109,12 +1244,18 @@ if __name__ == '__main__':
     except Exception as e:
         print(f"Ошибка при инициализации тренировок: {e}")
     
-    # Добавь это
     try:
         database.init_stats_table()
         print("Таблицы статистики инициализированы")
     except Exception as e:
         print(f"Ошибка при инициализации статистики: {e}")
+    
+    # НОВОЕ: инициализация таблиц питания
+    try:
+        database.init_nutrition_tables()
+        print("Таблицы питания инициализированы")
+    except Exception as e:
+        print(f"Ошибка при инициализации питания: {e}")
     
     threading.Thread(target=open_browser).start()
     app.run(host='127.0.0.1', port=5000, debug=False)

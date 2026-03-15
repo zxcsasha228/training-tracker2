@@ -1,14 +1,16 @@
 <!-- Боковое меню -->
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
+    <a href="{{ url_for('easter_egg') }}" style="text-decoration: none; color: white;">
         <div class="logo">
             <i class="fas fa-dumbbell" style="color: var(--primary);"></i>
             <span>FitTrack</span>
         </div>
-        <button class="sidebar-toggle" onclick="toggleSidebar()">
-            <i class="fas fa-chevron-left" id="toggleIcon"></i>
-        </button>
-    </div>
+    </a>
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-chevron-left" id="toggleIcon"></i>
+    </button>
+</div>
     
     <div class="sidebar-menu">
         
@@ -27,6 +29,12 @@
             <i class="fas fa-chart-line"></i>
             <span>Статистика</span>
         </a>
+
+            <!-- НОВАЯ КНОПКА ПИТАНИЯ -->
+    <a href="{{ url_for('nutrition') }}" class="menu-item {% if request.endpoint == 'nutrition' %}active{% endif %}">
+        <i class="fas fa-apple-alt"></i>
+        <span>Питание</span>
+    </a>
 
         <a href="{{ url_for('exercises_library') }}" class="menu-item {% if request.endpoint == 'exercises_library' %}active{% endif %}">
             <i class="fas fa-book"></i>

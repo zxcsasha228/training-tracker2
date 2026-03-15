@@ -103,7 +103,7 @@ def init_db():
     else:
         print("База данных найдена.")
 
-# Функции для работы с пользователями
+#region Функции для работы с пользователями
 def create_user(username, password, is_admin=0):
     """Создать нового пользователя"""
     try:
@@ -134,7 +134,9 @@ def get_user_by_id(user_id):
         cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
         return cursor.fetchone()
 
-# АДМИН-ФУНКЦИИ
+#endregion
+
+#region АДМИН-ФУНКЦИИ
 def get_all_users():
     """Получить всех пользователей (для админа)"""
     with get_db() as conn:
@@ -201,9 +203,9 @@ def get_user_stats():
             'recent_workouts': recent_workouts
         }
 
+#endregion
 
-
-# Функции для работы с тренировками (обычные пользователи)
+#region Функции для работы с тренировками (обычные пользователи)
 def add_workout(user_id, date, exercise, sets, reps, weight):
     with get_db() as conn:
         cursor = conn.cursor()
@@ -279,7 +281,9 @@ def delete_workout(workout_id, user_id):
         ''', (workout_id, user_id))
 
         # ================ БИБЛИОТЕКА УПРАЖНЕНИЙ ================
-# ================ БИБЛИОТЕКА УПРАЖНЕНИЙ ================
+#endregion
+
+#region ================ БИБЛИОТЕКА УПРАЖНЕНИЙ ================
 
 def init_exercises_table():
     """Создать таблицу упражнений, если её нет"""
@@ -440,8 +444,9 @@ def get_muscle_groups():
             ORDER BY muscle_group
         ''')
         return [row['muscle_group'] for row in cursor.fetchall()]
+#endregion
 
-# ================ ТРЕНИРОВКИ ================
+#region ================ ТРЕНИРОВКИ ================
 def init_workouts_table():
     """Создать таблицы для тренировок"""
     try:
@@ -658,8 +663,9 @@ def update_workout_session(workout_id, user_id, name, date, notes):
         print(f"Ошибка при обновлении тренировки: {e}")
         return False     
 
-   
-# ================ СТАТИСТИКА ================
+#endregion   
+
+#region ================ СТАТИСТИКА ================
 
 def init_stats_table():
     """Создать таблицу для статистики тренировок"""
@@ -1021,3 +1027,230 @@ def get_workouts_chart_data():
     except Exception as e:
         print(f"Ошибка при получении данных графика тренировок: {e}")
         return {'labels': [], 'data': []}
+    
+#endregion
+
+#region ================ НАСТРОЙКИ ПАСХАЛКИ ================
+
+def init_easter_egg_table():
+    """Создать таблицу для настроек пасхалки"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS easter_egg_settings (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    media_path TEXT,
+                    media_type TEXT DEFAULT 'image',
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
+            # Добавляем запись по умолчанию, если её нет
+            cursor.execute('SELECT COUNT(*) as count FROM easter_egg_settings')
+            if cursor.fetchone()['count'] == 0:
+                cursor.execute('''
+                    INSERT INTO easter_egg_settings (media_path, media_type)
+                    VALUES (?, ?)
+                ''', ('uploads/easter_default.jpg', 'image'))
+            
+            conn.commit()
+            print("Таблица пасхалки инициализирована")
+    except Exception as e:
+        print(f"Ошибка при создании таблицы пасхалки: {e}")
+
+def get_easter_egg_media():
+    """Получить текущий медиафайл пасхалки"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT media_path, media_type FROM easter_egg_settings ORDER BY id DESC LIMIT 1')
+            row = cursor.fetchone()
+            if row:
+                return {'path': row['media_path'], 'type': row['media_type']}
+            return {'path': 'uploads/easter_default.jpg', 'type': 'image'}
+    except Exception as e:
+        print(f"Ошибка при получении медиа пасхалки: {e}")
+        return {'path': 'uploads/easter_default.jpg', 'type': 'image'}
+
+def update_easter_egg_media(media_path, media_type):
+    """Обновить медиафайл пасхалки"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            # Очищаем старые записи
+            cursor.execute('DELETE FROM easter_egg_settings')
+            # Добавляем новую
+            cursor.execute('''
+                INSERT INTO easter_egg_settings (media_path, media_type)
+                VALUES (?, ?)
+            ''', (media_path, media_type))
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"Ошибка при обновлении медиа пасхалки: {e}")
+        return False
+
+def get_easter_egg_settings():
+    """Получить все настройки пасхалки"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT setting_key, setting_value FROM easter_egg_settings')
+            settings = cursor.fetchall()
+            return {row['setting_key']: row['setting_value'] for row in settings}
+    except Exception as e:
+        print(f"Ошибка при получении настроек пасхалки: {e}")
+        return {}
+
+def update_easter_egg_setting(key, value):
+    """Обновить настройку пасхалки"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                UPDATE easter_egg_settings 
+                SET setting_value = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE setting_key = ?
+            ''', (value, key))
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"Ошибка при обновлении настройки пасхалки: {e}")
+        return False
+
+#endregion
+
+
+#region================ ПИТАНИЕ ================
+
+def init_nutrition_tables():
+    """Создать таблицы для питания"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            
+            # Таблица для отслеживания веса
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS weight_tracking (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    date TEXT NOT NULL,
+                    weight REAL NOT NULL,
+                    notes TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+                    UNIQUE(user_id, date)
+                )
+            ''')
+            
+            print("Таблицы питания инициализированы")
+    except Exception as e:
+        print(f"Ошибка при создании таблиц питания: {e}")
+
+# Добавить запись веса
+def add_weight_entry(user_id, date, weight, notes=""):
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            
+            # Проверяем, есть ли уже запись на эту дату
+            cursor.execute('SELECT id FROM weight_tracking WHERE user_id = ? AND date = ?', 
+                         (user_id, date))
+            existing = cursor.fetchone()
+            
+            if existing:
+                # Если есть - обновляем
+                cursor.execute('''
+                    UPDATE weight_tracking 
+                    SET weight = ?, notes = ?
+                    WHERE user_id = ? AND date = ?
+                ''', (weight, notes, user_id, date))
+                print(f"Обновлена запись за {date}")
+            else:
+                # Если нет - добавляем новую
+                cursor.execute('''
+                    INSERT INTO weight_tracking (user_id, date, weight, notes)
+                    VALUES (?, ?, ?, ?)
+                ''', (user_id, date, weight, notes))
+                print(f"Добавлена новая запись за {date}")
+            
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"Ошибка при добавлении веса: {e}")
+        return False
+# Получить все записи веса пользователя
+def get_weight_entries(user_id):
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT * FROM weight_tracking 
+                WHERE user_id = ? 
+                ORDER BY date DESC
+            ''', (user_id,))
+            return cursor.fetchall()
+    except Exception as e:
+        print(f"Ошибка при получении записей веса: {e}")
+        return []
+
+# Получить статистику веса
+def get_weight_stats(user_id):
+
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            
+            # Последняя запись
+            cursor.execute('''
+                SELECT weight, date FROM weight_tracking 
+                WHERE user_id = ? 
+                ORDER BY date DESC LIMIT 1
+            ''', (user_id,))
+            last = cursor.fetchone()
+            
+            # Минимальный вес
+            cursor.execute('''
+                SELECT MIN(weight) as min_weight, date FROM weight_tracking 
+                WHERE user_id = ?
+            ''', (user_id,))
+            min_data = cursor.fetchone()
+            
+            # Максимальный вес
+            cursor.execute('''
+                SELECT MAX(weight) as max_weight, date FROM weight_tracking 
+                WHERE user_id = ?
+            ''', (user_id,))
+            max_data = cursor.fetchone()
+            
+            # Изменение за последние 30 дней
+            from datetime import datetime, timedelta
+            month_ago = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
+            
+            cursor.execute('''
+                SELECT weight FROM weight_tracking 
+                WHERE user_id = ? AND date >= ?
+                ORDER BY date ASC LIMIT 1
+            ''', (user_id, month_ago))
+            first_month = cursor.fetchone()
+            
+            change_30d = 0
+            if first_month and last:
+                change_30d = round(last['weight'] - first_month['weight'], 1)
+            
+            return {
+                'last_weight': last['weight'] if last else None,
+                'last_date': last['date'] if last else None,
+                'min_weight': min_data['min_weight'] if min_data['min_weight'] else None,
+                'min_date': min_data['date'] if min_data['date'] else None,
+                'max_weight': max_data['max_weight'] if max_data['max_weight'] else None,
+                'max_date': max_data['date'] if max_data['date'] else None,
+                'change_30d': change_30d,
+                'total_entries': len(get_weight_entries(user_id))
+            }
+    except Exception as e:
+        print(f"Ошибка при получении статистики веса: {e}")
+        return {}
+    
+#endregion

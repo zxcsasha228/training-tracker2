@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Пасхалка</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --success: #10b981;
+            --gray: #9ca3af;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(0,0,0,0.05);
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: black;
+        }
+
+        .btn-gray {
+            background: var(--gray);
+            color: white;
+        }
+
+        .btn:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+
+        .upload-area {
+            border: 2px dashed #e5e7eb;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 20px 0;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .upload-area i {
+            font-size: 3em;
+            color: var(--gray);
+            margin-bottom: 15px;
+        }
+
+        .upload-area p {
+            color: var(--gray);
+            margin-bottom: 5px;
+        }
+
+        .upload-area .hint {
+            font-size: 0.85em;
+            opacity: 0.7;
+        }
+
+        .preview {
+            margin-top: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #f3f4f6;
+            display: none;
+        }
+
+        .preview.show {
+            display: block;
+        }
+
+        .preview img,
+        .preview video {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+        }
+
+        .file-name {
+            margin-top: 10px;
+            padding: 8px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            color: var(--primary);
+            font-size: 0.9em;
+            word-break: break-all;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .success-message {
+            background: #d1fae5;
+            color: var(--success);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 60px 20px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% include 'sidebar.html' %}
+    
+    <div class="main-content" id="mainContent">
+        <div class="container">
+            <div class="header">
+                <h1><i class="fas fa-egg"></i> Пасхалка</h1>
+                <a href="{{ url_for('admin_panel') }}" class="btn btn-gray">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </a>
+            </div>
+
+            <div id="successMessage" class="success-message">
+                <i class="fas fa-check-circle"></i> Сохранено!
+            </div>
+
+            <form id="easterEggForm" enctype="multipart/form-data">
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Нажмите чтобы загрузить</p>
+                    <p class="hint">Поддерживаются JPG, PNG, GIF, MP4</p>
+                </div>
+                
+                <input type="file" id="fileInput" name="media" accept="image/*,video/*" style="display: none;" onchange="previewFile(this)">
+
+                <div class="preview" id="preview">
+                    {% if media.type == 'video' %}
+                    <video src="/{{ media.path }}" controls></video>
+                    {% else %}
+                    <img src="/{{ media.path }}" alt="Preview">
+                    {% endif %}
+                </div>
+                <div class="file-name" id="fileName">{{ media.path }}</div>
+
+                <div class="action-buttons">
+                    <button type="button" class="btn btn-primary" onclick="saveMedia()">
+                        <i class="fas fa-save"></i> Сохранить
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% include 'active_workout_banner.html' %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const preview = document.getElementById('preview');
+            preview.classList.add('show');
+            
+            const mainContent = document.getElementById('mainContent');
+            const savedState = localStorage.getItem('sidebar_collapsed');
+            if (savedState === 'true') {
+                mainContent.classList.add('expanded');
+            }
+        });
+
+        function previewFile(input) {
+            const preview = document.getElementById('preview');
+            const fileName = document.getElementById('fileName');
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                fileName.textContent = file.name;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (file.type.startsWith('video/')) {
+                        preview.innerHTML = `<video src="${e.target.result}" controls></video>`;
+                    } else {
+                        preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                    }
+                    preview.classList.add('show');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function saveMedia() {
+            const formData = new FormData();
+            const fileInput = document.getElementById('fileInput');
+            
+            if (!fileInput.files[0]) {
+                alert('Выберите файл');
+                return;
+            }
+            
+            formData.append('media', fileInput.files[0]);
+
+            fetch('/api/save_easter_egg', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const msg = document.getElementById('successMessage');
+                    msg.classList.add('show');
+                    setTimeout(() => msg.classList.remove('show'), 2000);
+                } else {
+                    alert('Ошибка');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

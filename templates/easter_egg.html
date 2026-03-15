@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🥚</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+
+        .fullscreen-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;  /* Сохраняет пропорции */
+        }
+
+        .fullscreen-video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;  /* Сохраняет пропорции */
+            background: #000;
+        }
+
+        .close-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .close-btn:hover {
+            background: rgba(0, 0, 0, 0.8);
+            transform: scale(1.1);
+        }
+
+        /* Контролы громкости (опционально) */
+        .volume-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 2;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .volume-control i {
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+
+        .volume-control input {
+            width: 100px;
+            cursor: pointer;
+            background: transparent;
+        }
+
+        @media (max-width: 768px) {
+            .close-btn {
+                top: 15px;
+                right: 15px;
+                width: 40px;
+                height: 40px;
+                font-size: 1.2em;
+            }
+            
+            .volume-control {
+                bottom: 15px;
+                right: 15px;
+                padding: 8px 15px;
+            }
+            
+            .volume-control input {
+                width: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="fullscreen" id="mediaContainer">
+        {% if media.type == 'video' %}
+        <video class="fullscreen-video" id="videoPlayer" autoplay loop playsinline>
+            <source src="/{{ media.path }}?t={{ range(1, 999999) | random }}" type="video/mp4">
+        </video>
+        {% else %}
+        <img src="/{{ media.path }}?t={{ range(1, 999999) | random }}" 
+             alt="" 
+             class="fullscreen-image">
+        {% endif %}
+    </div>
+
+    <!-- Кнопка закрытия -->
+    <a href="{{ url_for('my_workouts') }}" class="close-btn">
+        ✕
+    </a>
+
+    {% if media.type == 'video' %}
+    <!-- Управление громкостью (только для видео) -->
+    <div class="volume-control">
+        <i class="fas fa-volume-up" id="volumeIcon" onclick="toggleMute()"></i>
+        <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.5" oninput="changeVolume(this.value)">
+    </div>
+    {% endif %}
+
+    <script>
+        {% if media.type == 'video' %}
+        const video = document.getElementById('videoPlayer');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeIcon = document.getElementById('volumeIcon');
+        
+        // Устанавливаем начальную громкость
+        video.volume = 0.5;
+        
+        // Видео должно играть со звуком
+        video.muted = false;
+        
+        // Пробуем включить звук (некоторые браузеры блокируют автовоспроизведение со звуком)
+        document.addEventListener('click', function playVideo() {
+            video.play().catch(e => console.log('Автовоспроизведение заблокировано:', e));
+            document.removeEventListener('click', playVideo);
+        }, { once: true });
+
+        // Изменение громкости
+        function changeVolume(value) {
+            video.volume = value;
+            video.muted = (value == 0);
+            
+            // Меняем иконку
+            if (value == 0) {
+                volumeIcon.className = 'fas fa-volume-mute';
+            } else if (value < 0.5) {
+                volumeIcon.className = 'fas fa-volume-down';
+            } else {
+                volumeIcon.className = 'fas fa-volume-up';
+            }
+        }
+
+        // Включение/выключение звука
+        function toggleMute() {
+            if (video.volume > 0) {
+                video.volume = 0;
+                volumeSlider.value = 0;
+                volumeIcon.className = 'fas fa-volume-mute';
+            } else {
+                video.volume = 0.5;
+                volumeSlider.value = 0.5;
+                volumeIcon.className = 'fas fa-volume-up';
+            }
+        }
+        {% endif %}
+    </script>
+</body>
+</html>
