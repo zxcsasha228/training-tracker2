@@ -40,6 +40,11 @@
             <i class="fas fa-book"></i>
             <span>Упражнения</span>
         </a>
+        
+         <a href="{{ url_for('about') }}" class="menu-item {% if request.endpoint == 'about' %}active{% endif %}">
+        <i class="fas fa-info-circle"></i>
+        <span>О нас</span>
+    </a>
 
         {% if is_admin %}
 <a href="{{ url_for('admin_panel') }}" class="menu-item {% if request.endpoint == 'admin_panel' %}active{% endif %}">

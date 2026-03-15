@@ -852,7 +852,7 @@ def get_table_data(table_name):
     if 'user_id' not in session or not session.get('is_admin'):
         return jsonify({'error': 'Unauthorized'}), 401
     
-    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'completed_workouts', 'completed_sets']
+    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'about_content', 'completed_workouts', 'completed_sets']
     if table_name not in allowed_tables:
         return jsonify({'error': 'Invalid table'}), 400
     
@@ -897,7 +897,7 @@ def update_cell(table_name, row_id):
     column = data.get('column')
     value = data.get('value')
     
-    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'completed_workouts', 'completed_sets']
+    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'about_content', 'completed_workouts', 'completed_sets']
     if table_name not in allowed_tables:
         return jsonify({'success': False, 'error': 'Invalid table'}), 400
     
@@ -916,7 +916,7 @@ def delete_row(table_name, row_id):
     if 'user_id' not in session or not session.get('is_admin'):
         return jsonify({'success': False, 'error': 'Unauthorized'}), 401
     
-    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'completed_workouts', 'completed_sets']
+    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'about_content', 'completed_workouts', 'completed_sets']
     if table_name not in allowed_tables:
         return jsonify({'success': False, 'error': 'Invalid table'}), 400
     
@@ -939,7 +939,7 @@ def bulk_delete(table_name):
     data = request.get_json()
     ids = data.get('ids', [])
     
-    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'completed_workouts', 'completed_sets']
+    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'about_content', 'completed_workouts', 'completed_sets']
     if table_name not in allowed_tables:
         return jsonify({'success': False, 'error': 'Invalid table'}), 400
     
@@ -962,7 +962,7 @@ def add_row(table_name):
     
     data = request.get_json()
     
-    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'completed_workouts', 'completed_sets']
+    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'about_content', 'completed_workouts', 'completed_sets']
     if table_name not in allowed_tables:
         return jsonify({'success': False, 'error': 'Invalid table'}), 400
     
@@ -989,7 +989,7 @@ def update_row(table_name, row_id):
     
     data = request.get_json()
     
-    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'completed_workouts', 'completed_sets']
+    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'about_content', 'completed_workouts', 'completed_sets']
     if table_name not in allowed_tables:
         return jsonify({'success': False, 'error': 'Invalid table'}), 400
     
@@ -1295,6 +1295,17 @@ def delete_weight(entry_id):
 
 
 
+@app.route('/about')
+def about():
+    stats = database.get_admin_stats()
+    about_content = database.get_about_content()  # Получаем контент из БД
+    
+    return render_template('about.html',
+                         about_content=about_content,
+                         total_users=stats.get('total_users', 0),
+                         total_exercises=stats.get('total_exercises', 0),
+                         total_hours=stats.get('total_hours', 0),
+                         is_admin=session.get('is_admin', 0))
 
 
 
@@ -1325,6 +1336,46 @@ def open_browser():
 
 
 if __name__ == '__main__':
+    database.init_db()
+    try:
+        database.init_exercises_table()
+        print("Таблица упражнений инициализирована")
+    except Exception as e:
+        print(f"Ошибка при инициализации упражнений: {e}")
+    
+    try:
+        database.init_workouts_table()
+        print("Таблицы тренировок инициализированы")
+    except Exception as e:
+        print(f"Ошибка при инициализации тренировок: {e}")
+    
+    try:
+        database.init_stats_table()
+        print("Таблицы статистики инициализированы")
+    except Exception as e:
+        print(f"Ошибка при инициализации статистики: {e}")
+    
+    try:
+        database.init_nutrition_tables()
+        print("Таблицы питания инициализированы")
+    except Exception as e:
+        print(f"Ошибка при инициализации питания: {e}")
+    
+    try:
+        database.init_bju_settings_table()
+        print("Таблица настроек БЖУ инициализирована")
+    except Exception as e:
+        print(f"Ошибка при инициализации БЖУ: {e}")
+    
+    # НОВОЕ: инициализация таблицы О нас
+    try:
+        database.init_about_table()
+        print("Таблица контента О нас инициализирована")
+    except Exception as e:
+        print(f"Ошибка при инициализации контента О нас: {e}")
+    
+    threading.Thread(target=open_browser).start()
+    app.run(host='127.0.0.1', port=5000, debug=False)
     database.init_db()
     try:
         database.init_exercises_table()

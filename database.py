@@ -1288,3 +1288,98 @@ def get_weight_stats(user_id):
         return {}
     
 #endregion
+
+
+#region================О НАС ================
+def init_about_table():
+    """Создать таблицу для контента страницы О нас"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS about_content (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    section_key TEXT UNIQUE NOT NULL,
+                    section_title TEXT,
+                    section_content TEXT,
+                    icon TEXT,
+                    sort_order INTEGER DEFAULT 0,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
+            # Добавляем контент по умолчанию, если таблица пустая
+            cursor.execute('SELECT COUNT(*) as count FROM about_content')
+            if cursor.fetchone()['count'] == 0:
+                default_content = [
+                    ('mission', 'Наша миссия', 'Мы создали этот трекер тренировок, чтобы помочь вам достигать своих фитнес-целей, отслеживать прогресс и оставаться мотивированными.', 'fa-rocket', 1),
+                    ('team_developer', 'Громов Александр Сергеевич', 'Разработчик', 'fa-user-tie', 2),
+                    ('team_designer', 'Виртуальный помощник', 'Дизайнер', 'fa-paint-brush', 3),
+                    ('team_curator', 'Родионов Виктор Валерьевич', 'Куратор', 'fa-crown', 4),
+                ]
+                for item in default_content:
+                    cursor.execute('''
+                        INSERT INTO about_content (section_key, section_title, section_content, icon, sort_order)
+                        VALUES (?, ?, ?, ?, ?)
+                    ''', item)
+            
+            conn.commit()
+            print("Таблица контента О нас инициализирована")
+    except Exception as e:
+        print(f"Ошибка при создании таблицы about_content: {e}")
+
+def get_about_content():
+    """Получить весь контент для страницы О нас"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT * FROM about_content ORDER BY sort_order')
+            return cursor.fetchall()
+    except Exception as e:
+        print(f"Ошибка при получении контента О нас: {e}")
+        return []
+
+def update_about_content(content_id, section_title, section_content, icon, sort_order):
+    """Обновить контент страницы О нас"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                UPDATE about_content 
+                SET section_title = ?, section_content = ?, icon = ?, sort_order = ?
+                WHERE id = ?
+            ''', (section_title, section_content, icon, sort_order, content_id))
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"Ошибка при обновлении контента О нас: {e}")
+        return False
+
+def delete_about_content(content_id):
+    """Удалить контент страницы О нас"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM about_content WHERE id = ?', (content_id,))
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"Ошибка при удалении контента О нас: {e}")
+        return False
+
+def add_about_content(section_key, section_title, section_content, icon, sort_order):
+    """Добавить новый контент на страницу О нас"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT INTO about_content (section_key, section_title, section_content, icon, sort_order)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (section_key, section_title, section_content, icon, sort_order))
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"Ошибка при добавлении контента О нас: {e}")
+        return False
+    
+#endregion
