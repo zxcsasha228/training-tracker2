@@ -1148,6 +1148,40 @@ def init_nutrition_tables():
     except Exception as e:
         print(f"Ошибка при создании таблиц питания: {e}")
 
+
+def init_bju_settings_table():
+    """Создать таблицу настроек БЖУ"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS bju_settings (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL UNIQUE,
+                    age INTEGER DEFAULT 30,
+                    height INTEGER DEFAULT 175,
+                    gender TEXT DEFAULT 'female',
+                    activity_level REAL DEFAULT 1.55,
+                    goal TEXT DEFAULT 'maintain',
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+                )
+            ''')
+            
+            # Добавляем настройки для существующих пользователей
+            cursor.execute('SELECT id FROM users')
+            users = cursor.fetchall()
+            for user in users:
+                cursor.execute('''
+                    INSERT OR IGNORE INTO bju_settings (user_id)
+                    VALUES (?)
+                ''', (user['id'],))
+            
+            conn.commit()
+            print("Таблица настроек БЖУ инициализирована")
+    except Exception as e:
+        print(f"Ошибка при создании таблицы настроек БЖУ: {e}")
+
 # Добавить запись веса
 def add_weight_entry(user_id, date, weight, notes=""):
     try:

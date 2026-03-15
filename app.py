@@ -7,6 +7,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, s
 from werkzeug.utils import secure_filename
 import database
 from flask import jsonify
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here-change-this'
@@ -851,17 +852,33 @@ def get_table_data(table_name):
     if 'user_id' not in session or not session.get('is_admin'):
         return jsonify({'error': 'Unauthorized'}), 401
     
-    allowed_tables = ['users', 'workout_sessions', 'exercises', 'completed_workouts', 'completed_sets']
+    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'completed_workouts', 'completed_sets']
     if table_name not in allowed_tables:
         return jsonify({'error': 'Invalid table'}), 400
     
     try:
         with database.get_db() as conn:
             cursor = conn.cursor()
-            cursor.execute(f'SELECT * FROM {table_name} ORDER BY id DESC')
-            rows = cursor.fetchall()
             
-            # Преобразуем в список словарей
+            # Для таблиц с внешними ключами добавим JOIN чтобы видеть имена пользователей
+            if table_name == 'weight_tracking':
+                cursor.execute('''
+                    SELECT wt.*, u.username 
+                    FROM weight_tracking wt
+                    JOIN users u ON wt.user_id = u.id
+                    ORDER BY wt.date DESC
+                ''')
+            elif table_name == 'bju_settings':
+                cursor.execute('''
+                    SELECT bs.*, u.username 
+                    FROM bju_settings bs
+                    JOIN users u ON bs.user_id = u.id
+                    ORDER BY u.username
+                ''')
+            else:
+                cursor.execute(f'SELECT * FROM {table_name} ORDER BY id DESC')
+            
+            rows = cursor.fetchall()
             result = []
             for row in rows:
                 result.append(dict(row))
@@ -870,7 +887,6 @@ def get_table_data(table_name):
     except Exception as e:
         print(f"Ошибка при получении данных таблицы {table_name}: {e}")
         return jsonify([])
-
 # Обновить ячейку
 @app.route('/api/update_cell/<table_name>/<int:row_id>', methods=['POST'])
 def update_cell(table_name, row_id):
@@ -881,7 +897,7 @@ def update_cell(table_name, row_id):
     column = data.get('column')
     value = data.get('value')
     
-    allowed_tables = ['users', 'workout_sessions', 'exercises', 'completed_workouts', 'completed_sets']
+    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'completed_workouts', 'completed_sets']
     if table_name not in allowed_tables:
         return jsonify({'success': False, 'error': 'Invalid table'}), 400
     
@@ -900,7 +916,7 @@ def delete_row(table_name, row_id):
     if 'user_id' not in session or not session.get('is_admin'):
         return jsonify({'success': False, 'error': 'Unauthorized'}), 401
     
-    allowed_tables = ['users', 'workout_sessions', 'exercises', 'completed_workouts', 'completed_sets']
+    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'completed_workouts', 'completed_sets']
     if table_name not in allowed_tables:
         return jsonify({'success': False, 'error': 'Invalid table'}), 400
     
@@ -923,7 +939,7 @@ def bulk_delete(table_name):
     data = request.get_json()
     ids = data.get('ids', [])
     
-    allowed_tables = ['users', 'workout_sessions', 'exercises', 'completed_workouts', 'completed_sets']
+    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'completed_workouts', 'completed_sets']
     if table_name not in allowed_tables:
         return jsonify({'success': False, 'error': 'Invalid table'}), 400
     
@@ -946,7 +962,7 @@ def add_row(table_name):
     
     data = request.get_json()
     
-    allowed_tables = ['users', 'workout_sessions', 'exercises', 'completed_workouts', 'completed_sets']
+    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'completed_workouts', 'completed_sets']
     if table_name not in allowed_tables:
         return jsonify({'success': False, 'error': 'Invalid table'}), 400
     
@@ -973,7 +989,7 @@ def update_row(table_name, row_id):
     
     data = request.get_json()
     
-    allowed_tables = ['users', 'workout_sessions', 'exercises', 'completed_workouts', 'completed_sets']
+    allowed_tables = ['users', 'workout_sessions', 'exercises', 'weight_tracking', 'bju_settings', 'completed_workouts', 'completed_sets']
     if table_name not in allowed_tables:
         return jsonify({'success': False, 'error': 'Invalid table'}), 400
     
@@ -1143,8 +1159,86 @@ def check_video():
 
 
 
+#region================ УПРАВЛЕНИЕ ДАННЫМИ ПИТАНИЯ ДЛЯ АДМИНА ================
 
-from datetime import datetime
+# Страница управления данными питания
+@app.route('/admin/nutrition-data')
+def admin_nutrition_data():
+    if 'user_id' not in session or not session.get('is_admin'):
+        return redirect(url_for('login'))
+    
+    tab = request.args.get('tab', 'weight')
+    
+    weight_entries = database.admin_get_all_weight_entries()
+    bju_settings = database.admin_get_all_bju_settings()
+    
+    # Получаем список всех пользователей для выпадающих списков
+    with database.get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT id, username FROM users ORDER BY username')
+        users = cursor.fetchall()
+    
+    return render_template('admin_nutrition_data.html',
+                         active_tab=tab,
+                         weight_entries=weight_entries,
+                         bju_settings=bju_settings,
+                         users=users,
+                         is_admin=session.get('is_admin', 0))
+
+# API для обновления записи веса
+@app.route('/api/admin/update_weight', methods=['POST'])
+def admin_update_weight():
+    if 'user_id' not in session or not session.get('is_admin'):
+        return jsonify({'success': False}), 401
+    
+    data = request.get_json()
+    success = database.admin_update_weight_entry(
+        data['entry_id'],
+        data['user_id'],
+        data['date'],
+        float(data['weight']),
+        data['notes']
+    )
+    return jsonify({'success': success})
+
+# API для удаления записи веса
+@app.route('/api/admin/delete_weight', methods=['POST'])
+def admin_delete_weight():
+    if 'user_id' not in session or not session.get('is_admin'):
+        return jsonify({'success': False}), 401
+    
+    data = request.get_json()
+    success = database.admin_delete_weight_entry(data['entry_id'])
+    return jsonify({'success': success})
+
+# API для обновления настроек БЖУ
+@app.route('/api/admin/update_bju', methods=['POST'])
+def admin_update_bju():
+    if 'user_id' not in session or not session.get('is_admin'):
+        return jsonify({'success': False}), 401
+    
+    data = request.get_json()
+    success = database.admin_update_bju_settings(
+        data['settings_id'],
+        data['user_id'],
+        data['age'],
+        data['height'],
+        data['gender'],
+        data['activity_level'],
+        data['goal']
+    )
+    return jsonify({'success': success})
+
+# API для сброса настроек БЖУ
+@app.route('/api/admin/reset_bju', methods=['POST'])
+def admin_reset_bju():
+    if 'user_id' not in session or not session.get('is_admin'):
+        return jsonify({'success': False}), 401
+    
+    data = request.get_json()
+    success = database.admin_reset_bju_settings(data['settings_id'])
+    return jsonify({'success': success})
+
 
 # Страница питания
 @app.route('/nutrition')
@@ -1196,7 +1290,7 @@ def delete_weight(entry_id):
     
     return redirect(url_for('nutrition'))
 
-
+#endregion
 
 
 
@@ -1257,5 +1351,12 @@ if __name__ == '__main__':
     except Exception as e:
         print(f"Ошибка при инициализации питания: {e}")
     
+    try:
+        database.init_bju_settings_table()
+        print("Таблица настроек БЖУ инициализирована")
+    except Exception as e:
+        print(f"Ошибка при инициализации БЖУ: {e}")
+
+
     threading.Thread(target=open_browser).start()
     app.run(host='127.0.0.1', port=5000, debug=False)

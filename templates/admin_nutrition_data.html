@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Управление данными питания</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #9ca3af;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header h1 i {
+            margin-right: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            background: var(--light);
+            padding: 5px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            background: transparent;
+            color: var(--gray);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab:hover {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .tab i {
+            font-size: 1.1em;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 20px;
+            overflow: auto;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            max-height: 600px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+        }
+
+        th {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e5e7eb;
+            color: var(--dark);
+        }
+
+        tr:hover td {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin: 0 2px;
+        }
+
+        .btn-edit {
+            background: var(--warning);
+            color: var(--dark);
+        }
+
+        .btn-delete {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-reset {
+            background: var(--gray);
+            color: white;
+        }
+
+        .btn:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1em;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge.male {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge.female {
+            background: #fce7f3;
+            color: #9d174d;
+        }
+
+        .badge.maintain {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge.lose {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge.gain {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: var(--dark);
+        }
+
+        .close-btn {
+            font-size: 1.5em;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--gray);
+            font-size: 0.9em;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 60px 20px 20px;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% include 'sidebar.html' %}
+    
+    <div class="main-content" id="mainContent">
+        <div class="container">
+            <div class="header">
+                <h1><i class="fas fa-utensils"></i> Управление данными питания</h1>
+                <div>
+                    <a href="{{ url_for('admin_panel') }}" class="btn" style="background: var(--gray); color: white; padding: 10px 20px;">
+                        <i class="fas fa-arrow-left"></i> Назад в админку
+                    </a>
+                </div>
+            </div>
+
+            <!-- Вкладки -->
+            <div class="tabs">
+                <button class="tab {% if active_tab == 'weight' %}active{% endif %}" onclick="switchTab('weight')">
+                    <i class="fas fa-weight-scale"></i> История веса
+                </button>
+                <button class="tab {% if active_tab == 'bju' %}active{% endif %}" onclick="switchTab('bju')">
+                    <i class="fas fa-calculator"></i> Настройки БЖУ
+                </button>
+            </div>
+
+            <!-- Поиск -->
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="🔍 Поиск по имени пользователя...">
+                <button class="btn" style="background: var(--gray); color: white; padding: 12px 20px;" onclick="clearSearch()">Очистить</button>
+            </div>
+
+            <!-- Таблица истории веса -->
+            <div id="weightTable" style="display: {% if active_tab == 'weight' %}block{% else %}none{% endif %};">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Пользователь</th>
+                                <th>Дата</th>
+                                <th>Вес (кг)</th>
+                                <th>Заметки</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="weightTableBody">
+                            {% for entry in weight_entries %}
+                            <tr data-id="{{ entry.id }}" data-username="{{ entry.username|lower }}">
+                                <td><strong>#{{ entry.id }}</strong></td>
+                                <td>{{ entry.username }}</td>
+                                <td>{{ entry.date }}</td>
+                                <td><strong>{{ entry.weight }} кг</strong></td>
+                                <td>{{ entry.notes or '—' }}</td>
+                                <td>
+                                    <button class="btn btn-edit" onclick="editWeightEntry({{ entry.id }})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-delete" onclick="deleteWeightEntry({{ entry.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Таблица настроек БЖУ -->
+            <div id="bjuTable" style="display: {% if active_tab == 'bju' %}block{% else %}none{% endif %};">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Пользователь</th>
+                                <th>Возраст</th>
+                                <th>Рост</th>
+                                <th>Пол</th>
+                                <th>Активность</th>
+                                <th>Цель</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bjuTableBody">
+                            {% for setting in bju_settings %}
+                            <tr data-id="{{ setting.id }}" data-username="{{ setting.username|lower }}">
+                                <td><strong>#{{ setting.id }}</strong></td>
+                                <td>{{ setting.username }}</td>
+                                <td>{{ setting.age }}</td>
+                                <td>{{ setting.height }} см</td>
+                                <td>
+                                    <span class="badge {{ setting.gender }}">
+                                        {{ 'Мужской' if setting.gender == 'male' else 'Женский' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if setting.activity_level == 1.2 %}🪑 Минимальная
+                                    {% elif setting.activity_level == 1.375 %}🚶 Лёгкая
+                                    {% elif setting.activity_level == 1.55 %}🏃 Средняя
+                                    {% elif setting.activity_level == 1.725 %}💪 Высокая
+                                    {% elif setting.activity_level == 1.9 %}🏆 Очень высокая
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge {{ setting.goal }}">
+                                        {% if setting.goal == 'maintain' %}🏋️ Поддержание
+                                        {% elif setting.goal == 'lose' %}📉 Похудение
+                                        {% elif setting.goal == 'gain' %}📈 Набор массы
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-edit" onclick="editBjuSettings({{ setting.id }})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-reset" onclick="resetBjuSettings({{ setting.id }})">
+                                        <i class="fas fa-undo-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно редактирования записи веса -->
+    <div class="modal" id="editWeightModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Редактировать запись веса</h2>
+                <span class="close-btn" onclick="closeModal('editWeightModal')">&times;</span>
+            </div>
+            <form id="editWeightForm">
+                <input type="hidden" name="entry_id" id="editWeightId">
+                <div class="form-group">
+                    <label>Пользователь</label>
+                    <select name="user_id" id="editWeightUserId" required>
+                        {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Дата</label>
+                    <input type="date" name="date" id="editWeightDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Вес (кг)</label>
+                    <input type="number" step="0.1" name="weight" id="editWeightValue" required>
+                </div>
+                <div class="form-group">
+                    <label>Заметки</label>
+                    <input type="text" name="notes" id="editWeightNotes">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn" style="background: var(--success); color: white;" onclick="saveWeightEdit()">Сохранить</button>
+                    <button type="button" class="btn" style="background: var(--gray); color: white;" onclick="closeModal('editWeightModal')">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно редактирования настроек БЖУ -->
+    <div class="modal" id="editBjuModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Редактировать настройки БЖУ</h2>
+                <span class="close-btn" onclick="closeModal('editBjuModal')">&times;</span>
+            </div>
+            <form id="editBjuForm">
+                <input type="hidden" name="settings_id" id="editBjuId">
+                <div class="form-group">
+                    <label>Пользователь</label>
+                    <select name="user_id" id="editBjuUserId" required>
+                        {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Возраст</label>
+                    <input type="number" name="age" id="editBjuAge" min="15" max="100" required>
+                </div>
+                <div class="form-group">
+                    <label>Рост (см)</label>
+                    <input type="number" name="height" id="editBjuHeight" min="140" max="220" required>
+                </div>
+                <div class="form-group">
+                    <label>Пол</label>
+                    <select name="gender" id="editBjuGender" required>
+                        <option value="male">Мужской</option>
+                        <option value="female">Женский</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Активность</label>
+                    <select name="activity_level" id="editBjuActivity" required>
+                        <option value="1.2">🪑 Минимальная</option>
+                        <option value="1.375">🚶 Лёгкая</option>
+                        <option value="1.55">🏃 Средняя</option>
+                        <option value="1.725">💪 Высокая</option>
+                        <option value="1.9">🏆 Очень высокая</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Цель</label>
+                    <select name="goal" id="editBjuGoal" required>
+                        <option value="maintain">🏋️ Поддержание</option>
+                        <option value="lose">📉 Похудение</option>
+                        <option value="gain">📈 Набор массы</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn" style="background: var(--success); color: white;" onclick="saveBjuEdit()">Сохранить</button>
+                    <button type="button" class="btn" style="background: var(--gray); color: white;" onclick="closeModal('editBjuModal')">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% include 'active_workout_banner.html' %}
+
+    <script>
+        let currentTab = '{{ active_tab }}';
+
+        // Переключение вкладок
+        function switchTab(tab) {
+            currentTab = tab;
+            window.location.href = `/admin/nutrition-data?tab=${tab}`;
+        }
+
+        // Поиск
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            const searchText = this.value.toLowerCase();
+            const tableBody = currentTab === 'weight' ? 
+                document.getElementById('weightTableBody') : 
+                document.getElementById('bjuTableBody');
+            
+            const rows = tableBody.getElementsByTagName('tr');
+            
+            for (let row of rows) {
+                const username = row.getAttribute('data-username');
+                if (username.includes(searchText)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            const rows = document.querySelectorAll('#weightTableBody tr, #bjuTableBody tr');
+            rows.forEach(row => row.style.display = '');
+        }
+
+        // Редактирование записи веса
+        function editWeightEntry(id) {
+            const row = document.querySelector(`#weightTableBody tr[data-id="${id}"]`);
+            const cells = row.getElementsByTagName('td');
+            
+            document.getElementById('editWeightId').value = id;
+            
+            // Ищем ID пользователя по имени
+            const username = cells[1].textContent;
+            const userSelect = document.getElementById('editWeightUserId');
+            for (let option of userSelect.options) {
+                if (option.text === username) {
+                    option.selected = true;
+                    break;
+                }
+            }
+            
+            document.getElementById('editWeightDate').value = cells[2].textContent;
+            document.getElementById('editWeightValue').value = parseFloat(cells[3].textContent);
+            document.getElementById('editWeightNotes').value = cells[4].textContent !== '—' ? cells[4].textContent : '';
+            
+            document.getElementById('editWeightModal').classList.add('active');
+        }
+
+        function saveWeightEdit() {
+            const data = {
+                entry_id: document.getElementById('editWeightId').value,
+                user_id: document.getElementById('editWeightUserId').value,
+                date: document.getElementById('editWeightDate').value,
+                weight: document.getElementById('editWeightValue').value,
+                notes: document.getElementById('editWeightNotes').value
+            };
+
+            fetch('/api/admin/update_weight', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    location.reload();
+                } else {
+                    alert('Ошибка при сохранении');
+                }
+            });
+        }
+
+        function deleteWeightEntry(id) {
+            if (confirm('Удалить запись веса?')) {
+                fetch('/api/admin/delete_weight', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ entry_id: id })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        location.reload();
+                    } else {
+                        alert('Ошибка при удалении');
+                    }
+                });
+            }
+        }
+
+        // Редактирование настроек БЖУ
+        function editBjuSettings(id) {
+            const row = document.querySelector(`#bjuTableBody tr[data-id="${id}"]`);
+            const cells = row.getElementsByTagName('td');
+            
+            document.getElementById('editBjuId').value = id;
+            
+            // Пользователь
+            const username = cells[1].textContent;
+            const userSelect = document.getElementById('editBjuUserId');
+            for (let option of userSelect.options) {
+                if (option.text === username) {
+                    option.selected = true;
+                    break;
+                }
+            }
+            
+            document.getElementById('editBjuAge').value = parseInt(cells[2].textContent);
+            document.getElementById('editBjuHeight').value = parseInt(cells[3].textContent);
+            
+            // Пол
+            const genderCell = cells[4].textContent;
+            document.getElementById('editBjuGender').value = genderCell.includes('Мужской') ? 'male' : 'female';
+            
+            // Активность
+            const activityText = cells[5].textContent;
+            if (activityText.includes('Минимальная')) document.getElementById('editBjuActivity').value = '1.2';
+            else if (activityText.includes('Лёгкая')) document.getElementById('editBjuActivity').value = '1.375';
+            else if (activityText.includes('Средняя')) document.getElementById('editBjuActivity').value = '1.55';
+            else if (activityText.includes('Высокая')) document.getElementById('editBjuActivity').value = '1.725';
+            else if (activityText.includes('Очень')) document.getElementById('editBjuActivity').value = '1.9';
+            
+            // Цель
+            const goalText = cells[6].textContent;
+            if (goalText.includes('Поддержание')) document.getElementById('editBjuGoal').value = 'maintain';
+            else if (goalText.includes('Похудение')) document.getElementById('editBjuGoal').value = 'lose';
+            else if (goalText.includes('Набор')) document.getElementById('editBjuGoal').value = 'gain';
+            
+            document.getElementById('editBjuModal').classList.add('active');
+        }
+
+        function saveBjuEdit() {
+            const data = {
+                settings_id: document.getElementById('editBjuId').value,
+                user_id: document.getElementById('editBjuUserId').value,
+                age: document.getElementById('editBjuAge').value,
+                height: document.getElementById('editBjuHeight').value,
+                gender: document.getElementById('editBjuGender').value,
+                activity_level: parseFloat(document.getElementById('editBjuActivity').value),
+                goal: document.getElementById('editBjuGoal').value
+            };
+
+            fetch('/api/admin/update_bju', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    location.reload();
+                } else {
+                    alert('Ошибка при сохранении');
+                }
+            });
+        }
+
+        function resetBjuSettings(id) {
+            if (confirm('Сбросить настройки БЖУ к значениям по умолчанию?')) {
+                fetch('/api/admin/reset_bju', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ settings_id: id })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        location.reload();
+                    } else {
+                        alert('Ошибка при сбросе');
+                    }
+                });
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Состояние сайдбара
+        document.addEventListener('DOMContentLoaded', function() {
+            const mainContent = document.getElementById('mainContent');
+            const savedState = localStorage.getItem('sidebar_collapsed');
+            if (savedState === 'true') {
+                mainContent.classList.add('expanded');
+            }
+        });
+    </script>
+</body>
+</html>
