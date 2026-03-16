@@ -65,6 +65,37 @@
             }
         }
 
+        /* Баннер для админа */
+        .admin-view-banner {
+            background: rgba(99, 102, 241, 0.1);
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .admin-view-banner i {
+            color: var(--primary);
+            margin-right: 8px;
+        }
+
+        .admin-view-banner .btn {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+
+        .admin-view-banner .btn:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+
         /* Шапка профиля */
         .profile-header {
             display: flex;
@@ -259,14 +290,34 @@
             .stats-row {
                 grid-template-columns: 1fr;
             }
+
+            .admin-view-banner {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
         }
     </style>
 </head>
 <body>
+    <input type="hidden" id="userId" value="{{ session['user_id'] }}">
     {% include 'sidebar.html' %}
     
     <div class="main-content" id="mainContent">
         <div class="content-container">
+            {% if view_as_admin %}
+            <!-- Баннер для админа -->
+            <div class="admin-view-banner">
+                <span>
+                    <i class="fas fa-crown"></i> 
+                    Вы просматриваете профиль пользователя <strong>{{ user.full_name or user.username }}</strong>
+                </span>
+                <a href="{{ url_for('admin_panel') }}" class="btn">
+                    <i class="fas fa-arrow-left"></i> Назад в админку
+                </a>
+            </div>
+            {% endif %}
+
             <!-- Шапка профиля -->
             <div class="profile-header">
                 <div class="profile-avatar">
@@ -309,9 +360,17 @@
                     </div>
                 </div>
 
-                
+                <div class="info-card">
+                    <div class="info-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="info-content">
+                        <h3>Email</h3>
+                        <p>—</p>
+                    </div>
+                </div>
 
-                <!-- Новая карточка с логином для информации -->
+                <!-- Карточка с логином для информации -->
                 <div class="info-card">
                     <div class="info-icon">
                         <i class="fas fa-user-tag"></i>
@@ -323,25 +382,7 @@
                 </div>
             </div>
 
-            <!-- Статистика -->
-            <div class="stats-section">
-                <div class="section-title">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Моя статистика</span>
-                </div>
-                <div class="stats-row">
-                    <div class="stat-item">
-                        <div class="stat-value">{{ stats.workouts_count }}</div>
-                        <div class="stat-label">Тренировок</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">{{ stats.total_duration }}</div>
-                        <div class="stat-label">Минут</div>
-                    </div>
-                    
-                </div>
-            </div>
-
+            
             <!-- Кнопка редактирования (пока неактивна) -->
             <div style="text-align: center;">
                 <button class="edit-profile-btn" onclick="alert('Редактирование профиля будет доступно позже')">
@@ -365,6 +406,6 @@
             }
         });
     </script>
-{% include 'active_workout_banner.html' %}
+    
 </body>
 </html>

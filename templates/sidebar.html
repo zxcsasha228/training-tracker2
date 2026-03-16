@@ -1,61 +1,63 @@
 <!-- Боковое меню -->
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
-    <a href="{{ url_for('easter_egg') }}" style="text-decoration: none; color: white;">
-        <div class="logo">
-            <i class="fas fa-dumbbell" style="color: var(--primary);"></i>
-            <span>FitTrack</span>
-        </div>
-    </a>
-    <button class="sidebar-toggle" onclick="toggleSidebar()">
-        <i class="fas fa-chevron-left" id="toggleIcon"></i>
-    </button>
-</div>
+        <a href="{{ url_for('easter_egg') }}" style="text-decoration: none; color: white;">
+            <div class="logo">
+                <i class="fas fa-dumbbell" style="color: var(--primary);"></i>
+                <span>FitTrack</span>
+            </div>
+        </a>
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-chevron-left" id="toggleIcon"></i>
+        </button>
+    </div>
     
     <div class="sidebar-menu">
-        
-        <div class="theme-toggle" onclick="toggleTheme()">
-            <i class="fas fa-moon" id="themeIcon"></i>
-            <span>Тёмная тема</span>
-        </div>
-        
         <a href="{{ url_for('my_workouts') }}" class="menu-item {% if request.endpoint == 'my_workouts' %}active{% endif %}">
             <i class="fas fa-home"></i>
             <span>Мои тренировки</span>
         </a>
-        
         
         <a href="{{ url_for('stats') }}" class="menu-item {% if request.endpoint == 'stats' %}active{% endif %}">
             <i class="fas fa-chart-line"></i>
             <span>Статистика</span>
         </a>
 
-            <!-- НОВАЯ КНОПКА ПИТАНИЯ -->
-    <a href="{{ url_for('nutrition') }}" class="menu-item {% if request.endpoint == 'nutrition' %}active{% endif %}">
-        <i class="fas fa-apple-alt"></i>
-        <span>Питание</span>
-    </a>
+        <a href="{{ url_for('nutrition') }}" class="menu-item {% if request.endpoint == 'nutrition' %}active{% endif %}">
+            <i class="fas fa-apple-alt"></i>
+            <span>Питание</span>
+        </a>
 
         <a href="{{ url_for('exercises_library') }}" class="menu-item {% if request.endpoint == 'exercises_library' %}active{% endif %}">
             <i class="fas fa-book"></i>
             <span>Упражнения</span>
         </a>
-        
-         <a href="{{ url_for('about') }}" class="menu-item {% if request.endpoint == 'about' %}active{% endif %}">
-        <i class="fas fa-info-circle"></i>
-        <span>О нас</span>
-    </a>
+
+        <!-- 👇 ЭТО 10 ЭТАП - проверка включена ли пасхалка -->
+        {% if easter_egg_enabled %}
+        <a href="{{ url_for('easter_egg') }}" class="menu-item {% if request.endpoint == 'easter_egg' %}active{% endif %}">
+            <i class="fas fa-egg"></i>
+            <span>Пасхалка</span>
+        </a>
+        {% endif %}
+        <!-- 👆 КОНЕЦ 10 ЭТАПА -->
+
+        <a href="{{ url_for('about') }}" class="menu-item {% if request.endpoint == 'about' %}active{% endif %}">
+            <i class="fas fa-info-circle"></i>
+            <span>О нас</span>
+        </a>
 
         {% if is_admin %}
-<a href="{{ url_for('admin_panel') }}" class="menu-item {% if request.endpoint == 'admin_panel' %}active{% endif %}">
-    <i class="fas fa-crown"></i>
-    <span>Админ-панель</span>
-</a>
-{% endif %}
+        <a href="{{ url_for('admin_panel') }}" class="menu-item {% if request.endpoint == 'admin_panel' %}active{% endif %}">
+            <i class="fas fa-crown"></i>
+            <span>Админ-панель</span>
+        </a>
+        {% endif %}
+
+        
     </div>
 
     <div class="sidebar-footer">
-        <!-- Кнопка профиля -->
         <a href="{{ url_for('profile') }}" class="profile-button">
             <div class="profile-info">
                 <i class="fas fa-user-circle"></i>
@@ -64,7 +66,6 @@
             <i class="fas fa-chevron-right profile-arrow"></i>
         </a>
         
-        <!-- Кнопка выхода -->
         <a href="{{ url_for('logout') }}" class="logout-button">
             <i class="fas fa-sign-out-alt"></i>
             <span>Выйти</span>

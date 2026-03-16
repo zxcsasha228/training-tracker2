@@ -28,81 +28,65 @@ def get_user(user_id):
 
 def init_db():
     """Создает таблицы, если их нет."""
-    if not os.path.exists(DB_NAME):
-        print("База данных не найдена. Создаю новую...")
-        with get_db() as conn:
-            cursor = conn.cursor()
-            
-            # Таблица пользователей
+    with get_db() as conn:
+        cursor = conn.cursor()
+        
+        # Таблица пользователей (с full_name)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                full_name TEXT,
+                is_admin INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        # Таблица тренировок
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS workout_sessions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                date TEXT NOT NULL,
+                notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+            )
+        ''')
+        
+        # Таблица упражнений в тренировке
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS workout_exercises (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                workout_id INTEGER NOT NULL,
+                exercise_id INTEGER NOT NULL,
+                sets INTEGER,
+                reps INTEGER,
+                weight REAL,
+                order_num INTEGER,
+                notes TEXT,
+                FOREIGN KEY (workout_id) REFERENCES workout_sessions (id) ON DELETE CASCADE,
+                FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE
+            )
+        ''')
+        
+        print("База данных инициализирована")
+        
+        # Создаем тестового пользователя, если нет админа
+        cursor.execute("SELECT * FROM users WHERE username = 'admin'")
+        if not cursor.fetchone():
             cursor.execute('''
-                CREATE TABLE users (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    username TEXT UNIQUE NOT NULL,
-                    password TEXT NOT NULL,
-                    is_admin INTEGER DEFAULT 0,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            ''')
+                INSERT INTO users (username, password, full_name, is_admin)
+                VALUES (?, ?, ?, ?)
+            ''', ('admin', 'admin123', 'Администратор', 1))
             
-            # Таблица тренировок
             cursor.execute('''
-                CREATE TABLE workouts (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    user_id INTEGER NOT NULL,
-                    date TEXT NOT NULL,
-                    exercise TEXT NOT NULL,
-                    sets INTEGER,
-                    reps INTEGER,
-                    weight REAL,
-                    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-                )
-            ''')
-            
-            # Создаем админа
-            cursor.execute('''
-                INSERT INTO users (username, password, is_admin)
-                VALUES (?, ?, ?)
-            ''', ('admin', 'admin123', 1))
-            
-            # Создаем тестового пользователя
-            cursor.execute('''
-                INSERT INTO users (username, password, is_admin)
-                VALUES (?, ?, ?)
-            ''', ('user1', 'user123', 0))
-            
-            # Получаем ID пользователей
-            cursor.execute('SELECT id FROM users WHERE username = ?', ('admin',))
-            admin_id = cursor.fetchone()[0]
-            
-            cursor.execute('SELECT id FROM users WHERE username = ?', ('user1',))
-            user1_id = cursor.fetchone()[0]
-            
-            # Добавляем демо-тренировки для админа
-            admin_workouts = [
-                (admin_id, '2026-03-01', 'Жим лежа', 3, 10, 50.5),
-                (admin_id, '2026-03-03', 'Приседания', 4, 8, 80.0)
-            ]
-            cursor.executemany('''
-                INSERT INTO workouts (user_id, date, exercise, sets, reps, weight)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', admin_workouts)
-            
-            # Добавляем демо-тренировки для обычного пользователя
-            user_workouts = [
-                (user1_id, '2026-03-02', 'Тяга штанги', 3, 12, 60.0),
-                (user1_id, '2026-03-04', 'Жим гантелей', 3, 10, 20.5)
-            ]
-            cursor.executemany('''
-                INSERT INTO workouts (user_id, date, exercise, sets, reps, weight)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', user_workouts)
-            
-        print("База данных инициализирована.")
-        print("Админ: admin / admin123")
-        print("Пользователь: user1 / user123")
-    else:
-        print("База данных найдена.")
-
+                INSERT INTO users (username, password, full_name, is_admin)
+                VALUES (?, ?, ?, ?)
+            ''', ('user1', 'user123', 'Тестовый пользователь', 0))
+            print("Созданы тестовые пользователи")
 #region Функции для работы с пользователями
 def create_user(username, password, full_name):
     """Создать нового пользователя с ФИО"""
@@ -131,9 +115,8 @@ def get_user_by_id(user_id):
     """Получить пользователя по ID"""
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+        cursor.execute('SELECT id, username, full_name, is_admin, created_at FROM users WHERE id = ?', (user_id,))
         return cursor.fetchone()
-
 #endregion
 
 #region АДМИН-ФУНКЦИИ
@@ -939,6 +922,7 @@ def get_admin_stats():
             'new_exercises': 0,
             'new_workouts_week': 0
         }
+
 def get_users_chart_data():
     """Получить данные для графика новых пользователей за последние 7 дней"""
     try:
@@ -1064,14 +1048,14 @@ def get_easter_egg_media():
     try:
         with get_db() as conn:
             cursor = conn.cursor()
-            cursor.execute('SELECT media_path, media_type FROM easter_egg_settings ORDER BY id DESC LIMIT 1')
+            cursor.execute('SELECT media_path, media_type, enabled FROM easter_egg_settings ORDER BY id DESC LIMIT 1')
             row = cursor.fetchone()
             if row:
-                return {'path': row['media_path'], 'type': row['media_type']}
-            return {'path': 'uploads/easter_default.jpg', 'type': 'image'}
+                return {'path': row['media_path'], 'type': row['media_type'], 'enabled': row['enabled']}
+            return {'path': 'uploads/easter_default.jpg', 'type': 'image', 'enabled': True}
     except Exception as e:
         print(f"Ошибка при получении медиа пасхалки: {e}")
-        return {'path': 'uploads/easter_default.jpg', 'type': 'image'}
+        return {'path': 'uploads/easter_default.jpg', 'type': 'image', 'enabled': True}
 
 def update_easter_egg_media(media_path, media_type):
     """Обновить медиафайл пасхалки"""
@@ -1119,6 +1103,28 @@ def update_easter_egg_setting(key, value):
         print(f"Ошибка при обновлении настройки пасхалки: {e}")
         return False
 
+def get_easter_egg_enabled():
+    """Проверить, включена ли пасхалка"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT enabled FROM easter_egg_settings ORDER BY id DESC LIMIT 1')
+            row = cursor.fetchone()
+            return row['enabled'] if row else True
+    except:
+        return True
+
+def set_easter_egg_enabled(enabled):
+    """Включить/выключить пасхалку"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('UPDATE easter_egg_settings SET enabled = ?', (1 if enabled else 0,))
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"Ошибка при изменении статуса пасхалки: {e}")
+        return False
 #endregion
 
 
@@ -1314,7 +1320,7 @@ def get_user_bju_settings(user_id):
 
 #region================О НАС ================
 def init_about_table():
-    """Создать таблицу для контента страницы О нас"""
+    """Создать таблицу для контента страницы О нас и заполнить базовыми данными"""
     try:
         with get_db() as conn:
             cursor = conn.cursor()
@@ -1330,25 +1336,47 @@ def init_about_table():
                 )
             ''')
             
-            # Добавляем контент по умолчанию, если таблица пустая
+            # Проверяем, есть ли уже записи
             cursor.execute('SELECT COUNT(*) as count FROM about_content')
-            if cursor.fetchone()['count'] == 0:
-                default_content = [
-                    ('mission', 'Наша миссия', 'Мы создали этот трекер тренировок, чтобы помочь вам достигать своих фитнес-целей, отслеживать прогресс и оставаться мотивированными.', 'fa-rocket', 1),
-                    ('team_developer', 'Громов Александр Сергеевич', 'Разработчик', 'fa-user-tie', 2),
-                    ('team_designer', 'Виртуальный помощник', 'Дизайнер', 'fa-paint-brush', 3),
-                    ('team_curator', 'Родионов Виктор Валерьевич', 'Куратор', 'fa-crown', 4),
-                ]
-                for item in default_content:
-                    cursor.execute('''
-                        INSERT INTO about_content (section_key, section_title, section_content, icon, sort_order)
-                        VALUES (?, ?, ?, ?, ?)
-                    ''', item)
+            count = cursor.fetchone()['count']
+            
+            if count == 0:
+                print("Добавление базового контента для страницы О нас...")
+                
+                # Базовая миссия
+                cursor.execute('''
+                    INSERT INTO about_content (section_key, section_title, section_content, icon, sort_order)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', ('mission', 'Наша миссия', 
+                      'Мы создали этот трекер тренировок, чтобы помочь вам достигать своих фитнес-целей, отслеживать прогресс и оставаться мотивированными. Наша платформа объединяет удобный интерфейс, мощную аналитику и гибкие настройки под любые задачи.',
+                      'fa-rocket', 1))
+                
+                # Команда - разработчик
+                cursor.execute('''
+                    INSERT INTO about_content (section_key, section_title, section_content, icon, sort_order)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', ('team_developer', 'Громов Александр Сергеевич', 'Разработчик', 'fa-user-tie', 2))
+                
+                # Команда - дизайнер
+                cursor.execute('''
+                    INSERT INTO about_content (section_key, section_title, section_content, icon, sort_order)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', ('team_designer', 'Виртуальный помощник', 'Дизайнер', 'fa-paint-brush', 3))
+                
+                # Команда - куратор
+                cursor.execute('''
+                    INSERT INTO about_content (section_key, section_title, section_content, icon, sort_order)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', ('team_curator', 'Родионов Виктор Валерьевич', 'Куратор', 'fa-crown', 4))
+                
+                print("✅ Базовый контент для страницы О нас добавлен")
+            else:
+                print("⏩ Контент для страницы О нас уже существует")
             
             conn.commit()
-            print("Таблица контента О нас инициализирована")
+            print("✅ Таблица контента О нас инициализирована")
     except Exception as e:
-        print(f"Ошибка при создании таблицы about_content: {e}")
+        print(f"❌ Ошибка при создании таблицы about_content: {e}")
 
 def get_about_content():
     """Получить весь контент для страницы О нас"""
@@ -1511,3 +1539,210 @@ def get_goal_types():
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM goal_types ORDER BY sort_order')
         return cursor.fetchall()
+    
+
+def migrate_database():
+    """Обновляет структуру базы данных до актуальной версии"""
+    try:
+        import sqlite3
+        conn = sqlite3.connect(DB_NAME)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        print("Проверка структуры базы данных...")
+        
+        # ========== ТАБЛИЦА USERS ==========
+        cursor.execute("PRAGMA table_info(users)")
+        columns = [col[1] for col in cursor.fetchall()]
+        
+        if 'full_name' not in columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN full_name TEXT")
+            print("✅ Добавлена колонка full_name в users")
+            cursor.execute("UPDATE users SET full_name = username WHERE full_name IS NULL")
+        
+        # ========== ТАБЛИЦА BJU_SETTINGS ==========
+        try:
+            cursor.execute("PRAGMA table_info(bju_settings)")
+            columns = [col[1] for col in cursor.fetchall()]
+            
+            if 'gender_id' not in columns:
+                cursor.execute("ALTER TABLE bju_settings ADD COLUMN gender_id INTEGER DEFAULT 1")
+                print("✅ Добавлена колонка gender_id")
+                
+            if 'activity_id' not in columns:
+                cursor.execute("ALTER TABLE bju_settings ADD COLUMN activity_id INTEGER DEFAULT 3")
+                print("✅ Добавлена колонка activity_id")
+                
+            if 'goal_id' not in columns:
+                cursor.execute("ALTER TABLE bju_settings ADD COLUMN goal_id INTEGER DEFAULT 1")
+                print("✅ Добавлена колонка goal_id")
+            
+            # Обновляем значения
+            cursor.execute('''
+                UPDATE bju_settings 
+                SET gender_id = CASE gender 
+                    WHEN 'male' THEN 1 
+                    WHEN 'female' THEN 2 
+                    ELSE 1 
+                END
+                WHERE gender_id IS NULL
+            ''')
+            
+            cursor.execute('''
+                UPDATE bju_settings 
+                SET activity_id = CASE 
+                    WHEN activity_level = 1.2 THEN 1
+                    WHEN activity_level = 1.375 THEN 2
+                    WHEN activity_level = 1.55 THEN 3
+                    WHEN activity_level = 1.725 THEN 4
+                    WHEN activity_level = 1.9 THEN 5
+                    ELSE 3
+                END
+                WHERE activity_id IS NULL
+            ''')
+            
+            cursor.execute('''
+                UPDATE bju_settings 
+                SET goal_id = CASE goal 
+                    WHEN 'maintain' THEN 1 
+                    WHEN 'lose' THEN 2 
+                    WHEN 'gain' THEN 3 
+                    ELSE 1 
+                END
+                WHERE goal_id IS NULL
+            ''')
+            print("✅ Обновлены значения в bju_settings")
+        except Exception as e:
+            print(f"⚠️ Таблица bju_settings еще не создана: {e}")
+        
+        # ========== ТАБЛИЦЫ СПРАВОЧНИКОВ ==========
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS gender_types (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT UNIQUE NOT NULL,
+                display_name TEXT NOT NULL,
+                icon TEXT,
+                sort_order INTEGER DEFAULT 0
+            )
+        ''')
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS activity_levels (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT UNIQUE NOT NULL,
+                display_name TEXT NOT NULL,
+                value REAL NOT NULL,
+                icon TEXT,
+                description TEXT,
+                sort_order INTEGER DEFAULT 0
+            )
+        ''')
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS goal_types (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT UNIQUE NOT NULL,
+                display_name TEXT NOT NULL,
+                icon TEXT,
+                description TEXT,
+                sort_order INTEGER DEFAULT 0
+            )
+        ''')
+        
+        # ========== ТАБЛИЦА ABOUT_CONTENT ==========
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS about_content (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                section_key TEXT UNIQUE NOT NULL,
+                section_title TEXT,
+                section_content TEXT,
+                icon TEXT,
+                sort_order INTEGER DEFAULT 0,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        print("✅ Таблица about_content создана")
+        
+        # Проверяем, есть ли записи
+        cursor.execute("SELECT COUNT(*) as count FROM about_content")
+        row = cursor.fetchone()
+        if row[0] == 0:
+            print("Добавление базового контента в about_content...")
+            
+            cursor.execute('''
+                INSERT INTO about_content (section_key, section_title, section_content, icon, sort_order)
+                VALUES (?, ?, ?, ?, ?)
+            ''', ('mission', 'Наша миссия', 
+                  'Мы создали этот трекер тренировок, чтобы помочь вам достигать своих фитнес-целей, отслеживать прогресс и оставаться мотивированными.',
+                  'fa-rocket', 1))
+            
+            cursor.execute('''
+                INSERT INTO about_content (section_key, section_title, section_content, icon, sort_order)
+                VALUES (?, ?, ?, ?, ?)
+            ''', ('team_developer', 'Громов Александр Сергеевич', 'Разработчик', 'fa-user-tie', 2))
+            
+            cursor.execute('''
+                INSERT INTO about_content (section_key, section_title, section_content, icon, sort_order)
+                VALUES (?, ?, ?, ?, ?)
+            ''', ('team_designer', 'Виртуальный помощник', 'Дизайнер', 'fa-paint-brush', 3))
+            
+            cursor.execute('''
+                INSERT INTO about_content (section_key, section_title, section_content, icon, sort_order)
+                VALUES (?, ?, ?, ?, ?)
+            ''', ('team_curator', 'Родионов Виктор Валерьевич', 'Куратор', 'fa-crown', 4))
+            
+            print("✅ Базовый контент добавлен")
+        
+        # ========== ЗАПОЛНЯЕМ СПРАВОЧНИКИ ==========
+        cursor.execute("SELECT COUNT(*) as count FROM gender_types")
+        row = cursor.fetchone()
+        if row[0] == 0:
+            genders = [
+                ('male', '👨 Мужской', 'fa-mars', 1),
+                ('female', '👩 Женский', 'fa-venus', 2)
+            ]
+            for name, display_name, icon, sort in genders:
+                cursor.execute('''
+                    INSERT INTO gender_types (name, display_name, icon, sort_order)
+                    VALUES (?, ?, ?, ?)
+                ''', (name, display_name, icon, sort))
+            print("✅ Добавлены типы пола")
+        
+        cursor.execute("SELECT COUNT(*) as count FROM activity_levels")
+        row = cursor.fetchone()
+        if row[0] == 0:
+            activities = [
+                ('minimal', '🪑 Минимальная', 1.2, 'fa-chair', 'Сидячая работа, нет тренировок', 1),
+                ('light', '🚶 Лёгкая', 1.375, 'fa-walking', '1-3 тренировки в неделю', 2),
+                ('moderate', '🏃 Средняя', 1.55, 'fa-running', '3-5 тренировок в неделю', 3),
+                ('high', '💪 Высокая', 1.725, 'fa-dumbbell', '6-7 тренировок в неделю', 4),
+                ('extreme', '🏆 Очень высокая', 1.9, 'fa-trophy', 'Спортсмены, физическая работа', 5)
+            ]
+            for name, display_name, value, icon, desc, sort in activities:
+                cursor.execute('''
+                    INSERT INTO activity_levels (name, display_name, value, icon, description, sort_order)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', (name, display_name, value, icon, desc, sort))
+            print("✅ Добавлены уровни активности")
+        
+        cursor.execute("SELECT COUNT(*) as count FROM goal_types")
+        row = cursor.fetchone()
+        if row[0] == 0:
+            goals = [
+                ('maintain', '🏋️ Поддержание', 'fa-balance-scale', 'Сохранить текущий вес', 1),
+                ('lose', '📉 Похудение', 'fa-arrow-down', 'Снизить вес', 2),
+                ('gain', '📈 Набор массы', 'fa-arrow-up', 'Увеличить мышечную массу', 3)
+            ]
+            for name, display_name, icon, desc, sort in goals:
+                cursor.execute('''
+                    INSERT INTO goal_types (name, display_name, icon, description, sort_order)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (name, display_name, icon, desc, sort))
+            print("✅ Добавлены цели")
+        
+        conn.commit()
+        conn.close()
+        print("✅ Проверка структуры БД завершена")
+        
+    except Exception as e:
+        print(f"⚠️ Ошибка при миграции БД: {e}")     

@@ -4,6 +4,7 @@
     <title>{{ workout.name }} - Тренировка</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
             --primary: #6366f1;
@@ -33,7 +34,19 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 40px 20px;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 80px;
         }
 
         .container {
@@ -44,10 +57,7 @@
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 30px;
-           
         }
-
-       
 
         /* Шапка */
         .header {
@@ -450,6 +460,11 @@
 
         /* Для мобильных */
         @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 60px 20px 20px;
+            }
+            
             .timer-section {
                 width: 100%;
                 justify-content: center;
@@ -497,111 +512,102 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark_theme.css') }}">
 </head>
 <body>
-   {% include 'sidebar.html' %}  
-
-<!-- ОТЛАДКА -->
-<script>
-    console.log('=== ДАННЫЕ ИЗ БД ===');
-    const exercisesFromServer = [
-        {% for ex in exercises %}
-        {
-            id: {{ ex.id }},
-            exercise_lib_id: {{ ex.exercise_lib_id }},
-            name: "{{ ex.name }}"
-        },
-        {% endfor %}
-    ];
-    console.log('Упражнения из сервера:', exercisesFromServer);
-</script>
-
-
-    <!-- Скрытые поля для передачи данных -->
     <input type="hidden" id="userId" value="{{ session['user_id'] }}">
     <input type="hidden" id="workoutId" value="{{ workout.id }}">
     <input type="hidden" id="isContinuing" value="{{ 'true' if is_continuing else 'false' }}">
-    <input type="hidden" id="isAdmin" value="{{ 'true' if is_admin else 'false' }}">
 
-    <div class="container">
-        <!-- Шапка -->
-        <div class="header">
-            <h1><i class="fas fa-play-circle"></i> {{ workout.name }}</h1>
-            <div class="header-right">
-               <a href="{{ url_for('view_workout', workout_id=workout.id) }}" class="btn btn-gray" onclick="return confirmExit()">
-            <i class="fas fa-sign-out-alt"></i> к тренировке
-        </a>
+    {% include 'sidebar.html' %}
+    
+    <div class="main-content" id="mainContent">
+        <div class="container">
+            <!-- Шапка -->
+            <div class="header">
+                <h1><i class="fas fa-play-circle"></i> {{ workout.name }}</h1>
+                <div class="header-right">
+                    <a href="{{ url_for('view_workout', workout_id=workout.id) }}" class="btn btn-gray" onclick="return confirmExit()">
+                        <i class="fas fa-sign-out-alt"></i> Выйти
+                    </a>
+                </div>
+            </div>
+
+            <!-- Таймер -->
+            <div style="text-align: center;">
+                <div class="timer-section">
+                    <div class="timer-display" id="timer">00:00</div>
+                </div>
+            </div>
+
+            <!-- Информация о тренировке -->
+            <div class="workout-info">
+                <div class="info-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>{{ workout.date }}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-dumbbell"></i>
+                    <span id="totalExercises">{{ exercises|length }}</span> упражнений
+                </div>
+            </div>
+
+            <!-- Карточки упражнений -->
+            <div id="exercisesContainer">
+                {% for ex in exercises %}
+                <div class="exercise-card" id="exercise-{{ ex.id }}" data-exercise-id="{{ ex.id }}" data-exercise-lib-id="{{ ex.exercise_lib_id }}">
+                    <div class="exercise-header" onclick="toggleExercise({{ ex.id }})">
+                        {% if ex.image %}
+                            <img src="/{{ ex.image }}" alt="{{ ex.name }}">
+                        {% else %}
+                            <i class="fas fa-dumbbell"></i>
+                        {% endif %}
+                        <div class="exercise-header-info">
+                            <div class="exercise-name">{{ ex.name }}</div>
+                            <div class="exercise-muscle">{{ ex.muscle_group }}</div>
+                        </div>
+                        <i class="fas fa-chevron-down exercise-chevron" id="chevron-{{ ex.id }}"></i>
+                    </div>
+                    <div class="exercise-content" id="content-{{ ex.id }}">
+                        <div class="sets-container" id="sets-{{ ex.id }}"></div>
+                        
+                        <button class="add-set-btn" onclick="addSet({{ ex.id }})">
+                            <i class="fas fa-plus"></i> Добавить подход
+                        </button>
+
+                        <div class="sets-stats" id="stats-{{ ex.id }}"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Кнопки действий -->
+            <div class="action-buttons">
+                <button class="action-btn finish" onclick="finishWorkout()">
+                    <i class="fas fa-check-circle"></i> Завершить
+                </button>
+                <button class="action-btn add" onclick="openAddExerciseModal()">
+                    <i class="fas fa-plus"></i> Добавить упражнение
+                </button>
             </div>
         </div>
-
-        <!-- Таймер -->
-        <div style="text-align: center;">
-            <div class="timer-section">
-                <div class="timer-display" id="timer">00:00</div>
-            </div>
-        </div>
-
-        <!-- Информация о тренировке -->
-        <div class="workout-info">
-            <div class="info-item">
-                <i class="fas fa-calendar"></i>
-                <span>{{ workout.date }}</span>
-            </div>
-            <div class="info-item">
-                <i class="fas fa-dumbbell"></i>
-                <span id="totalExercises">{{ exercises|length }}</span> упражнений
-            </div>
-        </div>
-
-        <!-- Карточки упражнений -->
-        <div id="exercisesContainer">
-           {% for ex in exercises %}
-<div class="exercise-card" 
-     id="exercise-{{ ex.id }}" 
-     data-exercise-id="{{ ex.id }}"
-     data-exercise-lib-id="{{ ex.exercise_lib_id }}">
-    <div class="exercise-header" onclick="toggleExercise({{ ex.id }})">
-        <!-- Картинка упражнения в активной тренировке -->
-{% if ex.image %}
-    <img src="/{{ ex.image }}" alt="{{ ex.name }}">
-{% else %}
-    <i class="fas fa-dumbbell"></i>
-{% endif %}
-        <div class="exercise-header-info">
-            <div class="exercise-name">{{ ex.name }}</div>
-            <div class="exercise-muscle">{{ ex.muscle_group }}</div>
-        </div>
-        <i class="fas fa-chevron-down exercise-chevron" id="chevron-{{ ex.id }}"></i>
     </div>
-    <div class="exercise-content" id="content-{{ ex.id }}">
-        <div class="sets-container" id="sets-{{ ex.id }}"></div>
-        <button class="add-set-btn" onclick="addSet({{ ex.id }})">
-            <i class="fas fa-plus"></i> Добавить подход
-        </button>
-        <div class="sets-stats" id="stats-{{ ex.id }}"></div>
-    </div>
-</div>
-{% endfor %}
-        </div>
 
-        <!-- Кнопки действий -->
-        <div class="action-buttons">
-            <button class="action-btn finish" onclick="finishWorkout()">
-                <i class="fas fa-check-circle"></i> Завершить
-            </button>
-            <button class="action-btn add" onclick="openAddExerciseModal()">
-                <i class="fas fa-plus"></i> Добавить упражнение
-            </button>
-        </div>
-    </div>
+    
 
     <script>
         // Получаем данные из скрытых полей
         const userId = document.getElementById('userId').value;
         const workoutId = document.getElementById('workoutId').value;
         const isContinuing = document.getElementById('isContinuing').value === 'true';
+
+        // Состояние сайдбара
+        document.addEventListener('DOMContentLoaded', function() {
+            const mainContent = document.getElementById('mainContent');
+            const savedState = localStorage.getItem('sidebar_collapsed');
+            if (savedState === 'true') {
+                mainContent.classList.add('expanded');
+            }
+        });
 
         // Таймер
         let timerInterval;
@@ -624,82 +630,79 @@
             }
         }
 
-        // Загружаем таймер
         function loadTimer() {
-            const savedTime = localStorage.getItem(`workout_${userId}_${workoutId}_timer`);
-            
-            if (savedTime && isContinuing) {
-                seconds = parseInt(savedTime);
-            } else {
-                seconds = 0;
-            }
-            
-            document.getElementById('timer').textContent = formatTime(seconds);
-            startTimer();
-        }
+    const savedTime = localStorage.getItem(`workout_${userId}_${workoutId}_timer`);
+    
+    if (savedTime) {
+        seconds = parseInt(savedTime);
+        console.log('Загружен таймер:', seconds);
+    } else {
+        seconds = 0;
+    }
+    
+    document.getElementById('timer').textContent = formatTime(seconds);
+    startTimer();
+}
 
-        // Сохраняем время
         function saveTimer() {
             localStorage.setItem(`workout_${userId}_${workoutId}_timer`, seconds.toString());
         }
 
-       function addSet(exerciseId, setData = null) {
-    const container = document.getElementById(`sets-${exerciseId}`);
-    const setNumber = container.children.length + 1;
-    
-    const wrapper = document.createElement('div');
-    wrapper.className = 'set-card-wrapper';
-    
-    const setDiv = document.createElement('div');
-    setDiv.className = 'set-card';
-    setDiv.id = `set-${exerciseId}-${setNumber}`;
-    
-    // Получаем library ID из карточки или из переданных данных
-    const exerciseCard = document.getElementById(`exercise-${exerciseId}`);
-    const exerciseLibId = setData?.exercise_lib_id || exerciseCard?.dataset.exerciseLibId;
-    
-    console.log(`Создаём подход: локальный ID ${exerciseId}, библиотечный ID ${exerciseLibId}`);
-    
-    // Значения по умолчанию или из сохранённых данных
-    const weight = setData ? setData.weight : 0;
-    const reps = setData ? setData.reps : 10;
-    const isCompleted = setData ? setData.completed : false;
-    
-    setDiv.innerHTML = `
-        <button class="delete-set-btn" onclick="deleteSet(this)" title="Удалить подход">
-            <i class="fas fa-trash"></i>
-        </button>
-        <div class="set-number">#${setNumber}</div>
-        <div class="set-inputs">
-            <div class="input-field">
-                <input type="number" value="${weight}" step="0.5" min="0" class="weight-input" inputmode="decimal">
-                <div class="input-label">кг</div>
-            </div>
-            <div class="input-field">
-                <input type="number" value="${reps}" min="1" class="reps-input" inputmode="numeric">
-                <div class="input-label">раз</div>
-            </div>
-        </div>
-        <button class="complete-btn ${isCompleted ? 'completed' : ''}" onclick="toggleComplete(this)" title="Выполнено">
-            <i class="fas fa-check"></i>
-        </button>
-    `;
-    
-    if (isCompleted) {
-        setDiv.classList.add('completed');
-    }
-    
-    // Сохраняем library ID в dataset подхода
-    if (exerciseLibId) {
-        setDiv.dataset.exerciseLibId = exerciseLibId;
-    }
-    
-    wrapper.appendChild(setDiv);
-    container.appendChild(wrapper);
-    
-    initSwipe(setDiv);
-    updateExerciseStats(exerciseId);
-}
+        // Функции для работы с подходами
+        function addSet(exerciseId, setData = null) {
+            const container = document.getElementById(`sets-${exerciseId}`);
+            const setNumber = container.children.length + 1;
+            
+            const wrapper = document.createElement('div');
+            wrapper.className = 'set-card-wrapper';
+            
+            const setDiv = document.createElement('div');
+            setDiv.className = 'set-card';
+            setDiv.id = `set-${exerciseId}-${setNumber}`;
+            
+            const exerciseCard = document.getElementById(`exercise-${exerciseId}`);
+            const exerciseLibId = setData?.exercise_lib_id || exerciseCard?.dataset.exerciseLibId;
+            
+            console.log(`Создаём подход: локальный ID ${exerciseId}, библиотечный ID ${exerciseLibId}`);
+            
+            const weight = setData ? setData.weight : 0;
+            const reps = setData ? setData.reps : 10;
+            const isCompleted = setData ? setData.completed : false;
+            
+            setDiv.innerHTML = `
+                <button class="delete-set-btn" onclick="deleteSet(this)" title="Удалить подход">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <div class="set-number">#${setNumber}</div>
+                <div class="set-inputs">
+                    <div class="input-field">
+                        <input type="number" value="${weight}" step="0.5" min="0" class="weight-input" inputmode="decimal">
+                        <div class="input-label">кг</div>
+                    </div>
+                    <div class="input-field">
+                        <input type="number" value="${reps}" min="1" class="reps-input" inputmode="numeric">
+                        <div class="input-label">раз</div>
+                    </div>
+                </div>
+                <button class="complete-btn ${isCompleted ? 'completed' : ''}" onclick="toggleComplete(this)" title="Выполнено">
+                    <i class="fas fa-check"></i>
+                </button>
+            `;
+            
+            if (isCompleted) {
+                setDiv.classList.add('completed');
+            }
+            
+            if (exerciseLibId) {
+                setDiv.dataset.exerciseLibId = exerciseLibId;
+            }
+            
+            wrapper.appendChild(setDiv);
+            container.appendChild(wrapper);
+            
+            updateExerciseStats(exerciseId);
+            saveWorkoutState(); // Сохраняем сразу после добавления
+        }
 
         function deleteSet(btn) {
             if (confirm('Удалить этот подход?')) {
@@ -708,7 +711,6 @@
                 
                 setWrapper.remove();
                 
-                // Перенумеровываем подходы
                 const container = document.getElementById(`sets-${exerciseId}`);
                 const sets = container.children;
                 for (let i = 0; i < sets.length; i++) {
@@ -795,47 +797,40 @@
             chevron.classList.toggle('rotated');
         }
 
-       // Сохранение состояния тренировки
-        // Сохранение состояния тренировки
-function saveWorkoutState() {
-    const workoutState = {
-        exercises: [],
-        timer: seconds,
-        name: "{{ workout.name }}"
-    };
-    
-    document.querySelectorAll('.exercise-card').forEach(card => {
-        const exerciseId = card.dataset.exerciseId;
-        const exerciseLibId = card.dataset.exerciseLibId;
-        const exerciseName = card.querySelector('.exercise-name').textContent;
-        const sets = [];
-        
-        console.log(`Сохраняем состояние: ${exerciseName}, library ID: ${exerciseLibId}`);
-        
-        card.querySelectorAll('.set-card').forEach(set => {
-            const weight = set.querySelector('.weight-input').value;
-            const reps = set.querySelector('.reps-input').value;
-            const completed = set.classList.contains('completed');
+        // Сохранение и загрузка состояния
+        function saveWorkoutState() {
+            const workoutState = {
+                exercises: [],
+                timer: seconds,
+                name: "{{ workout.name }}"
+            };
             
-            sets.push({ 
-                weight, 
-                reps, 
-                completed
+            document.querySelectorAll('.exercise-card').forEach(card => {
+                const exerciseId = card.dataset.exerciseId;
+                const exerciseLibId = card.dataset.exerciseLibId;
+                const exerciseName = card.querySelector('.exercise-name').textContent;
+                const sets = [];
+                
+                card.querySelectorAll('.set-card').forEach(set => {
+                    const weight = set.querySelector('.weight-input').value;
+                    const reps = set.querySelector('.reps-input').value;
+                    const completed = set.classList.contains('completed');
+                    
+                    sets.push({ weight, reps, completed });
+                });
+                
+                workoutState.exercises.push({
+                    id: exerciseId,
+                    lib_id: exerciseLibId,
+                    name: exerciseName,
+                    sets: sets
+                });
             });
-        });
-        
-        workoutState.exercises.push({
-            id: exerciseId,
-            lib_id: exerciseLibId || 113, // Если нет library ID, используем 113
-            name: exerciseName,
-            sets: sets
-        });
-    });
-    
-    localStorage.setItem(`workout_${userId}_${workoutId}`, JSON.stringify(workoutState));
-    localStorage.setItem(`workout_${userId}_${workoutId}_timer`, seconds.toString());
-    console.log('Состояние сохранено');
-}
+            
+            localStorage.setItem(`workout_${userId}_${workoutId}`, JSON.stringify(workoutState));
+            localStorage.setItem(`workout_${userId}_${workoutId}_timer`, seconds.toString());
+            console.log('Состояние сохранено');
+        }
 
        function loadWorkoutState() {
     const saved = localStorage.getItem(`workout_${userId}_${workoutId}`);
@@ -845,19 +840,22 @@ function saveWorkoutState() {
         const state = JSON.parse(saved);
         console.log('Загружаем состояние:', state);
         
-        // Очищаем все подходы
+        // Загружаем таймер из состояния
+        if (state.timer) {
+            seconds = state.timer;
+        }
+        
         document.querySelectorAll('.sets-container').forEach(container => {
             container.innerHTML = '';
         });
         
-        // Восстанавливаем подходы
         state.exercises.forEach(ex => {
             ex.sets.forEach(setData => {
                 addSet(ex.id, {
                     weight: setData.weight,
                     reps: setData.reps,
                     completed: setData.completed,
-                    exercise_lib_id: ex.lib_id || 113
+                    exercise_lib_id: ex.lib_id
                 });
             });
         });
@@ -873,213 +871,135 @@ function saveWorkoutState() {
             saveWorkoutState();
             saveTimer();
         }
-// Функция для свайпа на мобильных устройствах
-function initSwipe(setCard) {
-    // Проверяем, мобильное ли устройство
-    const isMobile = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
-    
-    if (!isMobile) return; // На десктопе не инициализируем свайп
 
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let isSwiping = false;
-
-    setCard.addEventListener('touchstart', (e) => {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-        isSwiping = false;
-    });
-
-    setCard.addEventListener('touchmove', (e) => {
-        if (!touchStartX) return;
-        
-        const touchEndX = e.touches[0].clientX;
-        const touchEndY = e.touches[0].clientY;
-        const diffX = touchStartX - touchEndX;
-        const diffY = touchStartY - touchEndY;
-        
-        if (Math.abs(diffX) > Math.abs(diffY) && diffX > 20) {
-            e.preventDefault();
-            isSwiping = true;
-            const translateX = Math.min(diffX, 70);
-            setCard.style.transform = `translateX(-${translateX}px)`;
-            setCard.classList.add('swiping');
-        }
-    });
-
-    setCard.addEventListener('touchend', (e) => {
-        if (isSwiping) {
-            const diffX = touchStartX - e.changedTouches[0].clientX;
-            
-            if (diffX > 50) {
-                const setWrapper = setCard.closest('.set-card-wrapper');
-                const exerciseId = setCard.closest('.exercise-card').dataset.exerciseId;
-                
-                setCard.style.transform = 'translateX(-100%)';
-                setCard.style.opacity = '0';
-                
-                setTimeout(() => {
-                    setWrapper.remove();
-                    updateExerciseStats(exerciseId);
-                    updateAllExercisesCollapse();
-                    saveWorkoutState();
-                }, 300);
-            } else {
-                setCard.style.transform = '';
-                setCard.classList.remove('swiping');
+        // Подтверждение выхода
+        function confirmExit() {
+            if (confirm('Выйти из тренировки? Прогресс будет сохранён.')) {
+                saveWorkoutState();
+                saveTimer();
+                return true;
             }
+            return false;
         }
-        
-        touchStartX = 0;
-        touchStartY = 0;
-        isSwiping = false;
-    });
 
-    setCard.addEventListener('touchcancel', () => {
-        setCard.style.transform = '';
-        setCard.classList.remove('swiping');
-        touchStartX = 0;
-        touchStartY = 0;
-        isSwiping = false;
-    });
-}
         // Инициализация
-        document.addEventListener('DOMContentLoaded', function() {
-            if (isContinuing) {
-                // Продолжение тренировки - загружаем сохранённое состояние
-                const loaded = loadWorkoutState();
-                if (!loaded) {
-                    // Если нет сохранённого состояния, создаём новые подходы
-                    {% for ex in exercises %}
-                    addSet({{ ex.id }});
-                    {% endfor %}
-                }
-            } else {
-                // Новая тренировка - очищаем все старые данные
-                localStorage.removeItem(`workout_${userId}_${workoutId}`);
-                localStorage.removeItem(`workout_${userId}_${workoutId}_timer`);
-                localStorage.removeItem(`workout_${userId}_${workoutId}_active`);
-                
-                // Создаём новые подходы
-                {% for ex in exercises %}
-                addSet({{ ex.id }});
-                {% endfor %}
-            }
-            
-            // Запускаем таймер
-            loadTimer();
-            
-            // Помечаем, что тренировка активна (ТОЛЬКО если есть подходы)
-            if (document.querySelectorAll('.set-card').length > 0) {
-                localStorage.setItem(`workout_${userId}_${workoutId}_active`, 'true');
-            }
-        });
+document.addEventListener('DOMContentLoaded', function() {
+    if (isContinuing) {
+        const loaded = loadWorkoutState();
+        if (!loaded) {
+            {% for ex in exercises %}
+            addSet({{ ex.id }});
+            {% endfor %}
+        }
+    } else {
+        localStorage.removeItem(`workout_${userId}_${workoutId}`);
+        localStorage.removeItem(`workout_${userId}_${workoutId}_timer`);
+        localStorage.removeItem(`workout_${userId}_${workoutId}_active`);
+        
+        {% for ex in exercises %}
+        addSet({{ ex.id }});
+        {% endfor %}
+    }
+    
+    // Таймер загружается после состояния
+    loadTimer();
+    
+    // Сохраняем состояние после создания всех подходов
+    saveWorkoutState();
+    
+    // Помечаем, что тренировка активна
+    localStorage.setItem(`workout_${userId}_${workoutId}_active`, 'true');
+    console.log('Установлен флаг активности для тренировки', workoutId);
+});
 
-        // Автосохранение каждые 3 секунды
+        // Автосохранение
         setInterval(() => {
             saveWorkoutState();
             saveTimer();
         }, 3000);
 
-        // Сохраняем при уходе со страницы
         window.addEventListener('beforeunload', () => {
             saveWorkoutState();
             saveTimer();
         });
 
-        
-
-       // Завершение тренировки
-function finishWorkout() {
-    if (confirm('Завершить тренировку?')) {
-        // Собираем данные через collectWorkoutData
-        const setsData = collectWorkoutData();
-        
-        console.log('Данные для отправки на сервер:', setsData);
-        
-        // Отправляем данные на сервер
-        fetch('/api/save_completed_workout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                workout_id: workoutId,
-                workout_name: "{{ workout.name }}",
-                duration: seconds,
-                sets: setsData
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Очищаем localStorage
-                localStorage.removeItem(`workout_${userId}_${workoutId}_active`);
-                localStorage.removeItem(`workout_${userId}_${workoutId}`);
-                localStorage.removeItem(`workout_${userId}_${workoutId}_timer`);
+        // Завершение тренировки
+        function finishWorkout() {
+            if (confirm('Завершить тренировку?')) {
+                const setsData = collectWorkoutData();
                 
-                console.log('Тренировка завершена, данные очищены');
+                console.log('Данные для отправки на сервер:', setsData);
                 
-                // Переходим на страницу статистики
-                window.location.href = '/stats';
-            } else {
-                alert('Ошибка при сохранении тренировки');
-            }
-        })
-        .catch(error => {
-            console.error('Ошибка:', error);
-            alert('Ошибка при сохранении тренировки');
-        });
-    }
-}
-// Функция для сбора данных тренировки
-function collectWorkoutData() {
-    const data = [];
-    console.log('=== СБОР ДАННЫХ ТРЕНИРОВКИ (НОВАЯ ВЕРСИЯ) ===');
-    
-    document.querySelectorAll('.exercise-card').forEach(card => {
-        // ВАЖНО: используем dataset.exerciseLibId, а не dataset.exerciseId
-        const exerciseLibId = card.dataset.exerciseLibId;
-        const exerciseName = card.querySelector('.exercise-name')?.textContent;
-        
-        console.log(`Карточка: ${exerciseName}, dataset:`, {
-            exerciseId: card.dataset.exerciseId,
-            exerciseLibId: card.dataset.exerciseLibId
-        });
-        
-        if (!exerciseLibId) {
-            console.error('❌ Нет exerciseLibId в dataset!');
-            return;
-        }
-        
-        card.querySelectorAll('.set-card').forEach(set => {
-            const weight = set.querySelector('.weight-input')?.value;
-            const reps = set.querySelector('.reps-input')?.value;
-            const completed = set.classList.contains('completed');
-            
-            console.log(`  Подход: вес=${weight}, reps=${reps}, completed=${completed}`);
-            
-            if (completed && parseFloat(weight) > 0) {
-                // Используем exerciseLibId, а не exerciseId
-                const exerciseIdToSend = parseInt(exerciseLibId);
-                console.log(`    ✅ Добавляем подход с ID: ${exerciseIdToSend}`);
-                
-                data.push({
-                    exercise_id: exerciseIdToSend,
-                    exercise_name: exerciseName,
-                    weight: parseFloat(weight),
-                    reps: parseInt(reps)
+                fetch('/api/save_completed_workout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        workout_id: workoutId,
+                        workout_name: "{{ workout.name }}",
+                        duration: seconds,
+                        sets: setsData
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Удаляем флаг активности и данные тренировки
+                        localStorage.removeItem(`workout_${userId}_${workoutId}_active`);
+                        localStorage.removeItem(`workout_${userId}_${workoutId}`);
+                        localStorage.removeItem(`workout_${userId}_${workoutId}_timer`);
+                        
+                        console.log('Тренировка завершена, данные очищены');
+                        
+                        window.location.href = '/stats';
+                    } else {
+                        alert('Ошибка при сохранении тренировки');
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    alert('Ошибка при сохранении тренировки');
                 });
             }
-        });
-    });
-    
-    console.log('Итоговые данные для отправки:', JSON.stringify(data, null, 2));
-    return data;
-}
+        }
+
+        // Функция для сбора данных тренировки
+        function collectWorkoutData() {
+            const data = [];
+            console.log('=== СБОР ДАННЫХ ТРЕНИРОВКИ ===');
+            
+            document.querySelectorAll('.exercise-card').forEach(card => {
+                const exerciseLibId = card.dataset.exerciseLibId;
+                const exerciseName = card.querySelector('.exercise-name').textContent;
+                
+                console.log(`Карточка: ${exerciseName}, library ID: ${exerciseLibId}`);
+                
+                if (!exerciseLibId) return;
+                
+                card.querySelectorAll('.set-card').forEach(set => {
+                    const weight = set.querySelector('.weight-input')?.value;
+                    const reps = set.querySelector('.reps-input')?.value;
+                    const completed = set.classList.contains('completed');
+                    
+                    if (completed && parseFloat(weight) > 0) {
+                        data.push({
+                            exercise_id: parseInt(exerciseLibId),
+                            exercise_name: exerciseName,
+                            weight: parseFloat(weight),
+                            reps: parseInt(reps)
+                        });
+                        console.log(`    ✅ Добавлен подход: ID ${exerciseLibId}, ${weight}kg x ${reps}`);
+                    }
+                });
+            });
+            
+            console.log('Итоговые данные:', data);
+            return data;
+        }
+
         // Добавление упражнения
         function openAddExerciseModal() {
-            // Сохраняем перед уходом
             saveWorkoutState();
             saveTimer();
             window.location.href = "{{ url_for('view_workout', workout_id=workout.id) }}";

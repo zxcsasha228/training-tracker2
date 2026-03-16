@@ -22,11 +22,17 @@
     .active-workout-banner {
         position: fixed;
         bottom: 20px;
-        left: 20px;
+        left: 300px;  /* Отступ под сайдбар (280px + 20px) */
         right: 20px;
         z-index: 9999;
         display: none;
         pointer-events: none;
+        transition: left 0.3s ease;
+    }
+
+    /* Когда сайдбар свёрнут */
+    body:has(.sidebar.collapsed) .active-workout-banner {
+        left: 100px;  /* Отступ под свёрнутый сайдбар (80px + 20px) */
     }
 
     .banner-content {
@@ -116,7 +122,12 @@
         font-size: 0.9em;
     }
 
+    /* Адаптация для мобильных */
     @media (max-width: 768px) {
+        .active-workout-banner {
+            left: 20px !important;  /* На мобильных сайдбар скрыт */
+        }
+        
         .banner-content {
             padding: 12px 15px;
         }
@@ -151,6 +162,9 @@
 
     // Функция для очистки данных удалённой тренировки
     async function cleanupDeletedWorkouts() {
+        // Ждём появления userId
+        await waitForUserId();
+        
         const userIdElement = document.getElementById('userId');
         const currentUserId = userIdElement ? userIdElement.value : null;
         
@@ -158,7 +172,6 @@
         
         const keysToRemove = [];
         
-        // Собираем все ключи с активными тренировками
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
             
@@ -175,8 +188,26 @@
             }
         }
         
-        // Удаляем все ключи
         keysToRemove.forEach(key => localStorage.removeItem(key));
+    }
+
+    // Функция ожидания появления userId
+    function waitForUserId() {
+        return new Promise((resolve) => {
+            if (document.getElementById('userId')) {
+                resolve();
+                return;
+            }
+            
+            const observer = new MutationObserver(() => {
+                if (document.getElementById('userId')) {
+                    observer.disconnect();
+                    resolve();
+                }
+            });
+            
+            observer.observe(document.body, { childList: true, subtree: true });
+        });
     }
 
     // Функция для обновления плашки с активной тренировкой
@@ -184,11 +215,20 @@
         const banner = document.getElementById('activeWorkoutBanner');
         if (!banner) return;
         
+        // Не показываем баннер на странице активной тренировки
+        if (window.location.pathname.includes('/start') || 
+            window.location.pathname.includes('/continue')) {
+            banner.style.display = 'none';
+            return;
+        }
+        
+        // Ждём появления userId
+        await waitForUserId();
+        
         const workoutName = document.getElementById('activeWorkoutName');
         const workoutTimer = document.getElementById('activeWorkoutTimer');
         const continueBtn = document.getElementById('continueWorkoutBtn');
         
-        // Получаем текущего пользователя из HTML (если есть)
         const userIdElement = document.getElementById('userId');
         const currentUserId = userIdElement ? userIdElement.value : null;
         
@@ -200,10 +240,8 @@
             return;
         }
         
-        // Сначала чистим данные удалённых тренировок
         await cleanupDeletedWorkouts();
         
-        // Ищем активную тренировку для текущего пользователя
         let activeWorkoutId = null;
         let activeWorkoutData = null;
         
@@ -212,7 +250,7 @@
             
             if (key && key.startsWith(`workout_${currentUserId}_`) && key.endsWith('_active')) {
                 const isActive = localStorage.getItem(key) === 'true';
-                console.log('Найден ключ:', key, 'isActive:', isActive);
+                console.log('Найден ключ активности:', key, isActive);
                 
                 if (isActive) {
                     activeWorkoutId = key.replace(`workout_${currentUserId}_`, '').replace('_active', '');
@@ -225,13 +263,16 @@
                             activeWorkoutData = JSON.parse(workoutData);
                         } catch (e) {
                             console.error('Ошибка парсинга данных:', e);
+                            localStorage.removeItem(key);
+                            activeWorkoutId = null;
                         }
                     } else {
-                        // Если данных нет, удаляем флаг активности
-                        localStorage.removeItem(`workout_${currentUserId}_${activeWorkoutId}_active`);
+                        console.log('Нет данных тренировки, удаляем флаг');
+                        localStorage.removeItem(key);
+                        activeWorkoutId = null;
                     }
-                    break;
                 }
+                break;
             }
         }
         
@@ -258,12 +299,34 @@
         }
     }
 
+    // Следим за изменением сайдбара
+    function observeSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) {
+            const observer = new MutationObserver(() => {
+                const banner = document.getElementById('activeWorkoutBanner');
+                if (banner) {
+                    banner.style.transition = 'left 0.3s ease';
+                }
+            });
+            
+            observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+        }
+    }
+
     // Обновляем баннер при загрузке страницы
-    document.addEventListener('DOMContentLoaded', updateActiveWorkoutBanner);
-    
-    // Обновляем баннер каждые 3 секунды
-    setInterval(updateActiveWorkoutBanner, 3000);
-    
-    // Также обновляем при возврате на страницу
+    document.addEventListener('DOMContentLoaded', async () => {
+        await waitForUserId();
+        updateActiveWorkoutBanner();
+        observeSidebar();
+    });
+
+    // Обновляем баннер каждые 2 секунды
+    setInterval(updateActiveWorkoutBanner, 2000);
+
+    // Обновляем при возврате на страницу
     window.addEventListener('pageshow', updateActiveWorkoutBanner);
+
+    // Обновляем при фокусе на вкладке
+    window.addEventListener('focus', updateActiveWorkoutBanner);
 </script>

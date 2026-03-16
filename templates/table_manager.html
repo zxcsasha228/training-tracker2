@@ -365,7 +365,72 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+        /* Стили для менеджера упражнений */
+.exercise-manager {
+    background: #f9fafb;
+    border-radius: 12px;
+}
 
+.exercise-card {
+    background: white;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s;
+}
+
+.exercise-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 5px 15px rgba(99, 102, 241, 0.1);
+}
+
+.exercise-info h4 {
+    margin: 0 0 5px 0;
+    color: var(--dark);
+}
+
+.exercise-info p {
+    margin: 0;
+    color: var(--gray);
+    font-size: 0.9em;
+}
+
+.exercise-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 0.85em;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, var(--success), #059669);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.empty-message {
+    text-align: center;
+    color: var(--gray);
+    padding: 40px;
+    font-style: italic;
+}
         /* Модальное окно */
         .modal {
             display: none;
@@ -436,7 +501,7 @@
             justify-content: flex-end;
             margin-top: 20px;
         }
-        
+
         @media (max-width: 768px) {
             .main-content {
                 margin-left: 0;
@@ -456,6 +521,10 @@
 </head>
 <body>
     <input type="hidden" id="userId" value="{{ session['user_id'] }}">
+    <input type="hidden" id="userId" value="{{ session['user_id'] }}">
+<input type="hidden" id="gendersData" value='{{ genders|tojson }}'>
+<input type="hidden" id="activitiesData" value='{{ activities|tojson }}'>
+<input type="hidden" id="goalsData" value='{{ goals|tojson }}'>
     
     <!-- Скрытые поля с данными для выпадающих списков -->
     <input type="hidden" id="gendersData" value='{{ genders|tojson }}'>
@@ -508,9 +577,7 @@
                         <button class="btn btn-primary" onclick="refreshTable()">
                             <i class="fas fa-sync-alt"></i> Обновить
                         </button>
-                        <button class="btn btn-danger" onclick="deleteSelected()">
-                            <i class="fas fa-trash"></i> Удалить
-                        </button>
+                        
                     </div>
                     
                     <div class="search-box">
@@ -560,48 +627,58 @@
             </div>
 
             <!-- Панель для справочников (изначально скрыта) -->
-            <div id="lookupPanel" style="display: none;">
-                <div class="control-panel" style="border-color: var(--primary);">
-                    <div class="table-selector">
-                        <select id="lookupSelect" onchange="changeLookupTable()">
-                            <option value="gender_types">⚥ Типы пола</option>
-                            <option value="activity_levels">📊 Уровни активности</option>
-                            <option value="goal_types">🎯 Цели</option>
-                        </select>
-                    </div>
-                    
-                    <div class="action-group">
-                        <button class="btn btn-success" onclick="openLookupAddModal()">
-                            <i class="fas fa-plus"></i> Добавить
-                        </button>
-                        <button class="btn btn-primary" onclick="refreshLookupTable()">
-                            <i class="fas fa-sync-alt"></i> Обновить
-                        </button>
-                        <button class="btn btn-danger" onclick="deleteLookupSelected()">
-                            <i class="fas fa-trash"></i> Удалить
-                        </button>
-                    </div>
-                    
-                    <div class="search-box">
-                        <input type="text" id="lookupSearchInput" placeholder="🔍 Поиск в справочнике..." onkeyup="searchLookupTable()">
-                    </div>
-                </div>
-                
-                <!-- Таблица для справочников -->
-                <div class="table-wrapper">
-                    <table class="data-table" id="lookupTable">
-                        <thead id="lookupTableHeader"></thead>
-                        <tbody id="lookupTableBody"></tbody>
-                    </table>
-                </div>
-                
-                <!-- Пагинация для справочников -->
-                <div class="pagination" id="lookupPagination"></div>
-            </div>
+<div id="lookupPanel" style="display: none;">
+    <div class="control-panel" style="border-color: var(--primary);">
+        <div class="table-selector">
+            <select id="lookupSelect" onchange="changeLookupTable()">
+                <option value="gender_types">⚥ Типы пола</option>
+                <option value="activity_levels">📊 Уровни активности</option>
+                <option value="goal_types">🎯 Цели</option>
+                <option value="easter_egg_settings">🥚 Пасхалка</option>
+            </select>
+        </div>
+        
+        <div class="action-group">
+            <button class="btn btn-success" onclick="openLookupAddModal()">
+                <i class="fas fa-plus"></i> Добавить
+            </button>
+            <button class="btn btn-primary" onclick="refreshLookupTable()">
+                <i class="fas fa-sync-alt"></i> Обновить
+            </button>
+        </div>
+        
+        <div class="search-box">
+            <input type="text" id="lookupSearchInput" placeholder="🔍 Поиск в справочнике..." onkeyup="searchLookupTable()">
+        </div>
+    </div>
+    
+    <!-- ПАНЕЛЬ МАССОВЫХ ДЕЙСТВИЙ ДЛЯ СПРАВОЧНИКОВ -->
+    <div class="bulk-actions" id="lookupBulkActions" style="display: none;">
+        <div class="selection-info">
+            Выбрано: <span id="lookupSelectedCount">0</span> записей
+        </div>
+        <select id="lookupBulkAction">
+            <option value="delete">Удалить выбранные</option>
+        </select>
+        <button class="btn btn-primary" onclick="executeLookupBulkAction()">Применить</button>
+        <button class="btn btn-gray" onclick="clearLookupSelection()">Отмена</button>
+    </div>
+    
+    <!-- Таблица для справочников -->
+    <div class="table-wrapper">
+        <table class="data-table" id="lookupTable">
+            <thead id="lookupTableHeader"></thead>
+            <tbody id="lookupTableBody"></tbody>
+        </table>
+    </div>
+    
+    <!-- Пагинация для справочников -->
+    <div class="pagination" id="lookupPagination"></div>
+</div>
         </div>
     </div>
 
-    <!-- Модальное окно добавления/редактирования -->
+    
     <div class="modal" id="editModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -611,6 +688,31 @@
             <div id="modalForm"></div>
         </div>
     </div>
+
+   <!-- Модальное окно управления упражнениями тренировки -->
+<div class="modal" id="exerciseManagerModal">
+    <div class="modal-content" style="max-width: 1000px;">
+        <div class="modal-header">
+            <h2 id="exerciseManagerTitle">Упражнения тренировки</h2>
+            <span class="close-btn" onclick="closeExerciseManager()">&times;</span>
+        </div>
+        <div class="exercise-manager" style="display: flex; gap: 20px; padding: 20px;">
+            <!-- Левая колонка: упражнения в тренировке -->
+            <div style="flex: 1;">
+                <h3 style="margin-bottom: 15px;">Упражнения в тренировке</h3>
+                <div id="workoutExercisesList" style="max-height: 400px; overflow-y: auto;"></div>
+            </div>
+            
+            <!-- Правая колонка: библиотека упражнений -->
+            <div style="flex: 1;">
+                <h3 style="margin-bottom: 15px;">Библиотека упражнений</h3>
+                <input type="text" id="librarySearch" placeholder="🔍 Поиск упражнений..." 
+                       style="width: 100%; padding: 10px; margin-bottom: 15px; border: 2px solid #e5e7eb; border-radius: 8px;">
+                <div id="libraryExercisesList" style="max-height: 350px; overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
     {% include 'active_workout_banner.html' %}
 
@@ -804,6 +906,7 @@
             displayColumns = [
                 'id',
                 'username',
+                 'password',
                 'full_name',
                 'is_admin',
                 'created_at'
@@ -811,6 +914,7 @@
             columnNames = {
                 'id': 'ID',
                 'username': 'Логин',
+                 'password': 'Пароль',
                 'full_name': 'ФИО',
                 'is_admin': 'Администратор',
                 'created_at': 'Дата регистрации'
@@ -871,162 +975,226 @@
     }
 
     // Отрисовка тела таблицы
-    function renderBody(data) {
-        const tbody = document.getElementById('tableBody');
-        const currentTable = document.getElementById('tableSelect').value;
-        
-        if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="100" style="text-align: center; padding: 50px;">Нет данных</td></tr>';
-            return;
-        }
-        
-        // Получаем справочные данные для БЖУ
-        let genders = [], activities = [], goals = [];
-        if (currentTable === 'bju_settings') {
-            try {
-                genders = JSON.parse(document.getElementById('gendersData')?.value || '[]');
-                activities = JSON.parse(document.getElementById('activitiesData')?.value || '[]');
-                goals = JSON.parse(document.getElementById('goalsData')?.value || '[]');
-            } catch (e) {
-                console.error('Ошибка парсинга справочных данных:', e);
-            }
-        }
-        
-        const columns = Object.keys(data[0]);
-        let html = '';
-        
-        data.forEach((row, index) => {
-            const rowId = row.id || index;
-            const isSelected = selectedRows.has(String(rowId));
-            
-            html += `<tr data-id="${rowId}" class="${isSelected ? 'selected' : ''}">`;
-            html += `<td class="checkbox-cell"><input type="checkbox" class="row-checkbox" value="${rowId}" ${isSelected ? 'checked' : ''} onchange="toggleRow(this)"></td>`;
-            
-            // Для тренировок
-            if (currentTable === 'workout_sessions') {
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'id', ${rowId})">${row.id || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'user_id', ${rowId})">${row.user_id || ''}</td>`;
-                html += `<td>${row.full_name || row.username || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'name', ${rowId})">${row.name || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'date', ${rowId})">${row.date || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'notes', ${rowId})">${row.notes || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'created_at', ${rowId})">${row.created_at || ''}</td>`;
-            }
-            // Для упражнений
-            else if (currentTable === 'exercises') {
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'id', ${rowId})">${row.id || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'name', ${rowId})">${row.name || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'muscle_group', ${rowId})">${row.muscle_group || ''}</td>`;
-                
-                if (row.image) {
-                    html += `<td><i class="fas fa-image" style="color: var(--primary); margin-right: 5px;"></i> ${row.image}</td>`;
-                } else {
-                    html += `<td>—</td>`;
-                }
-                
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'created_by', ${rowId})">${row.created_by || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'created_at', ${rowId})">${row.created_at || ''}</td>`;
-            }
-            // Для истории веса
-            else if (currentTable === 'weight_tracking') {
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'id', ${rowId})">${row.id || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'user_id', ${rowId})">${row.user_id || ''}</td>`;
-                html += `<td>${row.full_name || row.username || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'date', ${rowId})">${row.date || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'weight', ${rowId})">${row.weight || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'notes', ${rowId})">${row.notes || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'created_at', ${rowId})">${row.created_at || ''}</td>`;
-            }
-            // Для настроек БЖУ
-            else if (currentTable === 'bju_settings') {
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'id', ${rowId})">${row.id || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'user_id', ${rowId})">${row.user_id || ''}</td>`;
-                html += `<td>${row.full_name || row.username || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'age', ${rowId})">${row.age || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'height', ${rowId})">${row.height || ''}</td>`;
-                
-                // Пол из справочника
-                const gender = genders.find(g => g.id == row.gender_id) || { display_name: 'Не указан' };
-                html += `<td class="editable-cell" data-value="${row.gender_id}" ondblclick="startEdit(this, 'gender_id', ${rowId})">${gender.display_name}</td>`;
-                
-                // Активность из справочника
-                const activity = activities.find(a => a.id == row.activity_id) || { display_name: 'Не указана' };
-                html += `<td class="editable-cell" data-value="${row.activity_id}" ondblclick="startEdit(this, 'activity_id', ${rowId})">${activity.display_name}</td>`;
-                
-                // Цель из справочника
-                const goal = goals.find(g => g.id == row.goal_id) || { display_name: 'Не указана' };
-                html += `<td class="editable-cell" data-value="${row.goal_id}" ondblclick="startEdit(this, 'goal_id', ${rowId})">${goal.display_name}</td>`;
-                
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'updated_at', ${rowId})">${row.updated_at || ''}</td>`;
-            }
-            // Для пользователей
-            else if (currentTable === 'users') {
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'id', ${rowId})">${row.id || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'username', ${rowId})">${row.username || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'full_name', ${rowId})">${row.full_name || ''}</td>`;
-                
-                let adminText = row.is_admin == 1 ? '1' : '0';
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'is_admin', ${rowId})">${adminText}</td>`;
-                
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'created_at', ${rowId})">${row.created_at || ''}</td>`;
-            }
-            // Для завершённых тренировок
-            else if (currentTable === 'completed_workouts') {
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'id', ${rowId})">${row.id || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'user_id', ${rowId})">${row.user_id || ''}</td>`;
-                html += `<td>${row.full_name || row.username || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'workout_name', ${rowId})">${row.workout_name || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'date', ${rowId})">${row.date || ''}</td>`;
-                
-                let duration = row.duration || 0;
-                let minutes = Math.floor(duration / 60);
-                let seconds = duration % 60;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'duration', ${rowId})">${minutes} мин ${seconds} сек</td>`;
-                
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'completed_at', ${rowId})">${row.completed_at || ''}</td>`;
-            }
-            // Для выполненных подходов
-            else if (currentTable === 'completed_sets') {
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'id', ${rowId})">${row.id || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'user_id', ${rowId})">${row.user_id || ''}</td>`;
-                html += `<td>${row.full_name || row.username || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'exercise_name', ${rowId})">${row.exercise_name || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'weight', ${rowId})">${row.weight || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'reps', ${rowId})">${row.reps || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'workout_date', ${rowId})">${row.workout_date || ''}</td>`;
-                html += `<td class="editable-cell" ondblclick="startEdit(this, 'completed_at', ${rowId})">${row.completed_at || ''}</td>`;
-            }
-            
-            html += `<td>
-                <div style="display: flex; gap: 5px;">`;
-            
-            if (currentTable === 'workout_sessions') {
-                html += `<button class="btn btn-success" style="padding: 5px 10px;" onclick="manageExercises(${rowId})">
-                    <i class="fas fa-dumbbell"></i> Упр.
-                </button>`;
-            }
-            
-            html += `<button class="btn btn-primary" style="padding: 5px 10px;" onclick="editRow(${rowId})">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-danger" style="padding: 5px 10px;" onclick="deleteRow(${rowId})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </td>`;
-            
-            html += '</tr>';
-        });
-        
-        tbody.innerHTML = html;
+function renderBody(data) {
+    const tbody = document.getElementById('tableBody');
+    const currentTable = document.getElementById('tableSelect').value;
+    
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="100" style="text-align: center; padding: 50px;">Нет данных</td></tr>';
+        return;
     }
-
+    
+    // Получаем справочные данные для БЖУ
+    let genders = [], activities = [], goals = [];
+    if (currentTable === 'bju_settings') {
+        try {
+            genders = JSON.parse(document.getElementById('gendersData')?.value || '[]');
+            activities = JSON.parse(document.getElementById('activitiesData')?.value || '[]');
+            goals = JSON.parse(document.getElementById('goalsData')?.value || '[]');
+        } catch (e) {
+            console.error('Ошибка парсинга справочных данных:', e);
+        }
+    }
+    
+    const columns = Object.keys(data[0]);
+    let html = '';
+    
+    data.forEach((row, index) => {
+        const rowId = row.id || index;
+        const isSelected = selectedRows.has(String(rowId));
+        
+        html += `<tr data-id="${rowId}" class="${isSelected ? 'selected' : ''}">`;
+        html += `<td class="checkbox-cell"><input type="checkbox" class="row-checkbox" value="${rowId}" ${isSelected ? 'checked' : ''} onchange="toggleRow(this)"></td>`;
+        
+        // Для тренировок
+        if (currentTable === 'workout_sessions') {
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'id', ${rowId})">${row.id || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'user_id', ${rowId})">${row.user_id || ''}</td>`;
+            html += `<td>${row.full_name || row.username || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'name', ${rowId})">${row.name || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'date', ${rowId})">${row.date || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'notes', ${rowId})">${row.notes || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'created_at', ${rowId})">${row.created_at || ''}</td>`;
+        }
+        // Для упражнений
+        else if (currentTable === 'exercises') {
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'id', ${rowId})">${row.id || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'name', ${rowId})">${row.name || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'muscle_group', ${rowId})">${row.muscle_group || ''}</td>`;
+            
+            if (row.image) {
+                html += `<td><i class="fas fa-image" style="color: var(--primary); margin-right: 5px;"></i> ${row.image}</td>`;
+            } else {
+                html += `<td>—</td>`;
+            }
+            
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'created_by', ${rowId})">${row.created_by || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'created_at', ${rowId})">${row.created_at || ''}</td>`;
+        }
+        // Для истории веса
+        else if (currentTable === 'weight_tracking') {
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'id', ${rowId})">${row.id || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'user_id', ${rowId})">${row.user_id || ''}</td>`;
+            html += `<td>${row.full_name || row.username || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'date', ${rowId})">${row.date || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'weight', ${rowId})">${row.weight || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'notes', ${rowId})">${row.notes || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'created_at', ${rowId})">${row.created_at || ''}</td>`;
+        }
+        // Для настроек БЖУ
+        else if (currentTable === 'bju_settings') {
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'id', ${rowId})">${row.id || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'user_id', ${rowId})">${row.user_id || ''}</td>`;
+            html += `<td>${row.full_name || row.username || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'age', ${rowId})">${row.age || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'height', ${rowId})">${row.height || ''}</td>`;
+            
+            // Пол из справочника
+            const gender = genders.find(g => g.id == row.gender_id) || { display_name: 'Не указан' };
+            html += `<td class="editable-cell" data-value="${row.gender_id}" ondblclick="startEdit(this, 'gender_id', ${rowId})">${gender.display_name}</td>`;
+            
+            // Активность из справочника
+            const activity = activities.find(a => a.id == row.activity_id) || { display_name: 'Не указана' };
+            html += `<td class="editable-cell" data-value="${row.activity_id}" ondblclick="startEdit(this, 'activity_id', ${rowId})">${activity.display_name}</td>`;
+            
+            // Цель из справочника
+            const goal = goals.find(g => g.id == row.goal_id) || { display_name: 'Не указана' };
+            html += `<td class="editable-cell" data-value="${row.goal_id}" ondblclick="startEdit(this, 'goal_id', ${rowId})">${goal.display_name}</td>`;
+            
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'updated_at', ${rowId})">${row.updated_at || ''}</td>`;
+        }
+       // Для пользователей
+else if (currentTable === 'users') {
+    html += `<td class="editable-cell" ondblclick="startEdit(this, 'id', ${rowId})">${row.id || ''}</td>`;
+    html += `<td class="editable-cell" ondblclick="startEdit(this, 'username', ${rowId})">${row.username || ''}</td>`;
+    
+    // Пароль с возможностью редактирования
+    let passwordDisplay = row.password ? '••••••••' : '';
+    html += `<td class="editable-cell" data-value="${row.password || ''}" ondblclick="startEdit(this, 'password', ${rowId})">${passwordDisplay}</td>`;
+    
+    html += `<td class="editable-cell" ondblclick="startEdit(this, 'full_name', ${rowId})">${row.full_name || ''}</td>`;
+    
+    let adminText = row.is_admin == 1 ? '1' : '0';
+    html += `<td class="editable-cell" ondblclick="startEdit(this, 'is_admin', ${rowId})">${adminText}</td>`;
+    
+    html += `<td class="editable-cell" ondblclick="startEdit(this, 'created_at', ${rowId})">${row.created_at || ''}</td>`;
+}
+        // Для завершённых тренировок
+        else if (currentTable === 'completed_workouts') {
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'id', ${rowId})">${row.id || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'user_id', ${rowId})">${row.user_id || ''}</td>`;
+            html += `<td>${row.full_name || row.username || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'workout_name', ${rowId})">${row.workout_name || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'date', ${rowId})">${row.date || ''}</td>`;
+            
+            let duration = row.duration || 0;
+            let minutes = Math.floor(duration / 60);
+            let seconds = duration % 60;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'duration', ${rowId})">${minutes} мин ${seconds} сек</td>`;
+            
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'completed_at', ${rowId})">${row.completed_at || ''}</td>`;
+        }
+        // Для выполненных подходов
+        else if (currentTable === 'completed_sets') {
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'id', ${rowId})">${row.id || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'user_id', ${rowId})">${row.user_id || ''}</td>`;
+            html += `<td>${row.full_name || row.username || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'exercise_name', ${rowId})">${row.exercise_name || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'weight', ${rowId})">${row.weight || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'reps', ${rowId})">${row.reps || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'workout_date', ${rowId})">${row.workout_date || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'completed_at', ${rowId})">${row.completed_at || ''}</td>`;
+        }
+        // Для справочных таблиц
+        else if (currentTable === 'gender_types') {
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'id', ${rowId})">${row.id || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'name', ${rowId})">${row.name || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'display_name', ${rowId})">${row.display_name || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'icon', ${rowId})">${row.icon || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'sort_order', ${rowId})">${row.sort_order || ''}</td>`;
+        }
+        else if (currentTable === 'activity_levels') {
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'id', ${rowId})">${row.id || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'name', ${rowId})">${row.name || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'display_name', ${rowId})">${row.display_name || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'value', ${rowId})">${row.value || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'icon', ${rowId})">${row.icon || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'description', ${rowId})">${row.description || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'sort_order', ${rowId})">${row.sort_order || ''}</td>`;
+        }
+        else if (currentTable === 'goal_types') {
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'id', ${rowId})">${row.id || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'name', ${rowId})">${row.name || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'display_name', ${rowId})">${row.display_name || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'icon', ${rowId})">${row.icon || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'description', ${rowId})">${row.description || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startEdit(this, 'sort_order', ${rowId})">${row.sort_order || ''}</td>`;
+        }
+        // Для других таблиц
+        else {
+            columns.forEach(col => {
+                let value = row[col] || '';
+                html += `<td class="editable-cell" ondblclick="startEdit(this, '${col}', ${rowId})">${value}</td>`;
+            });
+        }
+        
+        // КНОПКИ ДЕЙСТВИЙ - ИСПРАВЛЕННЫЙ БЛОК
+        html += `<td>
+            <div style="display: flex; gap: 5px; align-items: center; justify-content: flex-start;">`;
+        
+        if (currentTable === 'workout_sessions') {
+            html += `<button class="btn btn-success" style="padding: 5px 10px; min-width: 60px;" onclick="manageExercises(${rowId})">
+                <i class="fas fa-dumbbell"></i>
+            </button>`;
+        }
+        
+        html += `<button class="btn btn-primary" style="padding: 5px 10px; min-width: 50px;" onclick="editRow(${rowId})" title="Редактировать">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-danger" style="padding: 5px 10px; min-width: 50px;" onclick="deleteRow(${rowId})" title="Удалить">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </td>`;
+        
+        html += '</tr>';
+    });
+    
+    tbody.innerHTML = html;
+}
     // Начало редактирования ячейки
     function startEdit(cell, column, rowId) {
         if (editingCell) return;
         
         const currentTable = document.getElementById('tableSelect').value;
         const value = cell.innerText;
+
+// В начале функции, после получения currentTable и value
+if (currentTable === 'users' && column === 'password') {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = row[column] || '';
+    input.style.width = '100%';
+    input.style.padding = '12px 15px';
+    input.style.border = '2px solid var(--primary)';
+    input.style.borderRadius = '8px';
+    input.placeholder = 'Введите пароль';
+    
+    cell.innerHTML = '';
+    cell.appendChild(input);
+    cell.classList.add('editing');
+    input.focus();
+    
+    editingCell = { cell, column, rowId, originalValue: row[column] || '' };
+    
+    input.onblur = () => saveEdit(input.value);
+    input.onkeypress = (e) => {
+        if (e.key === 'Enter') saveEdit(input.value);
+        if (e.key === 'Escape') cancelEdit();
+    };
+    return;
+}
+
         
         // Получаем справочные данные для БЖУ
         let genders = [], activities = [], goals = [];
@@ -1358,20 +1526,160 @@
         openEditModal(rowData);
     }
 
-    // Модальное окно добавления
-    function openAddModal() {
-        document.getElementById('modalTitle').textContent = 'Добавить запись';
+   // Модальное окно добавления
+function openAddModal() {
+    const currentTable = document.getElementById('tableSelect').value;
+    document.getElementById('modalTitle').textContent = 'Добавить запись';
+    
+    if (allData.length === 0) {
+        alert('Нет данных для определения структуры');
+        return;
+    }
+    
+    const columns = Object.keys(allData[0]);
+    let formHtml = '';
+    
+    // Для каждой таблицы свои поля
+    if (currentTable === 'users') {
+    formHtml = `
+        <div class="form-group">
+            <label>Логин</label>
+            <input type="text" name="username" placeholder="Логин" required>
+        </div>
+        <div class="form-group">
+            <label>Пароль</label>
+            <input type="text" name="password" placeholder="Пароль" required>
+        </div>
+        <div class="form-group">
+            <label>ФИО</label>
+            <input type="text" name="full_name" placeholder="ФИО полностью">
+        </div>
+        <div class="form-group">
+            <label>Администратор</label>
+            <select name="is_admin">
+                <option value="0">Нет</option>
+                <option value="1">Да</option>
+            </select>
+        </div>
+    `;
+}
+    else if (currentTable === 'workout_sessions') {
+        formHtml = `
+            <div class="form-group">
+                <label>ID пользователя</label>
+                <input type="number" name="user_id" placeholder="ID пользователя" required>
+            </div>
+            <div class="form-group">
+                <label>Название тренировки</label>
+                <input type="text" name="name" placeholder="Название" required>
+            </div>
+            <div class="form-group">
+                <label>Дата</label>
+                <input type="date" name="date" required>
+            </div>
+            <div class="form-group">
+                <label>Заметки</label>
+                <input type="text" name="notes" placeholder="Заметки">
+            </div>
+        `;
+    }
+    else if (currentTable === 'exercises') {
+        formHtml = `
+            <div class="form-group">
+                <label>Название упражнения</label>
+                <input type="text" name="name" placeholder="Название" required>
+            </div>
+            <div class="form-group">
+                <label>Группа мышц</label>
+                <select name="muscle_group">
+                    <option value="Грудные">Грудные</option>
+                    <option value="Спина">Спина</option>
+                    <option value="Ноги">Ноги</option>
+                    <option value="Плечи">Плечи</option>
+                    <option value="Бицепс">Бицепс</option>
+                    <option value="Трицепс">Трицепс</option>
+                    <option value="Пресс">Пресс</option>
+                    <option value="Ягодицы">Ягодицы</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Изображение</label>
+                <input type="text" name="image" placeholder="Путь к изображению">
+            </div>
+        `;
+    }
+    else if (currentTable === 'weight_tracking') {
+        formHtml = `
+            <div class="form-group">
+                <label>ID пользователя</label>
+                <input type="number" name="user_id" placeholder="ID пользователя" required>
+            </div>
+            <div class="form-group">
+                <label>Дата</label>
+                <input type="date" name="date" required>
+            </div>
+            <div class="form-group">
+                <label>Вес (кг)</label>
+                <input type="number" step="0.1" name="weight" placeholder="Вес" required>
+            </div>
+            <div class="form-group">
+                <label>Заметки</label>
+                <input type="text" name="notes" placeholder="Заметки">
+            </div>
+        `;
+    }
+    else if (currentTable === 'bju_settings') {
+        // Получаем данные из справочников
+        const genders = JSON.parse(document.getElementById('gendersData')?.value || '[]');
+        const activities = JSON.parse(document.getElementById('activitiesData')?.value || '[]');
+        const goals = JSON.parse(document.getElementById('goalsData')?.value || '[]');
         
-        if (allData.length === 0) {
-            alert('Нет данных для определения структуры');
-            return;
-        }
+        let genderOptions = '<option value="">Выберите пол</option>';
+        genders.forEach(g => {
+            genderOptions += `<option value="${g.id}">${g.display_name}</option>`;
+        });
         
-        const columns = Object.keys(allData[0]);
-        let formHtml = '';
+        let activityOptions = '<option value="">Выберите активность</option>';
+        activities.forEach(a => {
+            activityOptions += `<option value="${a.id}">${a.display_name}</option>`;
+        });
         
+        let goalOptions = '<option value="">Выберите цель</option>';
+        goals.forEach(g => {
+            goalOptions += `<option value="${g.id}">${g.display_name}</option>`;
+        });
+        
+        formHtml = `
+            <div class="form-group">
+                <label>ID пользователя</label>
+                <input type="number" name="user_id" placeholder="ID пользователя" required>
+            </div>
+            <div class="form-group">
+                <label>Возраст</label>
+                <input type="number" name="age" value="30" min="15" max="100" required>
+            </div>
+            <div class="form-group">
+                <label>Рост (см)</label>
+                <input type="number" name="height" value="175" min="140" max="220" required>
+            </div>
+            <div class="form-group">
+                <label>Пол</label>
+                <select name="gender_id" required>${genderOptions}</select>
+            </div>
+            <div class="form-group">
+                <label>Активность</label>
+                <select name="activity_id" required>${activityOptions}</select>
+            </div>
+            <div class="form-group">
+                <label>Цель</label>
+                <select name="goal_id" required>${goalOptions}</select>
+            </div>
+        `;
+    }
+    else {
+        // Для остальных таблиц — стандартное отображение всех колонок
         columns.forEach(col => {
-            if (col !== 'id' && col !== 'full_name' && col !== 'username') {
+            if (col !== 'id' && col !== 'full_name' && col !== 'username' && col !== 'created_at' && col !== 'updated_at') {
                 formHtml += `
                     <div class="form-group">
                         <label>${col}</label>
@@ -1380,46 +1688,46 @@
                 `;
             }
         });
-        
-        formHtml += `
-            <div class="modal-actions">
-                <button class="btn btn-success" onclick="saveNewRecord()">Сохранить</button>
-                <button class="btn btn-gray" onclick="closeModal()">Отмена</button>
-            </div>
-        `;
-        
-        document.getElementById('modalForm').innerHTML = formHtml;
-        document.getElementById('editModal').classList.add('active');
     }
-
-    // Сохранение новой записи
-    function saveNewRecord() {
-        const form = document.getElementById('modalForm');
-        const inputs = form.querySelectorAll('input');
-        const data = {};
-        
-        inputs.forEach(input => {
-            data[input.name] = input.value;
-        });
-        
-        fetch(`/api/add_row/${currentTable}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.success) {
-                closeModal();
-                loadTableData();
-            } else {
-                alert('Ошибка добавления');
-            }
-        });
-    }
-
+    
+    formHtml += `
+        <div class="modal-actions">
+            <button class="btn btn-success" onclick="saveNewRecord()">Сохранить</button>
+            <button class="btn btn-gray" onclick="closeModal()">Отмена</button>
+        </div>
+    `;
+    
+    document.getElementById('modalForm').innerHTML = formHtml;
+    document.getElementById('editModal').classList.add('active');
+}
+  
+// Сохранение новой записи
+function saveNewRecord() {
+    const form = document.getElementById('modalForm');
+    const inputs = form.querySelectorAll('input, select');
+    const data = {};
+    
+    inputs.forEach(input => {
+        data[input.name] = input.value;
+    });
+    
+    fetch(`/api/add_row/${currentTable}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            closeModal();
+            loadTableData();
+        } else {
+            alert('Ошибка добавления');
+        }
+    });
+}
     // Открытие модального окна редактирования
     function openEditModal(rowData) {
         document.getElementById('modalTitle').textContent = 'Редактировать запись';
@@ -1519,7 +1827,7 @@
     }
 
     // ========== СПРАВОЧНИКИ ==========
-
+    let easterEggEnabled = true;
     // Переключение между основными таблицами и справочниками
     function switchMainTab(tab) {
         const mainPanel = document.getElementById('mainPanel');
@@ -1622,6 +1930,8 @@
                 'icon': 'Иконка',
                 'sort_order': 'Порядок'
             };
+
+        
         } else if (currentLookupTable === 'activity_levels') {
             columnNames = {
                 'id': 'ID',
@@ -1632,6 +1942,23 @@
                 'description': 'Описание',
                 'sort_order': 'Порядок'
             };
+         } else if (currentLookupTable === 'easter_egg_settings') {
+    columnNames = {
+        'id': 'ID',
+        'media_path': 'Путь к медиа',
+        'media_type': 'Тип',
+        'enabled': 'Статус',
+        'updated_at': 'Обновлено'
+    };
+
+        }else if (currentLookupTable === 'easter_egg_settings') {
+    columnNames = {
+        'id': 'ID',
+        'media_path': 'Путь к медиа',
+        'media_type': 'Тип',
+        'enabled': 'Статус',
+        'updated_at': 'Обновлено'
+    };
         } else if (currentLookupTable === 'goal_types') {
             columnNames = {
                 'id': 'ID',
@@ -1655,46 +1982,75 @@
     }
 
     // Отрисовка тела таблицы справочника
-    function renderLookupBody(data) {
-        const tbody = document.getElementById('lookupTableBody');
+function renderLookupBody(data) {
+    const tbody = document.getElementById('lookupTableBody');
+    
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="100" style="text-align: center; padding: 50px;">Нет данных</td></tr>';
+        return;
+    }
+    
+    const columns = Object.keys(lookupAllData[0]);
+    let html = '';
+    
+    data.forEach((row, index) => {
+        const rowId = row.id || index;
+        const isSelected = lookupSelectedRows.has(String(rowId));
         
-        if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="100" style="text-align: center; padding: 50px;">Нет данных</td></tr>';
-            return;
+        html += `<tr data-id="${rowId}" class="${isSelected ? 'selected' : ''}">`;
+        html += `<td class="checkbox-cell"><input type="checkbox" class="row-checkbox" value="${rowId}" ${isSelected ? 'checked' : ''} onchange="toggleLookupRow(this)"></td>`;
+        
+        if (currentLookupTable === 'gender_types') {
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'id', ${rowId})">${row.id || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'name', ${rowId})">${row.name || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'display_name', ${rowId})">${row.display_name || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'icon', ${rowId})">${row.icon || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'sort_order', ${rowId})">${row.sort_order || ''}</td>`;
+        }
+        else if (currentLookupTable === 'activity_levels') {
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'id', ${rowId})">${row.id || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'name', ${rowId})">${row.name || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'display_name', ${rowId})">${row.display_name || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'value', ${rowId})">${row.value || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'icon', ${rowId})">${row.icon || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'description', ${rowId})">${row.description || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'sort_order', ${rowId})">${row.sort_order || ''}</td>`;
+        }
+        else if (currentLookupTable === 'goal_types') {
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'id', ${rowId})">${row.id || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'name', ${rowId})">${row.name || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'display_name', ${rowId})">${row.display_name || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'icon', ${rowId})">${row.icon || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'description', ${rowId})">${row.description || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'sort_order', ${rowId})">${row.sort_order || ''}</td>`;
+        }
+        else if (currentLookupTable === 'easter_egg_settings') {
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'id', ${rowId})">${row.id || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'media_path', ${rowId})">${row.media_path || ''}</td>`;
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'media_type', ${rowId})">${row.media_type || ''}</td>`;
+            
+            let enabledText = row.enabled == 1 ? '1' : '0';
+            html += `<td class="editable-cell" data-value="${row.enabled}" ondblclick="startLookupEdit(this, 'enabled', ${rowId})">${enabledText}</td>`;
+            
+            html += `<td class="editable-cell" ondblclick="startLookupEdit(this, 'updated_at', ${rowId})">${row.updated_at || ''}</td>`;
         }
         
-        const columns = Object.keys(lookupAllData[0]);
-        let html = '';
+        html += `<td>
+            <div style="display: flex; gap: 5px;">
+                <button class="btn btn-primary" style="padding: 5px 10px;" onclick="editLookupRow(${rowId})">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-danger" style="padding: 5px 10px;" onclick="deleteLookupRow(${rowId})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </td>`;
         
-        data.forEach((row, index) => {
-            const rowId = row.id || index;
-            const isSelected = lookupSelectedRows.has(String(rowId));
-            
-            html += `<tr data-id="${rowId}" class="${isSelected ? 'selected' : ''}">`;
-            html += `<td class="checkbox-cell"><input type="checkbox" class="row-checkbox" value="${rowId}" ${isSelected ? 'checked' : ''} onchange="toggleLookupRow(this)"></td>`;
-            
-            columns.forEach(col => {
-                let value = row[col] || '';
-                html += `<td class="editable-cell" ondblclick="startLookupEdit(this, '${col}', ${rowId})">${value}</td>`;
-            });
-            
-            html += `<td>
-                <div style="display: flex; gap: 5px;">
-                    <button class="btn btn-primary" style="padding: 5px 10px;" onclick="editLookupRow(${rowId})">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-danger" style="padding: 5px 10px;" onclick="deleteLookupRow(${rowId})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </td>`;
-            
-            html += '</tr>';
-        });
-        
-        tbody.innerHTML = html;
-    }
-
+        html += '</tr>';
+    });
+    
+    tbody.innerHTML = html;
+}
     // Выделение строк в справочнике
     function toggleLookupRow(checkbox) {
         const rowId = checkbox.value;
@@ -1726,19 +2082,32 @@
         updateLookupSelection();
     }
 
-    function updateLookupSelection() {
-        document.querySelectorAll('#lookupTableBody tr').forEach(tr => {
-            const checkbox = tr.querySelector('.row-checkbox');
-            if (checkbox) {
-                const rowId = checkbox.value;
-                if (lookupSelectedRows.has(rowId)) {
-                    tr.classList.add('selected');
-                } else {
-                    tr.classList.remove('selected');
-                }
+    // Обновление выделения в справочнике (добавь в функцию updateLookupSelection)
+function updateLookupSelection() {
+    document.querySelectorAll('#lookupTableBody tr').forEach(tr => {
+        const checkbox = tr.querySelector('.row-checkbox');
+        if (checkbox) {
+            const rowId = checkbox.value;
+            if (lookupSelectedRows.has(rowId)) {
+                tr.classList.add('selected');
+            } else {
+                tr.classList.remove('selected');
             }
-        });
+        }
+    });
+    
+    // Обновляем панель массовых действий
+    const selectedCount = lookupSelectedRows.size;
+    const bulkDiv = document.getElementById('lookupBulkActions');
+    const countSpan = document.getElementById('lookupSelectedCount');
+    
+    if (selectedCount > 0) {
+        bulkDiv.style.display = 'flex';
+        countSpan.textContent = selectedCount;
+    } else {
+        bulkDiv.style.display = 'none';
     }
+}
 
     // Пагинация для справочника
     function renderLookupPagination() {
@@ -1855,11 +2224,162 @@
         editingCell.cell.classList.remove('editing');
     }
 
-    // CRUD операции для справочников
-    function openLookupAddModal() {
-        alert('Добавление в справочник будет позже');
+    // Добавление записи в справочник
+function openLookupAddModal() {
+    const currentLookup = document.getElementById('lookupSelect').value;
+    document.getElementById('modalTitle').textContent = 'Добавить запись в справочник';
+    
+    let formHtml = '';
+    
+    if (currentLookup === 'gender_types') {
+        formHtml = `
+            <div class="form-group">
+                <label>Код (name) *</label>
+                <input type="text" name="name" placeholder="male/female" required>
+                <small style="color: var(--gray);">Уникальный идентификатор</small>
+            </div>
+            <div class="form-group">
+                <label>Отображаемое имя *</label>
+                <input type="text" name="display_name" placeholder="👨 Мужской" required>
+            </div>
+            <div class="form-group">
+                <label>Иконка</label>
+                <input type="text" name="icon" placeholder="fa-mars" value="fa-user">
+            </div>
+            <div class="form-group">
+                <label>Порядок сортировки</label>
+                <input type="number" name="sort_order" value="1">
+            </div>
+        `;
     }
+    else if (currentLookup === 'activity_levels') {
+        formHtml = `
+            <div class="form-group">
+                <label>Код (name) *</label>
+                <input type="text" name="name" placeholder="moderate" required>
+            </div>
+            <div class="form-group">
+                <label>Отображаемое имя *</label>
+                <input type="text" name="display_name" placeholder="🏃 Средняя" required>
+            </div>
+            <div class="form-group">
+                <label>Коэффициент *</label>
+                <input type="number" step="0.001" name="value" value="1.55" required>
+            </div>
+            <div class="form-group">
+                <label>Иконка</label>
+                <input type="text" name="icon" placeholder="fa-running" value="fa-running">
+            </div>
+            <div class="form-group">
+                <label>Описание</label>
+                <input type="text" name="description" placeholder="3-5 тренировок в неделю">
+            </div>
+            <div class="form-group">
+                <label>Порядок сортировки</label>
+                <input type="number" name="sort_order" value="1">
+            </div>
+        `;
+    }
+    else if (currentLookup === 'goal_types') {
+        formHtml = `
+            <div class="form-group">
+                <label>Код (name) *</label>
+                <input type="text" name="name" placeholder="maintain/lose/gain" required>
+            </div>
+            <div class="form-group">
+                <label>Отображаемое имя *</label>
+                <input type="text" name="display_name" placeholder="🏋️ Поддержание" required>
+            </div>
+            <div class="form-group">
+                <label>Иконка</label>
+                <input type="text" name="icon" placeholder="fa-balance-scale" value="fa-bullseye">
+            </div>
+            <div class="form-group">
+                <label>Описание</label>
+                <input type="text" name="description" placeholder="Сохранить текущий вес">
+            </div>
+            <div class="form-group">
+                <label>Порядок сортировки</label>
+                <input type="number" name="sort_order" value="1">
+            </div>
+        `;
+    }
+    else if (currentLookup === 'easter_egg_settings') {
+        formHtml = `
+            <div class="form-group">
+                <label>Путь к медиа *</label>
+                <input type="text" name="media_path" placeholder="uploads/easter_egg.jpg" value="uploads/easter_egg.jpg" required>
+                <small style="color: var(--gray);">Путь к файлу в папке static/uploads/</small>
+            </div>
+            <div class="form-group">
+                <label>Тип медиа</label>
+                <select name="media_type">
+                    <option value="image">🖼️ Изображение</option>
+                    <option value="video">🎬 Видео</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Статус</label>
+                <select name="enabled">
+                    <option value="1">✅ Включено</option>
+                    <option value="0">❌ Выключено</option>
+                </select>
+            </div>
+        `;
+    }
+    
+    formHtml += `
+        <div class="modal-actions">
+            <button class="btn btn-success" onclick="saveLookupRecord()">Сохранить</button>
+            <button class="btn btn-gray" onclick="closeModal()">Отмена</button>
+        </div>
+    `;
+    
+    document.getElementById('modalForm').innerHTML = formHtml;
+    document.getElementById('editModal').classList.add('active');
+}
 
+// Сохранение записи в справочник
+    function saveLookupRecord() {
+    const currentLookup = document.getElementById('lookupSelect').value;
+    const form = document.getElementById('modalForm');
+    const inputs = form.querySelectorAll('input, select');
+    const data = {};
+    
+    inputs.forEach(input => {
+        data[input.name] = input.value;
+    });
+    
+    // Для пасхалки добавляем обязательные поля, если их нет
+    if (currentLookup === 'easter_egg_settings') {
+        if (!data.media_path) data.media_path = 'uploads/easter_egg.jpg';
+        if (!data.media_type) data.media_type = 'image';
+        if (!data.enabled) data.enabled = '1';
+    }
+    
+    // Преобразуем числовые поля
+    if (data.sort_order) data.sort_order = parseInt(data.sort_order);
+    if (data.value) data.value = parseFloat(data.value);
+    if (data.enabled) data.enabled = parseInt(data.enabled);
+    
+    fetch(`/api/add_row/${currentLookup}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            closeModal();
+            loadLookupTableData();
+        } else {
+            alert('Ошибка добавления: ' + (result.error || 'неизвестная ошибка'));
+        }
+    });
+}
+  
     function refreshLookupTable() {
         loadLookupTableData();
     }
@@ -1892,12 +2412,204 @@
         }
     }
 
-    function editLookupRow(id) {
-        const rowData = lookupAllData.find(row => row.id == id);
-        if (!rowData) return;
-        
-        alert('Редактирование записи: ' + JSON.stringify(rowData));
+    // Очистка выделения в справочнике
+function clearLookupSelection() {
+    lookupSelectedRows.clear();
+    document.querySelectorAll('#lookupTableBody .row-checkbox').forEach(cb => cb.checked = false);
+    const selectAll = document.querySelector('#lookupTable .select-all');
+    if (selectAll) selectAll.checked = false;
+    updateLookupSelection();
+}
+
+// Выполнение массового действия в справочнике
+function executeLookupBulkAction() {
+    const action = document.getElementById('lookupBulkAction').value;
+    
+    if (lookupSelectedRows.size === 0) {
+        alert('Выберите записи');
+        return;
     }
+    
+    const ids = Array.from(lookupSelectedRows);
+    
+    if (action === 'delete') {
+        if (confirm(`Удалить ${ids.length} записей?`)) {
+            fetch(`/api/bulk_delete/${currentLookupTable}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ ids: ids })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    lookupSelectedRows.clear();
+                    loadLookupTableData();
+                } else {
+                    alert('Ошибка удаления');
+                }
+            });
+        }
+    }
+}
+    
+// Обновление записи в справочнике
+function updateLookupRecord(id) {
+    const currentLookup = document.getElementById('lookupSelect').value;
+    const form = document.getElementById('modalForm');
+    const inputs = form.querySelectorAll('input, select');
+    const data = { id: id };
+    
+    inputs.forEach(input => {
+        data[input.name] = input.value;
+    });
+    
+    // Для пасхалки добавляем обязательные поля
+    if (currentLookup === 'easter_egg_settings') {
+        if (!data.media_path) data.media_path = 'uploads/easter_egg.jpg';
+        if (!data.media_type) data.media_type = 'image';
+        if (!data.enabled) data.enabled = '1';
+    }
+    
+    // Преобразуем числовые поля
+    if (data.sort_order) data.sort_order = parseInt(data.sort_order);
+    if (data.value) data.value = parseFloat(data.value);
+    if (data.enabled) data.enabled = parseInt(data.enabled);
+    
+    fetch(`/api/update_row/${currentLookup}/${id}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            closeModal();
+            loadLookupTableData();
+        } else {
+            alert('Ошибка обновления: ' + (result.error || 'неизвестная ошибка'));
+        }
+    });
+}
+
+// Редактирование записи в справочнике
+    function editLookupRow(id) {
+    const rowData = lookupAllData.find(row => row.id == id);
+    if (!rowData) return;
+    
+    document.getElementById('modalTitle').textContent = 'Редактировать запись';
+    
+    let formHtml = '';
+    const currentLookup = document.getElementById('lookupSelect').value;
+    
+    if (currentLookup === 'gender_types') {
+        formHtml = `
+            <div class="form-group">
+                <label>Код (name)</label>
+                <input type="text" name="name" value="${rowData.name || ''}" required>
+            </div>
+            <div class="form-group">
+                <label>Отображаемое имя</label>
+                <input type="text" name="display_name" value="${rowData.display_name || ''}" required>
+            </div>
+            <div class="form-group">
+                <label>Иконка</label>
+                <input type="text" name="icon" value="${rowData.icon || ''}">
+            </div>
+            <div class="form-group">
+                <label>Порядок сортировки</label>
+                <input type="number" name="sort_order" value="${rowData.sort_order || 1}">
+            </div>
+        `;
+    }
+    else if (currentLookup === 'easter_egg_settings') {
+    formHtml = `
+        <div class="form-group">
+            <label>Путь к медиа *</label>
+            <input type="text" name="media_path" value="${rowData.media_path || ''}" required>
+        </div>
+        <div class="form-group">
+            <label>Тип медиа</label>
+            <select name="media_type">
+                <option value="image" ${rowData.media_type === 'image' ? 'selected' : ''}>🖼️ Изображение</option>
+                <option value="video" ${rowData.media_type === 'video' ? 'selected' : ''}>🎬 Видео</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Статус</label>
+            <select name="enabled">
+                <option value="1" ${rowData.enabled == 1 ? 'selected' : ''}>✅ Включено</option>
+                <option value="0" ${rowData.enabled == 0 ? 'selected' : ''}>❌ Выключено</option>
+            </select>
+        </div>
+    `;
+}
+    else if (currentLookup === 'activity_levels') {
+        formHtml = `
+            <div class="form-group">
+                <label>Код (name)</label>
+                <input type="text" name="name" value="${rowData.name || ''}" required>
+            </div>
+            <div class="form-group">
+                <label>Отображаемое имя</label>
+                <input type="text" name="display_name" value="${rowData.display_name || ''}" required>
+            </div>
+            <div class="form-group">
+                <label>Коэффициент</label>
+                <input type="number" step="0.001" name="value" value="${rowData.value || 1.55}" required>
+            </div>
+            <div class="form-group">
+                <label>Иконка</label>
+                <input type="text" name="icon" value="${rowData.icon || ''}">
+            </div>
+            <div class="form-group">
+                <label>Описание</label>
+                <input type="text" name="description" value="${rowData.description || ''}">
+            </div>
+            <div class="form-group">
+                <label>Порядок сортировки</label>
+                <input type="number" name="sort_order" value="${rowData.sort_order || 1}">
+            </div>
+        `;
+    }
+    else if (currentLookup === 'goal_types') {
+        formHtml = `
+            <div class="form-group">
+                <label>Код (name)</label>
+                <input type="text" name="name" value="${rowData.name || ''}" required>
+            </div>
+            <div class="form-group">
+                <label>Отображаемое имя</label>
+                <input type="text" name="display_name" value="${rowData.display_name || ''}" required>
+            </div>
+            <div class="form-group">
+                <label>Иконка</label>
+                <input type="text" name="icon" value="${rowData.icon || ''}">
+            </div>
+            <div class="form-group">
+                <label>Описание</label>
+                <input type="text" name="description" value="${rowData.description || ''}">
+            </div>
+            <div class="form-group">
+                <label>Порядок сортировки</label>
+                <input type="number" name="sort_order" value="${rowData.sort_order || 1}">
+            </div>
+        `;
+    }
+    
+    formHtml += `
+        <div class="modal-actions">
+            <button class="btn btn-success" onclick="updateLookupRecord(${rowData.id})">Сохранить</button>
+            <button class="btn btn-gray" onclick="closeModal()">Отмена</button>
+        </div>
+    `;
+    
+    document.getElementById('modalForm').innerHTML = formHtml;
+    document.getElementById('editModal').classList.add('active');
+}
 
     function deleteLookupRow(id) {
         if (confirm('Удалить запись?')) {
@@ -1914,6 +2626,338 @@
             });
         }
     }
+
+    // ========== ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ СПРАВОЧНИКОВ ==========
+
+// Функции для массового выделения уже есть (toggleLookupRow, toggleLookupAll, updateLookupSelection)
+
+// Функции для пагинации уже есть (renderLookupPagination, changeLookupPage)
+
+// Функция для обновления справочника
+function refreshLookupTable() {
+    loadLookupTableData();
+}
+
+// Функция для массового удаления
+function deleteLookupSelected() {
+    if (lookupSelectedRows.size === 0) {
+        alert('Выберите записи для удаления');
+        return;
+    }
+    
+    if (confirm(`Удалить ${lookupSelectedRows.size} записей?`)) {
+        const ids = Array.from(lookupSelectedRows);
+        
+        fetch(`/api/bulk_delete/${currentLookupTable}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ ids: ids })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                lookupSelectedRows.clear();
+                loadLookupTableData();
+            } else {
+                alert('Ошибка удаления');
+            }
+        });
+    }
+}
+
+function deleteLookupRow(id) {
+    if (confirm('Удалить запись?')) {
+        fetch(`/api/delete_row/${currentLookupTable}/${id}`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                loadLookupTableData();
+            } else {
+                alert('Ошибка удаления');
+            }
+        });
+    }
+}
+
+function editLookupRow(id) {
+    const rowData = lookupAllData.find(row => row.id == id);
+    if (!rowData) return;
+    
+    document.getElementById('modalTitle').textContent = 'Редактировать запись';
+    
+    let formHtml = '';
+    const currentLookup = document.getElementById('lookupSelect').value;
+    
+    if (currentLookup === 'gender_types') {
+        formHtml = `
+            <div class="form-group">
+                <label>Код (name)</label>
+                <input type="text" name="name" value="${rowData.name || ''}" required>
+            </div>
+            <div class="form-group">
+                <label>Отображаемое имя</label>
+                <input type="text" name="display_name" value="${rowData.display_name || ''}" required>
+            </div>
+            <div class="form-group">
+                <label>Иконка</label>
+                <input type="text" name="icon" value="${rowData.icon || ''}">
+            </div>
+            <div class="form-group">
+                <label>Порядок сортировки</label>
+                <input type="number" name="sort_order" value="${rowData.sort_order || 1}">
+            </div>
+        `;
+    }else if (currentLookup === 'easter_egg_settings') {
+    formHtml = `
+        <div class="form-group">
+            <label>Путь к медиа *</label>
+            <input type="text" name="media_path" value="${rowData.media_path || ''}" required>
+        </div>
+        <div class="form-group">
+            <label>Тип медиа</label>
+            <select name="media_type">
+                <option value="image" ${rowData.media_type === 'image' ? 'selected' : ''}>🖼️ Изображение</option>
+                <option value="video" ${rowData.media_type === 'video' ? 'selected' : ''}>🎬 Видео</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Статус</label>
+            <select name="enabled">
+                <option value="1" ${rowData.enabled == 1 ? 'selected' : ''}>✅ Включено</option>
+                <option value="0" ${rowData.enabled == 0 ? 'selected' : ''}>❌ Выключено</option>
+            </select>
+        </div>
+    `;
+}
+    else if (currentLookup === 'activity_levels') {
+        formHtml = `
+            <div class="form-group">
+                <label>Код (name)</label>
+                <input type="text" name="name" value="${rowData.name || ''}" required>
+            </div>
+            <div class="form-group">
+                <label>Отображаемое имя</label>
+                <input type="text" name="display_name" value="${rowData.display_name || ''}" required>
+            </div>
+            <div class="form-group">
+                <label>Коэффициент</label>
+                <input type="number" step="0.001" name="value" value="${rowData.value || 1.55}" required>
+            </div>
+            <div class="form-group">
+                <label>Иконка</label>
+                <input type="text" name="icon" value="${rowData.icon || ''}">
+            </div>
+            <div class="form-group">
+                <label>Описание</label>
+                <input type="text" name="description" value="${rowData.description || ''}">
+            </div>
+            <div class="form-group">
+                <label>Порядок сортировки</label>
+                <input type="number" name="sort_order" value="${rowData.sort_order || 1}">
+            </div>
+        `;
+
+    }
+    else if (currentLookup === 'easter_egg_settings') {
+    formHtml = `
+        <div class="form-group">
+            <label>Путь к медиа *</label>
+            <input type="text" name="media_path" value="${rowData.media_path || ''}" required>
+        </div>
+        <div class="form-group">
+            <label>Тип медиа</label>
+            <select name="media_type">
+                <option value="image" ${rowData.media_type === 'image' ? 'selected' : ''}>🖼️ Изображение</option>
+                <option value="video" ${rowData.media_type === 'video' ? 'selected' : ''}>🎬 Видео</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Статус</label>
+            <select name="enabled">
+                <option value="1" ${rowData.enabled == 1 ? 'selected' : ''}>1</option>
+                <option value="0" ${rowData.enabled == 0 ? 'selected' : ''}>0</option>
+            </select>
+        </div>
+    `;
+}
+    else if (currentLookup === 'goal_types') {
+        formHtml = `
+            <div class="form-group">
+                <label>Код (name)</label>
+                <input type="text" name="name" value="${rowData.name || ''}" required>
+            </div>
+            <div class="form-group">
+                <label>Отображаемое имя</label>
+                <input type="text" name="display_name" value="${rowData.display_name || ''}" required>
+            </div>
+            <div class="form-group">
+                <label>Иконка</label>
+                <input type="text" name="icon" value="${rowData.icon || ''}">
+            </div>
+            <div class="form-group">
+                <label>Описание</label>
+                <input type="text" name="description" value="${rowData.description || ''}">
+            </div>
+            <div class="form-group">
+                <label>Порядок сортировки</label>
+                <input type="number" name="sort_order" value="${rowData.sort_order || 1}">
+            </div>
+        `;
+    }
+    
+    formHtml += `
+        <div class="modal-actions">
+            <button class="btn btn-success" onclick="updateLookupRecord(${rowData.id})">Сохранить</button>
+            <button class="btn btn-gray" onclick="closeModal()">Отмена</button>
+        </div>
+    `;
+    
+    document.getElementById('modalForm').innerHTML = formHtml;
+    document.getElementById('editModal').classList.add('active');
+}
+
+ // ========== УПРАВЛЕНИЕ УПРАЖНЕНИЯМИ ТРЕНИРОВКИ ==========
+
+
+// Открыть менеджер упражнений
+function manageExercises(workoutId) {
+    currentWorkoutId = workoutId;
+    
+    // Находим название тренировки
+    const workout = allData.find(w => w.id == workoutId);
+    const workoutName = workout ? workout.name : `Тренировка #${workoutId}`;
+    
+    document.getElementById('exerciseManagerTitle').textContent = `Упражнения: ${workoutName}`;
+    document.getElementById('exerciseManagerModal').classList.add('active');
+    
+    loadWorkoutExercises(workoutId);
+    loadLibraryExercises();
+}
+
+// Закрыть менеджер упражнений
+function closeExerciseManager() {
+    document.getElementById('exerciseManagerModal').classList.remove('active');
+    currentWorkoutId = null;
+}
+
+// Загрузить упражнения тренировки
+function loadWorkoutExercises(workoutId) {
+    fetch(`/api/workout_exercises/${workoutId}`)
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('workoutExercisesList');
+            
+            if (data.length === 0) {
+                container.innerHTML = '<div class="empty-message">В этой тренировке пока нет упражнений</div>';
+                return;
+            }
+            
+            let html = '';
+            data.forEach(ex => {
+                html += `
+                    <div class="exercise-card">
+                        <div class="exercise-info">
+                            <h4>${ex.name}</h4>
+                            <p>${ex.muscle_group || ''}</p>
+                        </div>
+                        <div class="exercise-actions">
+                            <button class="btn-sm btn-danger" onclick="removeExerciseFromWorkout(${ex.workout_exercise_id})">
+                                <i class="fas fa-trash"></i> Удалить
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        })
+        .catch(error => console.error('Ошибка загрузки упражнений тренировки:', error));
+}
+
+// Загрузить библиотеку упражнений
+function loadLibraryExercises() {
+    fetch('/api/all_exercises')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('libraryExercisesList');
+            
+            let html = '';
+            data.forEach(ex => {
+                html += `
+                    <div class="exercise-card">
+                        <div class="exercise-info">
+                            <h4>${ex.name}</h4>
+                            <p>${ex.muscle_group || ''}</p>
+                        </div>
+                        <div class="exercise-actions">
+                            <button class="btn-sm btn-success" onclick="addExerciseToWorkout(${ex.id})">
+                                <i class="fas fa-plus"></i> Добавить
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        })
+        .catch(error => console.error('Ошибка загрузки библиотеки:', error));
+}
+
+// Добавить упражнение в тренировку
+function addExerciseToWorkout(exerciseId) {
+    if (!currentWorkoutId) return;
+    
+    fetch(`/api/add_exercise_to_workout/${currentWorkoutId}/${exerciseId}`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            loadWorkoutExercises(currentWorkoutId);
+        } else {
+            alert('Ошибка при добавлении упражнения');
+        }
+    })
+    .catch(error => console.error('Ошибка:', error));
+}
+
+// Удалить упражнение из тренировки
+function removeExerciseFromWorkout(workoutExerciseId) {
+    if (confirm('Удалить это упражнение из тренировки?')) {
+        fetch(`/api/remove_exercise_from_workout/${workoutExerciseId}`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                loadWorkoutExercises(currentWorkoutId);
+            } else {
+                alert('Ошибка при удалении упражнения');
+            }
+        })
+        .catch(error => console.error('Ошибка:', error));
+    }
+}
+
+// Поиск в библиотеке
+document.getElementById('librarySearch')?.addEventListener('keyup', function() {
+    const searchText = this.value.toLowerCase();
+    const cards = document.querySelectorAll('#libraryExercisesList .exercise-card');
+    
+    cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        if (text.includes(searchText)) {
+            card.style.display = 'flex';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+});
+
 </script>
 </body>
 </html>

@@ -50,8 +50,21 @@
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 40px;
+            animation: slideUp 0.6s ease-out;
         }
 
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Шапка */
         .header {
             display: flex;
             justify-content: space-between;
@@ -59,6 +72,8 @@
             margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 2px solid rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         .header h1 {
@@ -66,10 +81,6 @@
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-        }
-
-        .header h1 i {
-            margin-right: 10px;
         }
 
         .btn {
@@ -86,22 +97,19 @@
             gap: 8px;
         }
 
-        .btn-gray {
-            background: var(--gray);
-            color: white;
-        }
-
-        .btn-gray:hover {
-            filter: brightness(1.1);
-        }
-
         .btn-primary {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
         }
 
-        .btn-primary:hover {
+        .btn-gray {
+            background: var(--gray);
+            color: white;
+        }
+
+        .btn:hover {
             filter: brightness(1.1);
+            transform: translateY(-2px);
         }
 
         /* Карточка пользователя */
@@ -135,6 +143,13 @@
             font-size: 1.8em;
             font-weight: bold;
             color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .user-login {
+            text-align: center;
+            color: var(--gray);
+            font-size: 1em;
             margin-bottom: 10px;
         }
 
@@ -228,20 +243,15 @@
             transform: scale(1.1);
         }
 
-        /* Уведомление */
-        .copy-notification {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--success);
-            color: white;
-            padding: 12px 25px;
-            border-radius: 50px;
-            font-size: 0.9em;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            animation: slideUp 0.3s ease-out;
-            z-index: 1000;
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-buttons .btn {
+            flex: 1;
+            justify-content: center;
         }
 
         @media (max-width: 768px) {
@@ -279,7 +289,9 @@
                     Профиль пользователя
                 </h1>
                 <div style="display: flex; gap: 10px;">
-                    
+                    <a href="{{ url_for('admin_panel') }}" class="btn btn-primary">
+                        <i class="fas fa-crown"></i> Админ-панель
+                    </a>
                     <a href="{{ url_for('admin_panel') }}" class="btn btn-gray">
                         <i class="fas fa-arrow-left"></i> Назад
                     </a>
@@ -295,6 +307,7 @@
 
                 <!-- Имя пользователя -->
                 <div class="user-name">{{ user.full_name or user.username }}</div>
+                <div class="user-login">@{{ user.username }}</div>
 
                 <!-- Бейдж роли -->
                 <div class="role-badge {% if user.is_admin %}admin{% else %}user{% endif %}">
@@ -333,6 +346,22 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Кнопки действий -->
+                <div class="action-buttons">
+                    <a href="{{ url_for('toggle_admin', user_id=user.id) }}" class="btn btn-primary" onclick="return confirm('Изменить права администратора?')">
+                        {% if user.is_admin %}
+                            <i class="fas fa-user"></i> Сделать пользователем
+                        {% else %}
+                            <i class="fas fa-crown"></i> Сделать админом
+                        {% endif %}
+                    </a>
+                    <form action="{{ url_for('admin_delete_user', user_id=user.id) }}" method="post" style="display: inline; width: 100%;" onsubmit="return confirm('Удалить пользователя?')">
+                        <button type="submit" class="btn btn-danger" style="width: 100%;">
+                            <i class="fas fa-trash"></i> Удалить
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -344,7 +373,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             const mainContent = document.getElementById('mainContent');
             const savedState = localStorage.getItem('sidebar_collapsed');
-            
             if (savedState === 'true') {
                 mainContent.classList.add('expanded');
             }
@@ -373,8 +401,17 @@
         // Показ уведомления
         function showNotification(message, isError = false) {
             const notification = document.createElement('div');
-            notification.className = 'copy-notification';
+            notification.style.position = 'fixed';
+            notification.style.bottom = '20px';
+            notification.style.left = '50%';
+            notification.style.transform = 'translateX(-50%)';
             notification.style.background = isError ? 'var(--danger)' : 'var(--success)';
+            notification.style.color = 'white';
+            notification.style.padding = '12px 25px';
+            notification.style.borderRadius = '50px';
+            notification.style.zIndex = '1000';
+            notification.style.boxShadow = '0 5px 20px rgba(0,0,0,0.2)';
+            notification.style.animation = 'slideUp 0.3s ease-out';
             notification.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
             
             document.body.appendChild(notification);
@@ -389,6 +426,5 @@
             copyPassword();
         });
     </script>
-      {% include 'active_workout_banner.html' %}
 </body>
 </html>
