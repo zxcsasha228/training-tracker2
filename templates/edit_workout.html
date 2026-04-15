@@ -51,7 +51,7 @@
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 40px;
-           
+        }
 
         /* Шапка */
         .header {
@@ -125,6 +125,11 @@
             margin-right: 8px;
         }
 
+        .required-star {
+            color: var(--danger);
+            margin-left: 4px;
+        }
+
         input {
             width: 100%;
             padding: 15px 18px;
@@ -139,6 +144,38 @@
             outline: none;
             border-color: var(--warning);
             box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
+        }
+
+        input::placeholder {
+            color: #aaa;
+            font-size: 0.95em;
+        }
+
+        /* Стили для валидного/невалидного поля */
+        input.valid {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        input.invalid {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        /* Счётчик символов */
+        .char-counter {
+            text-align: right;
+            font-size: 0.75em;
+            color: var(--gray);
+            margin-top: 5px;
+        }
+
+        .char-counter.warning {
+            color: var(--warning);
+        }
+
+        .char-counter.danger {
+            color: var(--danger);
         }
 
         .workout-info {
@@ -166,7 +203,49 @@
         .button-group .btn {
             flex: 1;
             justify-content: center;
-            padding: 12px 20px;
+        }
+
+        /* Всплывающее уведомление */
+        .toast-notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 9999;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .toast-notification.error {
+            background: var(--danger);
+        }
+
+        .toast-notification.success {
+            background: var(--success);
+        }
+
+        .toast-notification.warning {
+            background: var(--warning);
+            color: var(--dark);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
         }
 
         /* Адаптация */
@@ -211,19 +290,31 @@
                 <span>Тренировка от {{ workout.date }}</span>
             </div>
 
-            <form method="post">
+            <form method="post" id="editWorkoutForm">
                 <div class="form-group">
-                    <label><i class="fas fa-dumbbell"></i> Название тренировки</label>
-                    <input type="text" name="name" value="{{ workout.name }}" required 
+                    <label>
+                        <i class="fas fa-dumbbell"></i> Название тренировки
+                        <span class="required-star">*</span>
+                    </label>
+                    <input type="text" 
+                           name="name" 
+                           id="workoutName"
+                           value="{{ workout.name }}"
                            placeholder="Например: Тренировка груди"
+                           minlength="1"
+                           maxlength="200"
+                           required
                            autofocus>
+                    <div class="char-counter" id="charCounter">
+                        <span id="charCount">{{ workout.name|length }}</span>/20
+                    </div>
                 </div>
 
                 <div class="button-group">
                     <a href="{{ url_for('view_workout', workout_id=workout.id) }}" class="btn btn-gray">
                         Отмена
                     </a>
-                    <button type="submit" class="btn btn-warning">
+                    <button type="submit" class="btn btn-warning" id="submitBtn">
                         <i class="fas fa-save"></i> Сохранить
                     </button>
                 </div>
@@ -234,11 +325,126 @@
     {% include 'active_workout_banner.html' %}
 
     <script>
-        // Синхронизация состояния сайдбара
+        // Элементы
+        const workoutNameInput = document.getElementById('workoutName');
+        const charCountSpan = document.getElementById('charCount');
+        const charCounterDiv = document.querySelector('.char-counter');
+        const form = document.getElementById('editWorkoutForm');
+
+        // Функция показа уведомления
+        function showToast(message, type = 'error') {
+            const oldToast = document.querySelector('.toast-notification');
+            if (oldToast) oldToast.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type}`;
+            
+            let icon = '';
+            if (type === 'error') icon = '<i class="fas fa-exclamation-circle"></i>';
+            if (type === 'success') icon = '<i class="fas fa-check-circle"></i>';
+            if (type === 'warning') icon = '<i class="fas fa-info-circle"></i>';
+            
+            toast.innerHTML = `${icon} ${message}`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Обновление счётчика символов
+        function updateCharCounter() {
+            const length = workoutNameInput.value.length;
+            charCountSpan.textContent = length;
+            
+            if (length >= 15 && length < 20) {
+                charCounterDiv.classList.add('warning');
+                charCounterDiv.classList.remove('danger');
+            } else if (length >= 20) {
+                charCounterDiv.classList.add('danger');
+                charCounterDiv.classList.remove('warning');
+            } else {
+                charCounterDiv.classList.remove('warning', 'danger');
+            }
+        }
+
+        // Валидация поля (только проверка на пустоту и длину)
+        function validateField() {
+            const value = workoutNameInput.value.trim();
+            
+            if (value.length === 0) {
+                workoutNameInput.classList.remove('valid', 'invalid');
+                return false;
+            }
+            
+            if (value.length > 20) {
+                workoutNameInput.classList.add('invalid');
+                workoutNameInput.classList.remove('valid');
+                return false;
+            }
+            
+            workoutNameInput.classList.add('valid');
+            workoutNameInput.classList.remove('invalid');
+            return true;
+        }
+
+        // Ограничение на ввод (максимум 20 символов)
+        function limitInput() {
+            if (workoutNameInput.value.length > 20) {
+                workoutNameInput.value = workoutNameInput.value.slice(0, 20);
+                updateCharCounter();
+                showToast('Максимум 20 символов', 'warning');
+            }
+        }
+
+        // Обработка отправки формы
+        form.addEventListener('submit', function(e) {
+            const value = workoutNameInput.value.trim();
+            
+            // Проверка на пустое поле
+            if (value === '') {
+                e.preventDefault();
+                showToast('Пожалуйста, введите название тренировки', 'error');
+                workoutNameInput.classList.add('invalid');
+                workoutNameInput.focus();
+                return false;
+            }
+            
+            // Проверка на максимальную длину
+            if (value.length > 20) {
+                e.preventDefault();
+                showToast('Название не может превышать 20 символов', 'error');
+                workoutNameInput.classList.add('invalid');
+                workoutNameInput.focus();
+                return false;
+            }
+            
+            // Разрешаем любые символы — никакой проверки на спецсимволы!
+            
+            // Всё хорошо
+            showToast('Изменения сохранены!', 'success');
+        });
+
+        // События
+        workoutNameInput.addEventListener('input', function() {
+            updateCharCounter();
+            validateField();
+            limitInput();
+        });
+        
+        workoutNameInput.addEventListener('blur', function() {
+            validateField();
+        });
+        
+        // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
+            updateCharCounter();
+            validateField();
+            
             const mainContent = document.getElementById('mainContent');
             const savedState = localStorage.getItem('sidebar_collapsed');
-            
             if (savedState === 'true') {
                 mainContent.classList.add('expanded');
             }

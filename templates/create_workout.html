@@ -51,7 +51,7 @@
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 40px;
-            
+        }
 
         /* Шапка */
         .header {
@@ -128,6 +128,7 @@
         /* Форма */
         .form-group {
             margin-bottom: 25px;
+            position: relative;
         }
 
         label {
@@ -141,6 +142,11 @@
         label i {
             color: var(--success);
             margin-right: 8px;
+        }
+
+        .required-star {
+            color: var(--danger);
+            margin-left: 4px;
         }
 
         input {
@@ -162,6 +168,76 @@
         input::placeholder {
             color: #aaa;
             font-size: 0.95em;
+        }
+
+        /* Стили для валидного/невалидного поля */
+        input.valid {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        input.invalid {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        /* Счётчик символов */
+        .char-counter {
+            text-align: right;
+            font-size: 0.75em;
+            color: var(--gray);
+            margin-top: 5px;
+        }
+
+        .char-counter.warning {
+            color: var(--warning);
+        }
+
+        .char-counter.danger {
+            color: var(--danger);
+        }
+
+        /* Всплывающее уведомление (toast) */
+        .toast-notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 9999;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .toast-notification.error {
+            background: var(--danger);
+        }
+
+        .toast-notification.success {
+            background: var(--success);
+        }
+
+        .toast-notification.warning {
+            background: var(--warning);
+            color: var(--dark);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
         }
 
         .error-message {
@@ -220,7 +296,6 @@
             <div class="header">
                 <h1><i class="fas fa-plus-circle"></i> Новая тренировка</h1>
                 <div class="header-buttons">
-                    
                     <a href="{{ url_for('my_workouts') }}" class="btn btn-gray">
                         <i class="fas fa-times"></i> Отмена
                     </a>
@@ -233,15 +308,26 @@
             </div>
             {% endif %}
 
-            <form method="post">
+            <form method="post" id="workoutForm">
                 <div class="form-group">
-                    <label><i class="fas fa-dumbbell"></i> Название тренировки</label>
-                    <input type="text" name="name" required 
+                    <label>
+                        <i class="fas fa-dumbbell"></i> Название тренировки
+                        <span class="required-star">*</span>
+                    </label>
+                    <input type="text" 
+                           name="name" 
+                           id="workoutName"
                            placeholder="Например: Тренировка груди"
+                           minlength="3"
+                           maxlength="100"
+                           required
                            autofocus>
+                    <div class="char-counter" id="charCounter">
+                        <span id="charCount">0</span>/20
+                    </div>
                 </div>
 
-                <button type="submit" class="btn btn-success">
+                <button type="submit" class="btn btn-success" id="submitBtn">
                     <i class="fas fa-check"></i> Создать тренировку
                 </button>
             </form>
@@ -255,11 +341,151 @@
     {% include 'active_workout_banner.html' %}
 
     <script>
-        // Синхронизация состояния сайдбара
+        // Элементы
+        const workoutNameInput = document.getElementById('workoutName');
+        const charCountSpan = document.getElementById('charCount');
+        const charCounterDiv = document.querySelector('.char-counter');
+        const form = document.getElementById('workoutForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Функция показа уведомления
+        function showToast(message, type = 'error') {
+            // Удаляем старые уведомления
+            const oldToast = document.querySelector('.toast-notification');
+            if (oldToast) oldToast.remove();
+            
+            // Создаём новое
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type}`;
+            
+            let icon = '';
+            if (type === 'error') icon = '<i class="fas fa-exclamation-circle"></i>';
+            if (type === 'success') icon = '<i class="fas fa-check-circle"></i>';
+            if (type === 'warning') icon = '<i class="fas fa-info-circle"></i>';
+            
+            toast.innerHTML = `${icon} ${message}`;
+            document.body.appendChild(toast);
+            
+            // Автоматически скрываем через 3 секунды
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Обновление счётчика символов
+        function updateCharCounter() {
+            const length = workoutNameInput.value.length;
+            charCountSpan.textContent = length;
+            
+            // Меняем цвет в зависимости от длины
+            if (length >= 20 && length < 20) {
+                charCounterDiv.classList.add('warning');
+                charCounterDiv.classList.remove('danger');
+            } else if (length >= 20) {
+                charCounterDiv.classList.add('danger');
+                charCounterDiv.classList.remove('warning');
+            } else {
+                charCounterDiv.classList.remove('warning', 'danger');
+            }
+        }
+
+        // Валидация поля в реальном времени
+        function validateField() {
+            const value = workoutNameInput.value.trim();
+            const minLength = 3;
+            const maxLength = 20;
+            
+            if (value.length === 0) {
+                workoutNameInput.classList.remove('valid', 'invalid');
+                return false;
+            }
+            
+            if (value.length < minLength) {
+                workoutNameInput.classList.add('invalid');
+                workoutNameInput.classList.remove('valid');
+                return false;
+            }
+            
+            if (value.length > maxLength) {
+                workoutNameInput.classList.add('invalid');
+                workoutNameInput.classList.remove('valid');
+                return false;
+            }
+            
+            workoutNameInput.classList.add('valid');
+            workoutNameInput.classList.remove('invalid');
+            return true;
+        }
+
+        // Ограничение на ввод (максимум 20 символов)
+        function limitInput() {
+            if (workoutNameInput.value.length > 20) {
+                workoutNameInput.value = workoutNameInput.value.slice(0, 20);
+                updateCharCounter();
+                showToast('Максимум 20 символов', 'warning');
+            }
+        }
+
+        // Обработка отправки формы
+        form.addEventListener('submit', function(e) {
+            const value = workoutNameInput.value.trim();
+            const minLength = 3;
+            const maxLength = 20;
+            
+            // Проверка на пустое поле
+            if (value === '') {
+                e.preventDefault();
+                showToast('Пожалуйста, введите название тренировки', 'error');
+                workoutNameInput.classList.add('invalid');
+                workoutNameInput.focus();
+                return false;
+            }
+            
+            // Проверка на минимальную длину
+            if (value.length < minLength) {
+                e.preventDefault();
+                showToast(`Название должно содержать минимум ${minLength} символа`, 'error');
+                workoutNameInput.classList.add('invalid');
+                workoutNameInput.focus();
+                return false;
+            }
+            
+            // Проверка на максимальную длину
+            if (value.length > maxLength) {
+                e.preventDefault();
+                showToast(`Название не может превышать ${maxLength} символов`, 'error');
+                workoutNameInput.classList.add('invalid');
+                workoutNameInput.focus();
+                return false;
+            }
+            
+            
+            
+            // Всё хорошо, показываем успешное уведомление
+            showToast('Создаём тренировку...', 'success');
+        });
+
+        // События
+        workoutNameInput.addEventListener('input', function() {
+            updateCharCounter();
+            validateField();
+            limitInput();
+        });
+        
+        workoutNameInput.addEventListener('blur', function() {
+            validateField();
+        });
+        
+        // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
+            updateCharCounter();
+            validateField();
+            
+            // Синхронизация состояния сайдбара
             const mainContent = document.getElementById('mainContent');
             const savedState = localStorage.getItem('sidebar_collapsed');
-            
             if (savedState === 'true') {
                 mainContent.classList.add('expanded');
             }
