@@ -35,6 +35,7 @@
         .main-content {
             margin-left: 280px;
             padding: 40px 20px;
+            transition: margin-left 0.3s ease;
             min-height: 100vh;
         }
 
@@ -88,6 +89,7 @@
         }
 
         .btn-gray:hover {
+            transform: translateY(-2px);
             filter: brightness(1.1);
         }
 
@@ -102,7 +104,8 @@
         }
 
         .btn-success:hover {
-            filter: brightness(1.1);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
         }
 
         /* Красивый дизайн для загрузки файла */
@@ -176,6 +179,7 @@
 
         .form-group {
             margin-bottom: 25px;
+            position: relative;
         }
 
         label {
@@ -190,6 +194,11 @@
             margin-right: 8px;
         }
 
+        .required-star {
+            color: var(--danger);
+            margin-left: 4px;
+        }
+
         input, select {
             width: 100%;
             padding: 15px 18px;
@@ -197,11 +206,38 @@
             border-radius: 16px;
             font-size: 1.1em;
             font-family: inherit;
+            transition: all 0.3s;
         }
 
         input:focus, select:focus {
             outline: none;
             border-color: var(--success);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+        }
+
+        input.valid {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        input.invalid {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 0.75em;
+            color: var(--gray);
+            margin-top: 5px;
+        }
+
+        .char-counter.warning {
+            color: var(--warning);
+        }
+
+        .char-counter.danger {
+            color: var(--danger);
         }
 
         .error-message {
@@ -211,6 +247,49 @@
             border-radius: 16px;
             margin-bottom: 25px;
             border-left: 5px solid var(--danger);
+        }
+
+        /* Всплывающее уведомление */
+        .toast-notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 9999;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .toast-notification.error {
+            background: var(--danger);
+        }
+
+        .toast-notification.success {
+            background: var(--success);
+        }
+
+        .toast-notification.warning {
+            background: var(--warning);
+            color: var(--dark);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
         }
 
         @media (max-width: 768px) {
@@ -250,7 +329,7 @@
             </div>
             {% endif %}
 
-            <form method="post" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data" id="exerciseForm">
                 <!-- Красивая загрузка изображения -->
                 <div class="file-upload" onclick="document.getElementById('imageInput').click()">
                     <i class="fas fa-cloud-upload-alt"></i>
@@ -267,8 +346,21 @@
 
                 <!-- Название упражнения -->
                 <div class="form-group">
-                    <label><i class="fas fa-dumbbell"></i> Название упражнения *</label>
-                    <input type="text" name="name" required placeholder="Например: Жим штанги лежа">
+                    <label>
+                        <i class="fas fa-dumbbell"></i> Название упражнения
+                        <span class="required-star">*</span>
+                    </label>
+                    <input type="text" 
+                           name="name" 
+                           id="exerciseName"
+                           placeholder="Например: Жим штанги лежа"
+                           minlength="2"
+                           maxlength="20"
+                           required
+                           autofocus>
+                    <div class="char-counter" id="charCounter">
+                        <span id="charCount">0</span>/20
+                    </div>
                 </div>
 
                 <!-- Группа мышц -->
@@ -287,7 +379,7 @@
                     </select>
                 </div>
 
-                <button type="submit" class="btn btn-success">
+                <button type="submit" class="btn btn-success" id="submitBtn">
                     <i class="fas fa-save"></i> Сохранить упражнение
                 </button>
             </form>
@@ -297,13 +389,116 @@
     {% include 'active_workout_banner.html' %}
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const mainContent = document.getElementById('mainContent');
-            const savedState = localStorage.getItem('sidebar_collapsed');
+        const exerciseNameInput = document.getElementById('exerciseName');
+        const charCountSpan = document.getElementById('charCount');
+        const charCounterDiv = document.querySelector('.char-counter');
+        const form = document.getElementById('exerciseForm');
+
+        function showToast(message, type = 'error') {
+            const oldToast = document.querySelector('.toast-notification');
+            if (oldToast) oldToast.remove();
             
-            if (savedState === 'true') {
-                mainContent.classList.add('expanded');
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type}`;
+            let icon = type === 'error' ? '<i class="fas fa-exclamation-circle"></i>' : 
+                       type === 'success' ? '<i class="fas fa-check-circle"></i>' : 
+                       '<i class="fas fa-info-circle"></i>';
+            toast.innerHTML = `${icon} ${message}`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function updateCharCounter() {
+            const length = exerciseNameInput.value.length;
+            charCountSpan.textContent = length;
+            
+            if (length >= 18 && length < 20) {
+                charCounterDiv.classList.add('warning');
+                charCounterDiv.classList.remove('danger');
+            } else if (length >= 20) {
+                charCounterDiv.classList.add('danger');
+                charCounterDiv.classList.remove('warning');
+            } else {
+                charCounterDiv.classList.remove('warning', 'danger');
             }
+        }
+
+        function validateField() {
+            const value = exerciseNameInput.value.trim();
+            
+            if (value.length === 0) {
+                exerciseNameInput.classList.remove('valid', 'invalid');
+                return false;
+            }
+            
+            if (value.length < 2) {
+                exerciseNameInput.classList.add('invalid');
+                exerciseNameInput.classList.remove('valid');
+                return false;
+            }
+            
+            if (value.length > 20) {
+                exerciseNameInput.classList.add('invalid');
+                exerciseNameInput.classList.remove('valid');
+                return false;
+            }
+            
+            exerciseNameInput.classList.add('valid');
+            exerciseNameInput.classList.remove('invalid');
+            return true;
+        }
+
+        function limitInput() {
+            if (exerciseNameInput.value.length > 20) {
+                exerciseNameInput.value = exerciseNameInput.value.slice(0, 20);
+                updateCharCounter();
+                showToast('Максимум 20 символов', 'warning');
+            }
+        }
+
+        form.addEventListener('submit', function(e) {
+            const value = exerciseNameInput.value.trim();
+            
+            if (value === '') {
+                e.preventDefault();
+                showToast('Введите название упражнения', 'error');
+                exerciseNameInput.classList.add('invalid');
+                exerciseNameInput.focus();
+                return false;
+            }
+            
+            if (value.length < 2) {
+                e.preventDefault();
+                showToast('Название должно содержать минимум 2 символа', 'error');
+                exerciseNameInput.classList.add('invalid');
+                exerciseNameInput.focus();
+                return false;
+            }
+            
+            if (value.length > 20) {
+                e.preventDefault();
+                showToast('Название не может превышать 20 символов', 'error');
+                exerciseNameInput.classList.add('invalid');
+                exerciseNameInput.focus();
+                return false;
+            }
+            
+            showToast('Упражнение добавляется...', 'success');
+        });
+
+        exerciseNameInput.addEventListener('input', function() {
+            updateCharCounter();
+            validateField();
+            limitInput();
+        });
+        
+        exerciseNameInput.addEventListener('blur', function() {
+            validateField();
         });
 
         function previewImage(input) {
@@ -317,16 +512,24 @@
                 fileName.classList.add('active');
                 
                 const reader = new FileReader();
-                
                 reader.onload = function(e) {
                     previewImg.src = e.target.result;
                     preview.classList.add('active');
                 }
-                
                 reader.readAsDataURL(file);
             }
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCharCounter();
+            validateField();
+            
+            const mainContent = document.getElementById('mainContent');
+            const savedState = localStorage.getItem('sidebar_collapsed');
+            if (savedState === 'true') {
+                mainContent.classList.add('expanded');
+            }
+        });
     </script>
-    {% include 'active_workout_banner.html' %}
 </body>
 </html>
