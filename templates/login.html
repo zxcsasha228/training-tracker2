@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='mobile.css') }}">
     <title>Вход в систему</title>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <style>
         /* Современные переменные цветов */
         :root {
@@ -32,7 +34,7 @@
             align-items: center;
             padding: 20px;
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         /* Анимированный фон с кругами */
@@ -62,10 +64,8 @@
             position: relative;
             z-index: 1;
             transform: translateY(0);
-           
+            transition: all 0.3s ease;
         }
-
-        
 
         /* Заголовок с иконкой */
         .header {
@@ -134,6 +134,7 @@
             top: 50%;
             transform: translateY(-50%);
             color: var(--gray);
+            z-index: 2;
         }
 
         .input-icon input {
@@ -316,6 +317,93 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* ========================================
+           МОБИЛЬНАЯ АДАПТАЦИЯ (только для этой страницы)
+           ======================================== */
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+                align-items: center;
+                min-height: 100vh;
+            }
+            
+            .login-card {
+                padding: 28px 20px;
+                max-width: 100%;
+                border-radius: 20px;
+            }
+            
+            .header {
+                margin-bottom: 30px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .header p {
+                font-size: 0.85em;
+            }
+            
+            .form-group {
+                margin-bottom: 18px;
+            }
+            
+            .form-group input {
+                padding: 12px 16px;
+                font-size: 16px; /* Предотвращает зум на iOS */
+            }
+            
+            .input-icon i {
+                font-size: 14px;
+            }
+            
+            .input-icon input {
+                padding-left: 42px;
+            }
+            
+            .login-btn {
+                padding: 14px;
+                font-size: 1em;
+            }
+            
+            .test-accounts {
+                padding: 16px;
+                margin-top: 24px;
+            }
+            
+            .test-accounts .account-item {
+                flex-direction: column;
+                gap: 6px;
+                text-align: center;
+            }
+            
+            .test-accounts .account-creds {
+                font-size: 12px;
+            }
+            
+            .register-link {
+                margin-top: 20px;
+                padding-top: 20px;
+            }
+        }
+
+        /* Очень маленькие экраны (до 380px) */
+        @media (max-width: 380px) {
+            .login-card {
+                padding: 20px 16px;
+            }
+            
+            .header h1 {
+                font-size: 1.5em;
+            }
+            
+            .test-accounts .account-item {
+                padding: 8px;
+            }
+        }
     </style>
     <!-- Font Awesome для иконок -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -323,7 +411,7 @@
 <body>
     <div class="login-card">
         <div class="header">
-            <h1> FitTrack</h1>
+            <h1>FitTrack</h1>
             <p>Войди в свой тренировочный дневник</p>
         </div>
         
@@ -342,7 +430,7 @@
             
             <div class="form-group input-icon">
                 <i class="fas fa-lock"></i>
-                <input type="password" name="password" placeholder="Пароль" required>
+                <input type="password" name="password" id="password" placeholder="Пароль" required>
             </div>
             
             <button type="submit" class="login-btn" onclick="showLoading()">
@@ -387,7 +475,8 @@
 
         // Скрываем загрузку если страница загрузилась
         window.addEventListener('load', function() {
-            document.getElementById('loading').classList.remove('active');
+            const loading = document.getElementById('loading');
+            if (loading) loading.classList.remove('active');
         });
     </script>
 </body>

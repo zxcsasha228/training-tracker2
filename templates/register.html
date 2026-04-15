@@ -3,6 +3,8 @@
 <head>
     <title>Регистрация</title>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <link rel="stylesheet" href="{{ url_for('static', filename='mobile.css') }}">
     <style>
         :root {
             --primary: #6366f1;
@@ -31,7 +33,7 @@
             align-items: center;
             padding: 20px;
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         body::before {
@@ -43,7 +45,10 @@
             animation: rotate 20s linear infinite;
         }
 
-       
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
 
         .register-card {
             background: rgba(255, 255, 255, 0.95);
@@ -55,10 +60,7 @@
             max-width: 450px;
             position: relative;
             z-index: 1;
-           
         }
-
-       
 
         .header {
             text-align: center;
@@ -166,6 +168,14 @@
             font-size: 0.75em;
             color: var(--gray);
             margin-top: 5px;
+        }
+
+        .char-counter.warning {
+            color: var(--warning);
+        }
+
+        .char-counter.danger {
+            color: var(--danger);
         }
 
         .password-strength {
@@ -312,7 +322,16 @@
             background: var(--success);
         }
 
-       
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
 
         .loading {
             display: none;
@@ -344,13 +363,89 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* ========================================
+           МОБИЛЬНАЯ АДАПТАЦИЯ
+           ======================================== */
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+                align-items: center;
+                min-height: 100vh;
+            }
+            
+            .register-card {
+                padding: 24px 20px;
+                max-width: 100%;
+                border-radius: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .header p {
+                font-size: 0.85em;
+            }
+            
+            .form-group {
+                margin-bottom: 16px;
+            }
+            
+            .input-wrapper input {
+                padding: 12px 16px 12px 42px;
+                font-size: 16px;
+            }
+            
+            .input-icon {
+                font-size: 14px;
+                left: 14px;
+            }
+            
+            .toggle-password {
+                right: 12px;
+            }
+            
+            .register-btn {
+                padding: 14px;
+                font-size: 1em;
+            }
+            
+            .char-counter {
+                font-size: 0.7em;
+            }
+            
+            .password-hint, .password-match {
+                font-size: 0.75em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .register-card {
+                padding: 20px 16px;
+            }
+            
+            .header h1 {
+                font-size: 1.5em;
+            }
+            
+            .input-wrapper input {
+                padding: 11px 14px 11px 38px;
+            }
+            
+            .input-icon {
+                font-size: 12px;
+                left: 12px;
+            }
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="register-card">
         <div class="header">
-            <h1> Регистрация</h1>
+            <h1>Регистрация</h1>
             <p>Уже есть аккаунт? <a href="{{ url_for('login') }}">Войти</a></p>
         </div>
         
