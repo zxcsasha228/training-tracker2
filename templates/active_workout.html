@@ -3,7 +3,7 @@
 <head>
     <title>{{ workout.name }} - Тренировка</title>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
@@ -34,8 +34,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            margin: 0;
-            padding: 0;
+            overflow-x: hidden;
         }
 
         .main-content {
@@ -76,6 +75,7 @@
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            word-break: break-word;
         }
 
         .header-right {
@@ -128,6 +128,10 @@
         .btn-gray:hover {
             transform: translateY(-2px);
             filter: brightness(1.1);
+        }
+
+        .btn-gray:active {
+            transform: scale(0.96);
         }
 
         /* Информация о тренировке */
@@ -272,6 +276,7 @@
         .delete-set-btn:active {
             background: var(--danger);
             color: white;
+            transform: scale(0.95);
         }
 
         .set-number {
@@ -367,6 +372,10 @@
             transform: scale(1.05);
         }
 
+        .complete-btn:active {
+            transform: scale(0.95);
+        }
+
         .complete-btn.completed {
             background: var(--success);
             color: white;
@@ -399,6 +408,10 @@
         .add-set-btn:hover {
             background: rgba(99, 102, 241, 0.1);
             border-style: solid;
+        }
+
+        .add-set-btn:active {
+            transform: scale(0.98);
         }
 
         /* Статистика подходов */
@@ -448,6 +461,10 @@
             box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
         }
 
+        .action-btn.finish:active {
+            transform: scale(0.97);
+        }
+
         .action-btn.add {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
@@ -458,57 +475,210 @@
             box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
         }
 
-        /* Для мобильных */
+        .action-btn.add:active {
+            transform: scale(0.97);
+        }
+
+        /* ========================================
+           МОБИЛЬНАЯ АДАПТАЦИЯ
+           ======================================== */
+        
         @media (max-width: 768px) {
             .main-content {
-                margin-left: 0;
-                padding: 60px 20px 20px;
+                margin-left: 0 !important;
+                padding: 20px 16px 80px 16px;
+            }
+            
+            .container {
+                padding: 20px 16px;
+                border-radius: 20px;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .header h1 {
+                font-size: 1.4em;
+            }
+            
+            .header-right {
+                width: 100%;
+            }
+            
+            .header-right .btn-gray {
+                width: 100%;
+                justify-content: center;
+                padding: 10px 16px;
             }
             
             .timer-section {
                 width: 100%;
                 justify-content: center;
+                padding: 12px 20px;
+            }
+            
+            .timer-display {
+                font-size: 1.8em;
+                letter-spacing: 3px;
+            }
+            
+            .workout-info {
+                padding: 12px 16px;
+                gap: 12px;
+            }
+            
+            .info-item {
+                font-size: 0.9em;
+            }
+            
+            .exercise-header {
+                padding: 15px;
+                gap: 12px;
+            }
+            
+            .exercise-header img {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .exercise-header i {
+                font-size: 2.5em;
+            }
+            
+            .exercise-name {
+                font-size: 1.1em;
+            }
+            
+            .exercise-muscle {
+                font-size: 0.8em;
+            }
+            
+            .exercise-chevron {
+                font-size: 1.2em;
+            }
+            
+            .exercise-content {
+                padding: 15px;
             }
             
             .set-card {
                 flex-wrap: wrap;
-                padding: 15px 10px;
+                padding: 12px;
+                gap: 8px;
             }
             
             .delete-set-btn {
                 order: 1;
+                width: 36px;
+                height: 36px;
+                font-size: 0.9em;
             }
             
             .set-number {
                 order: 2;
-                width: auto;
-                margin-bottom: 0;
+                min-width: 35px;
+                font-size: 1em;
             }
             
             .set-inputs {
                 order: 3;
                 width: 100%;
+                gap: 8px;
             }
             
             .complete-btn {
                 order: 4;
+                width: 40px;
+                height: 40px;
             }
-
-            .exercise-header {
-                padding: 15px;
+            
+            .input-field {
+                padding: 6px 0;
             }
-
-            .exercise-header img {
-                width: 60px;
-                height: 60px;
+            
+            .input-field input {
+                font-size: 1.1em;
             }
-
-            .exercise-name {
-                font-size: 1.2em;
+            
+            .input-label {
+                font-size: 0.7em;
             }
-
+            
+            .add-set-btn {
+                padding: 10px;
+                font-size: 0.9em;
+            }
+            
             .action-buttons {
                 flex-direction: column;
+                gap: 12px;
+            }
+            
+            .action-btn {
+                padding: 12px;
+                font-size: 1em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 15px 12px 80px 12px;
+            }
+            
+            .container {
+                padding: 16px 12px;
+            }
+            
+            .header h1 {
+                font-size: 1.2em;
+            }
+            
+            .timer-display {
+                font-size: 1.5em;
+                letter-spacing: 2px;
+            }
+            
+            .exercise-header {
+                padding: 12px;
+                gap: 10px;
+            }
+            
+            .exercise-header img {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .exercise-name {
+                font-size: 1em;
+            }
+            
+            .set-card {
+                padding: 10px;
+            }
+            
+            .set-number {
+                min-width: 30px;
+                font-size: 0.9em;
+            }
+            
+            .delete-set-btn {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .complete-btn {
+                width: 36px;
+                height: 36px;
+            }
+        }
+
+        /* Планшеты */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .main-content {
+                margin-left: 80px !important;
+                padding: 20px 24px;
             }
         }
     </style>
@@ -592,22 +762,18 @@
         </div>
     </div>
 
-    
-
     <script>
+        // Состояние сайдбара
+        const mainContent = document.getElementById('mainContent');
+        const savedState = localStorage.getItem('sidebar_collapsed');
+        if (savedState === 'true') {
+            mainContent.classList.add('expanded');
+        }
+
         // Получаем данные из скрытых полей
         const userId = document.getElementById('userId').value;
         const workoutId = document.getElementById('workoutId').value;
         const isContinuing = document.getElementById('isContinuing').value === 'true';
-
-        // Состояние сайдбара
-        document.addEventListener('DOMContentLoaded', function() {
-            const mainContent = document.getElementById('mainContent');
-            const savedState = localStorage.getItem('sidebar_collapsed');
-            if (savedState === 'true') {
-                mainContent.classList.add('expanded');
-            }
-        });
 
         // Таймер
         let timerInterval;
@@ -631,18 +797,18 @@
         }
 
         function loadTimer() {
-    const savedTime = localStorage.getItem(`workout_${userId}_${workoutId}_timer`);
-    
-    if (savedTime) {
-        seconds = parseInt(savedTime);
-        console.log('Загружен таймер:', seconds);
-    } else {
-        seconds = 0;
-    }
-    
-    document.getElementById('timer').textContent = formatTime(seconds);
-    startTimer();
-}
+            const savedTime = localStorage.getItem(`workout_${userId}_${workoutId}_timer`);
+            
+            if (savedTime) {
+                seconds = parseInt(savedTime);
+                console.log('Загружен таймер:', seconds);
+            } else {
+                seconds = 0;
+            }
+            
+            document.getElementById('timer').textContent = formatTime(seconds);
+            startTimer();
+        }
 
         function saveTimer() {
             localStorage.setItem(`workout_${userId}_${workoutId}_timer`, seconds.toString());
@@ -701,7 +867,7 @@
             container.appendChild(wrapper);
             
             updateExerciseStats(exerciseId);
-            saveWorkoutState(); // Сохраняем сразу после добавления
+            saveWorkoutState();
         }
 
         function deleteSet(btn) {
@@ -832,47 +998,45 @@
             console.log('Состояние сохранено');
         }
 
-       function loadWorkoutState() {
-    const saved = localStorage.getItem(`workout_${userId}_${workoutId}`);
-    if (!saved) return false;
-    
-    try {
-        const state = JSON.parse(saved);
-        console.log('Загружаем состояние:', state);
-        
-        // Загружаем таймер из состояния
-        if (state.timer) {
-            seconds = state.timer;
-        }
-        
-        document.querySelectorAll('.sets-container').forEach(container => {
-            container.innerHTML = '';
-        });
-        
-        state.exercises.forEach(ex => {
-            ex.sets.forEach(setData => {
-                addSet(ex.id, {
-                    weight: setData.weight,
-                    reps: setData.reps,
-                    completed: setData.completed,
-                    exercise_lib_id: ex.lib_id
+        function loadWorkoutState() {
+            const saved = localStorage.getItem(`workout_${userId}_${workoutId}`);
+            if (!saved) return false;
+            
+            try {
+                const state = JSON.parse(saved);
+                console.log('Загружаем состояние:', state);
+                
+                if (state.timer) {
+                    seconds = state.timer;
+                }
+                
+                document.querySelectorAll('.sets-container').forEach(container => {
+                    container.innerHTML = '';
                 });
-            });
-        });
-        
-        return true;
-    } catch (e) {
-        console.error('Ошибка загрузки состояния:', e);
-        return false;
-    }
-}
+                
+                state.exercises.forEach(ex => {
+                    ex.sets.forEach(setData => {
+                        addSet(ex.id, {
+                            weight: setData.weight,
+                            reps: setData.reps,
+                            completed: setData.completed,
+                            exercise_lib_id: ex.lib_id
+                        });
+                    });
+                });
+                
+                return true;
+            } catch (e) {
+                console.error('Ошибка загрузки состояния:', e);
+                return false;
+            }
+        }
 
         function saveBeforeLeave() {
             saveWorkoutState();
             saveTimer();
         }
 
-        // Подтверждение выхода
         function confirmExit() {
             if (confirm('Выйти из тренировки? Прогресс будет сохранён.')) {
                 saveWorkoutState();
@@ -883,34 +1047,29 @@
         }
 
         // Инициализация
-document.addEventListener('DOMContentLoaded', function() {
-    if (isContinuing) {
-        const loaded = loadWorkoutState();
-        if (!loaded) {
-            {% for ex in exercises %}
-            addSet({{ ex.id }});
-            {% endfor %}
-        }
-    } else {
-        localStorage.removeItem(`workout_${userId}_${workoutId}`);
-        localStorage.removeItem(`workout_${userId}_${workoutId}_timer`);
-        localStorage.removeItem(`workout_${userId}_${workoutId}_active`);
-        
-        {% for ex in exercises %}
-        addSet({{ ex.id }});
-        {% endfor %}
-    }
-    
-    // Таймер загружается после состояния
-    loadTimer();
-    
-    // Сохраняем состояние после создания всех подходов
-    saveWorkoutState();
-    
-    // Помечаем, что тренировка активна
-    localStorage.setItem(`workout_${userId}_${workoutId}_active`, 'true');
-    console.log('Установлен флаг активности для тренировки', workoutId);
-});
+        document.addEventListener('DOMContentLoaded', function() {
+            if (isContinuing) {
+                const loaded = loadWorkoutState();
+                if (!loaded) {
+                    {% for ex in exercises %}
+                    addSet({{ ex.id }});
+                    {% endfor %}
+                }
+            } else {
+                localStorage.removeItem(`workout_${userId}_${workoutId}`);
+                localStorage.removeItem(`workout_${userId}_${workoutId}_timer`);
+                localStorage.removeItem(`workout_${userId}_${workoutId}_active`);
+                
+                {% for ex in exercises %}
+                addSet({{ ex.id }});
+                {% endfor %}
+            }
+            
+            loadTimer();
+            saveWorkoutState();
+            localStorage.setItem(`workout_${userId}_${workoutId}_active`, 'true');
+            console.log('Установлен флаг активности для тренировки', workoutId);
+        });
 
         // Автосохранение
         setInterval(() => {
@@ -923,7 +1082,6 @@ document.addEventListener('DOMContentLoaded', function() {
             saveTimer();
         });
 
-        // Завершение тренировки
         function finishWorkout() {
             if (confirm('Завершить тренировку?')) {
                 const setsData = collectWorkoutData();
@@ -945,7 +1103,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Удаляем флаг активности и данные тренировки
                         localStorage.removeItem(`workout_${userId}_${workoutId}_active`);
                         localStorage.removeItem(`workout_${userId}_${workoutId}`);
                         localStorage.removeItem(`workout_${userId}_${workoutId}_timer`);
@@ -964,7 +1121,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Функция для сбора данных тренировки
         function collectWorkoutData() {
             const data = [];
             console.log('=== СБОР ДАННЫХ ТРЕНИРОВКИ ===');
@@ -998,7 +1154,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return data;
         }
 
-        // Добавление упражнения
         function openAddExerciseModal() {
             saveWorkoutState();
             saveTimer();

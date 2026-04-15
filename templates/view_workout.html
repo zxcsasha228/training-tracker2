@@ -3,7 +3,7 @@
 <head>
     <title>{{ workout.name }}</title>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <style>
         :root {
             --primary: #6366f1;
@@ -28,7 +28,19 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Основной контент с отступом для сайдбара */
+        .main-content {
+            margin-left: 280px;
             padding: 40px 20px;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 80px;
         }
 
         .container {
@@ -39,7 +51,6 @@
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 30px;
-            
         }
 
         /* Шапка */
@@ -59,6 +70,7 @@
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            word-break: break-word;
         }
 
         .header-right {
@@ -136,6 +148,7 @@
         .info-right {
             display: flex;
             gap: 15px;
+            flex-wrap: wrap;
         }
 
         /* Кнопка начать/продолжить тренировку */
@@ -335,7 +348,7 @@
             transition: all 0.3s;
             border: 2px solid transparent;
             position: relative;
-            cursor: default; /* Убираем pointer, теперь не кликабельно */
+            cursor: default;
         }
 
         .exercise-card:hover {
@@ -423,6 +436,8 @@
             justify-content: space-between;
             align-items: start;
             margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
         .exercise-name {
@@ -438,24 +453,6 @@
             border-radius: 20px;
             font-size: 0.85em;
             font-weight: 600;
-        }
-
-        .exercise-details {
-            display: flex;
-            gap: 15px;
-            margin: 15px 0;
-            color: var(--gray);
-            font-size: 0.95em;
-        }
-
-        .exercise-details span {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .exercise-details i {
-            color: var(--primary);
         }
 
         /* Пустое состояние */
@@ -763,11 +760,53 @@
             box-shadow: 0 8px 15px rgba(16, 185, 129, 0.4);
         }
 
-        /* Адаптация */
+        /* ========================================
+           МОБИЛЬНАЯ АДАПТАЦИЯ
+           ======================================== */
+        
         @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0 !important;
+                padding: 20px 16px 80px 16px;
+            }
+            
+            .container {
+                padding: 20px 16px;
+                border-radius: 20px;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .header h1 {
+                font-size: 1.5em;
+            }
+            
+            .header-right {
+                width: 100%;
+                justify-content: stretch;
+            }
+            
+            .header-right .btn {
+                flex: 1;
+                justify-content: center;
+                padding: 10px 16px;
+                font-size: 0.9em;
+            }
+            
             .workout-info {
                 flex-direction: column;
                 align-items: flex-start;
+            }
+            
+            .info-left {
+                gap: 15px;
+            }
+            
+            .info-item {
+                font-size: 0.9em;
             }
             
             .info-right {
@@ -778,23 +817,53 @@
             .workout-action-btn {
                 width: 100%;
                 padding: 14px 20px;
-                font-size: 1.1em;
+                font-size: 1em;
             }
             
             .beautiful-add-btn {
                 width: 100%;
                 padding: 14px 20px;
-                font-size: 1.1em;
+                font-size: 1em;
             }
             
             .exercises-grid {
                 grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .exercise-card .selection-checkbox {
+                width: 28px;
+                height: 28px;
+                top: 10px;
+                right: 10px;
+            }
+            
+            .exercise-image {
+                height: 150px;
+            }
+            
+            .exercise-content {
+                padding: 15px;
+            }
+            
+            .exercise-name {
+                font-size: 1.1em;
+            }
+            
+            .exercise-muscle {
+                font-size: 0.75em;
+                padding: 3px 8px;
             }
             
             .action-bar {
                 flex-direction: column;
                 gap: 10px;
                 align-items: stretch;
+                padding: 12px 16px;
+            }
+            
+            .selection-info {
+                justify-content: center;
             }
             
             .action-buttons-group {
@@ -804,11 +873,120 @@
             .action-group-btn {
                 flex: 1;
                 justify-content: center;
+                padding: 8px 16px;
+            }
+            
+            .empty-state {
+                padding: 50px 20px;
+            }
+            
+            .empty-state h2 {
+                font-size: 1.4em;
+            }
+            
+            .empty-state p {
+                font-size: 0.9em;
+            }
+            
+            /* Модальное окно на мобилках */
+            .modal-content {
+                max-width: 100%;
+                border-radius: 20px;
+            }
+            
+            .modal-header {
+                padding: 15px;
+            }
+            
+            .modal-header h2 {
+                font-size: 1.2em;
+            }
+            
+            .modal-body {
+                padding: 15px;
+            }
+            
+            .modal-exercise-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .modal-exercise-card {
+                padding: 10px;
+            }
+            
+            .modal-exercise-image {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .modal-exercise-image i {
+                font-size: 1.8em;
+                line-height: 60px;
+            }
+            
+            .modal-exercise-name {
+                font-size: 0.85em;
+            }
+            
+            .modal-exercise-muscle {
+                font-size: 0.7em;
             }
             
             .selected-panel {
                 flex-direction: column;
                 align-items: stretch;
+                padding: 12px;
+            }
+            
+            .selected-exercises-list {
+                justify-content: center;
+            }
+            
+            .add-selected-btn {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 15px 12px 80px 12px;
+            }
+            
+            .container {
+                padding: 16px 12px;
+            }
+            
+            .header h1 {
+                font-size: 1.3em;
+            }
+            
+            .info-left {
+                gap: 10px;
+            }
+            
+            .info-item {
+                font-size: 0.8em;
+            }
+            
+            .modal-exercise-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Планшеты */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .main-content {
+                margin-left: 80px !important;
+                padding: 20px 24px;
+            }
+            
+            .exercises-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .modal-exercise-grid {
+                grid-template-columns: repeat(3, 1fr);
             }
         }
     </style>
@@ -816,99 +994,97 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark_theme.css') }}">
 </head>
 <body>
-     <input type="hidden" id="userId" value="{{ session['user_id'] }}">
+    <input type="hidden" id="userId" value="{{ session['user_id'] }}">
     {% include 'sidebar.html' %}
-    <div class="container">
-        <!-- Шапка -->
-        <div class="header">
-            <h1><i class="fas fa-dumbbell"></i> {{ workout.name }}</h1>
-            <div class="header-right">
-    <a href="{{ url_for('my_workouts') }}" class="btn btn-gray">
-        <i class="fas fa-arrow-left"></i> К списку
-    </a>
-    <a href="{{ url_for('edit_workout', workout_id=workout.id) }}" class="btn btn-warning">
-        <i class="fas fa-edit"></i> Изменить
-    </a>
-</div>
-        </div>
-
-        <!-- Информация о тренировке -->
-        <div class="workout-info">
-            <div class="info-left">
-                <div class="info-item">
-                    <i class="fas fa-calendar"></i>
-                    <span>{{ workout.date }}</span>
-                </div>
-                <div class="info-item">
-                    <i class="fas fa-dumbbell"></i>
-                    <span id="exercisesCount">{{ exercises|length }}</span> упражнений
-                </div>
-            </div>
-            <div class="info-right">
-    <!-- Кнопка продолжить/начать тренировку -->
-    <a href="#" id="workoutActionBtn" class="workout-action-btn" style="text-decoration: none;">
-        <span class="btn-icon"><i class="fas fa-play"></i></span>
-        <span id="workoutActionText">Начать тренировку</span>
-    </a>
     
-    <!-- Кнопка добавить упражнение -->
-    <button class="beautiful-add-btn" onclick="openModal()">
-        <span class="btn-icon"><i class="fas fa-plus"></i></span>
-        <span>Добавить</span>
-    </button>
-</div>
-        </div>
-
-        <!-- Панель массовых действий (появляется при выделении) -->
-        <div class="action-bar" id="actionBar" style="display: none;">
-            <div class="selection-info">
-                <div class="selection-count">
-                    Выделено: <span id="selectedCount">0</span>
+    <div class="main-content" id="mainContent">
+        <div class="container">
+            <!-- Шапка -->
+            <div class="header">
+                <h1><i class="fas fa-dumbbell"></i> {{ workout.name }}</h1>
+                <div class="header-right">
+                    <a href="{{ url_for('my_workouts') }}" class="btn btn-gray">
+                        <i class="fas fa-arrow-left"></i> К списку
+                    </a>
+                    <a href="{{ url_for('edit_workout', workout_id=workout.id) }}" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> Изменить
+                    </a>
                 </div>
             </div>
-            <div class="action-buttons-group">
-                <button class="action-group-btn delete-group-btn" onclick="deleteSelected()">
-                    <i class="fas fa-trash"></i> Удалить 
-                </button>
-                <button class="action-group-btn cancel-group-btn" onclick="clearSelection()">
-                    <i class="fas fa-times"></i> Отмена
-                </button>
-            </div>
-        </div>
 
-        <!-- Список упражнений -->
-        {% if exercises %}
-        <div class="exercises-grid" id="exercisesGrid">
-            {% for ex in exercises %}
-            <div class="exercise-card" id="exercise-card-{{ ex.id }}" data-id="{{ ex.id }}">
-                <div class="selection-checkbox" onclick="event.stopPropagation(); toggleSelectCard({{ ex.id }}, event)">
-                    <i class="fas fa-check"></i>
-                </div>
-                <div class="exercise-image">
-    {% if ex.image %}
-        <img src="/{{ ex.image }}" alt="{{ ex.name }}">
-    {% else %}
-        <i class="fas fa-dumbbell"></i>
-    {% endif %}
-</div>
-                <div class="exercise-content">
-                    <div class="exercise-header">
-                        <span class="exercise-name">{{ ex.name }}</span>
-                        <span class="exercise-muscle">{{ ex.muscle_group }}</span>
+            <!-- Информация о тренировке -->
+            <div class="workout-info">
+                <div class="info-left">
+                    <div class="info-item">
+                        <i class="fas fa-calendar"></i>
+                        <span>{{ workout.date }}</span>
                     </div>
-                    
+                    <div class="info-item">
+                        <i class="fas fa-dumbbell"></i>
+                        <span id="exercisesCount">{{ exercises|length }}</span> упражнений
+                    </div>
+                </div>
+                <div class="info-right">
+                    <a href="#" id="workoutActionBtn" class="workout-action-btn" style="text-decoration: none;">
+                        <span class="btn-icon"><i class="fas fa-play"></i></span>
+                        <span id="workoutActionText">Начать тренировку</span>
+                    </a>
+                    <button class="beautiful-add-btn" onclick="openModal()">
+                        <span class="btn-icon"><i class="fas fa-plus"></i></span>
+                        <span>Добавить</span>
+                    </button>
                 </div>
             </div>
-            {% endfor %}
+
+            <!-- Панель массовых действий (появляется при выделении) -->
+            <div class="action-bar" id="actionBar" style="display: none;">
+                <div class="selection-info">
+                    <div class="selection-count">
+                        Выделено: <span id="selectedCount">0</span>
+                    </div>
+                </div>
+                <div class="action-buttons-group">
+                    <button class="action-group-btn delete-group-btn" onclick="deleteSelected()">
+                        <i class="fas fa-trash"></i> Удалить 
+                    </button>
+                    <button class="action-group-btn cancel-group-btn" onclick="clearSelection()">
+                        <i class="fas fa-times"></i> Отмена
+                    </button>
+                </div>
+            </div>
+
+            <!-- Список упражнений -->
+            {% if exercises %}
+            <div class="exercises-grid" id="exercisesGrid">
+                {% for ex in exercises %}
+                <div class="exercise-card" id="exercise-card-{{ ex.id }}" data-id="{{ ex.id }}">
+                    <div class="selection-checkbox" onclick="event.stopPropagation(); toggleSelectCard({{ ex.id }}, event)">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div class="exercise-image">
+                        {% if ex.image %}
+                            <img src="/{{ ex.image }}" alt="{{ ex.name }}">
+                        {% else %}
+                            <i class="fas fa-dumbbell"></i>
+                        {% endif %}
+                    </div>
+                    <div class="exercise-content">
+                        <div class="exercise-header">
+                            <span class="exercise-name">{{ ex.name }}</span>
+                            <span class="exercise-muscle">{{ ex.muscle_group }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-dumbbell"></i>
+                <h2>В этой тренировке пока нет упражнений</h2>
+                <p>Нажмите "Добавить" чтобы начать</p>
+            </div>
+            {% endif %}
         </div>
-        {% else %}
-        <!-- Пустое состояние -->
-        <div class="empty-state">
-            <i class="fas fa-dumbbell"></i>
-            <h2>В этой тренировке пока нет упражнений</h2>
-          
-        </div>
-        {% endif %}
     </div>
 
     <!-- Модальное окно с упражнениями -->
@@ -924,19 +1100,17 @@
                 </div>
             </div>
             <div class="modal-body">
-                <!-- Поиск -->
                 <input type="text" class="modal-search" id="exerciseSearch" 
                        placeholder="🔍 Поиск упражнений..." onkeyup="filterExercises()">
 
-                <!-- Сетка упражнений -->
                 <div class="modal-exercise-grid" id="exerciseGrid">
-    {% for ex in all_exercises %}
-    <div class="modal-exercise-card" onclick="toggleModalExercise({{ ex.id }}, this)"
-         data-id="{{ ex.id }}"
-         data-name="{{ ex.name }}"
-         data-muscle="{{ ex.muscle_group }}"
-         data-name-lower="{{ ex.name|lower }}"
-         data-muscle-lower="{{ ex.muscle_group|lower }}">
+                    {% for ex in all_exercises %}
+                    <div class="modal-exercise-card" onclick="toggleModalExercise({{ ex.id }}, this)"
+                         data-id="{{ ex.id }}"
+                         data-name="{{ ex.name }}"
+                         data-muscle="{{ ex.muscle_group }}"
+                         data-name-lower="{{ ex.name|lower }}"
+                         data-muscle-lower="{{ ex.muscle_group|lower }}">
                         <div class="checkbox">
                             <i class="fas fa-check"></i>
                         </div>
@@ -953,7 +1127,6 @@
                     {% endfor %}
                 </div>
 
-                <!-- Панель выбранных -->
                 <div class="selected-panel" id="selectedPanel" style="display: none;">
                     <div class="selected-count">
                         Выбрано: <span id="modalSelectedCount">0</span>
@@ -968,279 +1141,241 @@
     </div>
 
     <script>
-    // Функция обновления статуса тренировки
-    function updateWorkoutStatus() {
-        const workoutId = {{ workout.id }};
-        const userId = "{{ session['user_id'] }}";
-        const actionBtn = document.getElementById('workoutActionBtn');
-        const actionText = document.getElementById('workoutActionText');
-        
-        // Проверяем, есть ли активная тренировка для этого пользователя
-        const isActive = localStorage.getItem(`workout_${userId}_${workoutId}_active`) === 'true';
-        const hasData = localStorage.getItem(`workout_${userId}_${workoutId}`) !== null;
-        
-        if (isActive && hasData) {
-            actionBtn.href = `/workout/${workoutId}/continue`;
-            actionText.textContent = 'Продолжить тренировку';
-        } else {
-            actionBtn.href = `/workout/${workoutId}/start`;
-            actionText.textContent = 'Начать тренировку';
+        // Состояние сайдбара
+        const mainContent = document.getElementById('mainContent');
+        const savedState = localStorage.getItem('sidebar_collapsed');
+        if (savedState === 'true') {
+            mainContent.classList.add('expanded');
         }
-    }
 
-    // Добавление выбранных упражнений
-function addSelectedExercises() {
-    if (modalSelectedExercises.length === 0) {
-        alert('Выберите хотя бы одно упражнение');
-        return;
-    }
-    
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/workout/{{ workout.id }}/add_exercises';  // <- ЭТО ВАЖНО!
-    form.style.display = 'none';
-    
-    modalSelectedExercises.forEach(ex => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'exercise_ids[]';
-        input.value = ex.id;
-        form.appendChild(input);
-    });
-    
-    ['sets', 'reps', 'weight'].forEach(field => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = field;
-        input.value = field === 'sets' ? '3' : field === 'reps' ? '10' : '0';
-        form.appendChild(input);
-    });
-    
-    document.body.appendChild(form);
-    form.submit();
-}
-
-    // Обновляем при загрузке
-    document.addEventListener('DOMContentLoaded', function() {
-        updateWorkoutStatus();
-    });
-
-    // Обновляем при возврате на страницу
-    window.addEventListener('pageshow', function(event) {
-        if (event.persisted) {
-            updateWorkoutStatus();
-        }
-    });
-
-    // Состояние выделенных карточек
-    let selectedCards = [];
-    let modalSelectedExercises = [];
-
-    // ========== ФУНКЦИИ ДЛЯ МОДАЛЬНОГО ОКНА ==========
-    
-    // Открыть модальное окно
-    function openModal() {
-        console.log('openModal() вызвана');
-        const modal = document.getElementById('exerciseModal');
-        if (!modal) {
-            console.error('Модальное окно не найдено!');
-            return;
-        }
-        modal.classList.add('active');
-        document.getElementById('exerciseSearch').value = '';
-        filterExercises();
-    }
-
-    // Закрыть модальное окно
-    function closeModal() {
-        const modal = document.getElementById('exerciseModal');
-        modal.classList.remove('active');
-        clearModalSelection();
-    }
-
-    // Выбор упражнения в модалке
-    function toggleModalExercise(id, card) {
-        console.log('Выбрано упражнение с ID:', id);
-        
-        const index = modalSelectedExercises.findIndex(ex => ex.id === id);
-        
-        if (index === -1) {
-            modalSelectedExercises.push({
-                id: id,
-                name: card.getAttribute('data-name'),
-                muscle: card.getAttribute('data-muscle')
-            });
-            card.classList.add('selected');
-        } else {
-            modalSelectedExercises.splice(index, 1);
-            card.classList.remove('selected');
-        }
-        
-        updateModalPanel();
-    }
-
-    // Обновление панели выбранных в модалке
-    function updateModalPanel() {
-        const panel = document.getElementById('selectedPanel');
-        const countSpan = document.getElementById('modalSelectedCount');
-        const listDiv = document.getElementById('selectedExercisesList');
-        
-        if (modalSelectedExercises.length > 0) {
-            panel.style.display = 'flex';
-            countSpan.textContent = modalSelectedExercises.length;
+        // Функция обновления статуса тренировки
+        function updateWorkoutStatus() {
+            const workoutId = {{ workout.id }};
+            const userId = "{{ session['user_id'] }}";
+            const actionBtn = document.getElementById('workoutActionBtn');
+            const actionText = document.getElementById('workoutActionText');
             
-            listDiv.innerHTML = '';
-            modalSelectedExercises.forEach(ex => {
-                const tag = document.createElement('span');
-                tag.className = 'selected-tag';
-                tag.innerHTML = `${ex.name} <i class="fas fa-times" onclick="removeModalExercise(${ex.id})"></i>`;
-                listDiv.appendChild(tag);
-            });
-        } else {
-            panel.style.display = 'none';
+            const isActive = localStorage.getItem(`workout_${userId}_${workoutId}_active`) === 'true';
+            const hasData = localStorage.getItem(`workout_${userId}_${workoutId}`) !== null;
+            
+            if (isActive && hasData) {
+                actionBtn.href = `/workout/${workoutId}/continue`;
+                actionText.textContent = 'Продолжить тренировку';
+            } else {
+                actionBtn.href = `/workout/${workoutId}/start`;
+                actionText.textContent = 'Начать тренировку';
+            }
         }
-    }
 
-    // Удаление упражнения из выбранных в модалке
-    function removeModalExercise(id) {
-        const card = document.querySelector(`.modal-exercise-card[data-id="${id}"]`);
-        if (card) card.classList.remove('selected');
-        modalSelectedExercises = modalSelectedExercises.filter(ex => ex.id !== id);
-        updateModalPanel();
-    }
+        // Состояние выделенных карточек
+        let selectedCards = [];
+        let modalSelectedExercises = [];
 
-    // Очистка выбора в модалке
-    function clearModalSelection() {
-        document.querySelectorAll('.modal-exercise-card.selected').forEach(card => {
-            card.classList.remove('selected');
-        });
-        modalSelectedExercises = [];
-        updateModalPanel();
-    }
-
-    // Фильтрация упражнений в модалке
-    function filterExercises() {
-        const searchText = document.getElementById('exerciseSearch').value.toLowerCase();
-        const cards = document.querySelectorAll('.modal-exercise-card');
+        // ========== ФУНКЦИИ ДЛЯ МОДАЛЬНОГО ОКНА ==========
         
-        cards.forEach(card => {
-            const name = card.getAttribute('data-name-lower');
-            const muscle = card.getAttribute('data-muscle-lower');
-            card.style.display = (name.includes(searchText) || muscle.includes(searchText)) ? 'block' : 'none';
-        });
-    }
-
-    // Добавление выбранных упражнений
-function addSelectedExercises() {
-    if (modalSelectedExercises.length === 0) {
-        alert('Выберите хотя бы одно упражнение');
-        return;
-    }
-    
-    console.log('=== ДОБАВЛЕНИЕ УПРАЖНЕНИЙ В ТРЕНИРОВКУ ===');
-    console.log('Выбранные упражнения из модалки:', modalSelectedExercises);
-    
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '{{ url_for("add_workout_exercises", workout_id=workout.id) }}';
-    form.style.display = 'none';
-    
-    modalSelectedExercises.forEach(ex => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'exercise_ids[]';
-        input.value = ex.id;
-        console.log('Отправляем ID:', ex.id, 'название:', ex.name);
-        form.appendChild(input);
-    });
-    
-    ['sets', 'reps', 'weight'].forEach(field => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = field;
-        input.value = field === 'sets' ? '3' : field === 'reps' ? '10' : '0';
-        form.appendChild(input);
-    });
-    
-    document.body.appendChild(form);
-    console.log('Форма создана, отправляем...');
-    form.submit();
-}
-
-    // ========== ФУНКЦИИ ДЛЯ ВЫДЕЛЕНИЯ КАРТОЧЕК ==========
-
-    // Выделение карточки
-    function toggleSelectCard(id, event) {
-        event.stopPropagation();
-        const card = document.getElementById(`exercise-card-${id}`);
-        const index = selectedCards.indexOf(id);
-        
-        if (index === -1) {
-            selectedCards.push(id);
-            card.classList.add('selected');
-        } else {
-            selectedCards.splice(index, 1);
-            card.classList.remove('selected');
+        function openModal() {
+            console.log('openModal() вызвана');
+            const modal = document.getElementById('exerciseModal');
+            if (!modal) {
+                console.error('Модальное окно не найдено!');
+                return;
+            }
+            modal.classList.add('active');
+            document.getElementById('exerciseSearch').value = '';
+            filterExercises();
         }
-        
-        updateActionBar();
-    }
 
-    // Обновление панели действий
-    function updateActionBar() {
-        const actionBar = document.getElementById('actionBar');
-        const selectedCount = document.getElementById('selectedCount');
-        
-        if (selectedCards.length > 0) {
-            actionBar.style.display = 'flex';
-            selectedCount.textContent = selectedCards.length;
-        } else {
-            actionBar.style.display = 'none';
+        function closeModal() {
+            const modal = document.getElementById('exerciseModal');
+            modal.classList.remove('active');
+            clearModalSelection();
         }
-    }
 
-    // Очистка выделения
-    function clearSelection() {
-        selectedCards.forEach(id => {
-            const card = document.getElementById(`exercise-card-${id}`);
+        function toggleModalExercise(id, card) {
+            console.log('Выбрано упражнение с ID:', id);
+            
+            const index = modalSelectedExercises.findIndex(ex => ex.id === id);
+            
+            if (index === -1) {
+                modalSelectedExercises.push({
+                    id: id,
+                    name: card.getAttribute('data-name'),
+                    muscle: card.getAttribute('data-muscle')
+                });
+                card.classList.add('selected');
+            } else {
+                modalSelectedExercises.splice(index, 1);
+                card.classList.remove('selected');
+            }
+            
+            updateModalPanel();
+        }
+
+        function updateModalPanel() {
+            const panel = document.getElementById('selectedPanel');
+            const countSpan = document.getElementById('modalSelectedCount');
+            const listDiv = document.getElementById('selectedExercisesList');
+            
+            if (modalSelectedExercises.length > 0) {
+                panel.style.display = 'flex';
+                countSpan.textContent = modalSelectedExercises.length;
+                
+                listDiv.innerHTML = '';
+                modalSelectedExercises.forEach(ex => {
+                    const tag = document.createElement('span');
+                    tag.className = 'selected-tag';
+                    tag.innerHTML = `${ex.name} <i class="fas fa-times" onclick="removeModalExercise(${ex.id})"></i>`;
+                    listDiv.appendChild(tag);
+                });
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        function removeModalExercise(id) {
+            const card = document.querySelector(`.modal-exercise-card[data-id="${id}"]`);
             if (card) card.classList.remove('selected');
-        });
-        selectedCards = [];
-        updateActionBar();
-    }
+            modalSelectedExercises = modalSelectedExercises.filter(ex => ex.id !== id);
+            updateModalPanel();
+        }
 
-    // Удаление выбранных упражнений
-    function deleteSelected() {
-        if (selectedCards.length === 0) return;
-        
-        if (confirm(`Удалить ${selectedCards.length} упражнений?`)) {
+        function clearModalSelection() {
+            document.querySelectorAll('.modal-exercise-card.selected').forEach(card => {
+                card.classList.remove('selected');
+            });
+            modalSelectedExercises = [];
+            updateModalPanel();
+        }
+
+        function filterExercises() {
+            const searchText = document.getElementById('exerciseSearch').value.toLowerCase();
+            const cards = document.querySelectorAll('.modal-exercise-card');
+            
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name-lower');
+                const muscle = card.getAttribute('data-muscle-lower');
+                card.style.display = (name.includes(searchText) || muscle.includes(searchText)) ? 'block' : 'none';
+            });
+        }
+
+        function addSelectedExercises() {
+            if (modalSelectedExercises.length === 0) {
+                alert('Выберите хотя бы одно упражнение');
+                return;
+            }
+            
+            console.log('=== ДОБАВЛЕНИЕ УПРАЖНЕНИЙ В ТРЕНИРОВКУ ===');
+            console.log('Выбранные упражнения из модалки:', modalSelectedExercises);
+            
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = '/workout/{{ workout.id }}/delete_multiple';
+            form.action = '{{ url_for("add_workout_exercises", workout_id=workout.id) }}';
             form.style.display = 'none';
             
-            selectedCards.forEach(id => {
+            modalSelectedExercises.forEach(ex => {
                 const input = document.createElement('input');
                 input.type = 'hidden';
                 input.name = 'exercise_ids[]';
-                input.value = id;
+                input.value = ex.id;
+                console.log('Отправляем ID:', ex.id, 'название:', ex.name);
+                form.appendChild(input);
+            });
+            
+            ['sets', 'reps', 'weight'].forEach(field => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = field;
+                input.value = field === 'sets' ? '3' : field === 'reps' ? '10' : '0';
                 form.appendChild(input);
             });
             
             document.body.appendChild(form);
+            console.log('Форма создана, отправляем...');
             form.submit();
         }
-    }
 
-    // Закрытие модалки по клику вне
-    window.onclick = function(event) {
-        const modal = document.getElementById('exerciseModal');
-        if (event.target == modal) {
-            closeModal();
+        // ========== ФУНКЦИИ ДЛЯ ВЫДЕЛЕНИЯ КАРТОЧЕК ==========
+
+        function toggleSelectCard(id, event) {
+            event.stopPropagation();
+            const card = document.getElementById(`exercise-card-${id}`);
+            const index = selectedCards.indexOf(id);
+            
+            if (index === -1) {
+                selectedCards.push(id);
+                card.classList.add('selected');
+            } else {
+                selectedCards.splice(index, 1);
+                card.classList.remove('selected');
+            }
+            
+            updateActionBar();
         }
-    }
-</script>
 
-     {% include 'active_workout_banner.html' %}
+        function updateActionBar() {
+            const actionBar = document.getElementById('actionBar');
+            const selectedCount = document.getElementById('selectedCount');
+            
+            if (selectedCards.length > 0) {
+                actionBar.style.display = 'flex';
+                selectedCount.textContent = selectedCards.length;
+            } else {
+                actionBar.style.display = 'none';
+            }
+        }
+
+        function clearSelection() {
+            selectedCards.forEach(id => {
+                const card = document.getElementById(`exercise-card-${id}`);
+                if (card) card.classList.remove('selected');
+            });
+            selectedCards = [];
+            updateActionBar();
+        }
+
+        function deleteSelected() {
+            if (selectedCards.length === 0) return;
+            
+            if (confirm(`Удалить ${selectedCards.length} упражнений?`)) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/workout/{{ workout.id }}/delete_multiple';
+                form.style.display = 'none';
+                
+                selectedCards.forEach(id => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'exercise_ids[]';
+                    input.value = id;
+                    form.appendChild(input);
+                });
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Закрытие модалки по клику вне
+        window.onclick = function(event) {
+            const modal = document.getElementById('exerciseModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // Обновляем при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            updateWorkoutStatus();
+        });
+
+        // Обновляем при возврате на страницу
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                updateWorkoutStatus();
+            }
+        });
+    </script>
+
+    {% include 'active_workout_banner.html' %}
 </body>
 </html>
