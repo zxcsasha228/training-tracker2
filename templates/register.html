@@ -34,7 +34,6 @@
             overflow: hidden;
         }
 
-        /* Анимированный фон с кругами */
         body::before {
             content: '';
             position: absolute;
@@ -44,12 +43,8 @@
             animation: rotate 20s linear infinite;
         }
 
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
+       
 
-        /* Карточка регистрации */
         .register-card {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -60,21 +55,11 @@
             max-width: 450px;
             position: relative;
             z-index: 1;
-            animation: slideUp 0.6s ease-out;
+           
         }
 
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+       
 
-        /* Заголовок */
         .header {
             text-align: center;
             margin-bottom: 30px;
@@ -104,21 +89,11 @@
             color: var(--secondary);
         }
 
-        /* Форма */
         .form-group {
             margin-bottom: 20px;
             position: relative;
         }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--dark);
-            font-weight: 500;
-            font-size: 0.95em;
-        }
-
-        /* Поле ввода с кнопкой показа пароля */
         .input-wrapper {
             position: relative;
             display: flex;
@@ -127,9 +102,9 @@
 
         .input-wrapper input {
             width: 100%;
-            padding: 14px 45px 14px 45px;
+            padding: 15px 18px 15px 45px;
             border: 2px solid #e5e7eb;
-            border-radius: 12px;
+            border-radius: 16px;
             font-size: 1em;
             transition: all 0.3s;
             background: white;
@@ -138,15 +113,20 @@
         .input-wrapper input:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
             transform: translateY(-2px);
         }
 
-        .input-wrapper input:hover {
-            border-color: var(--primary-dark);
+        .input-wrapper input.valid {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.05);
         }
 
-        /* Иконки */
+        .input-wrapper input.invalid {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
         .input-icon {
             position: absolute;
             left: 16px;
@@ -177,48 +157,61 @@
             color: var(--primary);
         }
 
-        .toggle-password.active {
-            color: var(--primary);
-        }
-
-        /* Иконка слева активна */
         .input-icon.active {
             color: var(--primary);
         }
 
-        /* Кнопка копирования */
-        .copy-password {
-            position: absolute;
-            right: 45px;
-            top: 50%;
-            transform: translateY(-50%);
+        .char-counter {
+            text-align: right;
+            font-size: 0.75em;
             color: var(--gray);
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 1em;
-            background: none;
-            border: none;
-            padding: 5px;
-            z-index: 1;
-        }
-
-        .copy-password:hover {
-            color: var(--primary);
-        }
-
-        .copy-password.copied {
-            color: var(--success);
-        }
-
-        /* Сообщение о совпадении паролей */
-        .password-match {
-            font-size: 0.85em;
             margin-top: 5px;
-            margin-bottom: 15px;
+        }
+
+        .password-strength {
+            margin-top: 8px;
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0;
+            transition: all 0.3s;
+        }
+
+        .password-strength-bar.weak {
+            width: 33.33%;
+            background: var(--danger);
+        }
+
+        .password-strength-bar.medium {
+            width: 66.66%;
+            background: var(--warning);
+        }
+
+        .password-strength-bar.strong {
+            width: 100%;
+            background: var(--success);
+        }
+
+        .password-hint {
+            font-size: 0.8em;
+            color: var(--gray);
+            margin-top: 5px;
             display: flex;
             align-items: center;
             gap: 5px;
-            padding-left: 5px;
+        }
+
+        .password-match {
+            font-size: 0.85em;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .match-success {
@@ -229,14 +222,13 @@
             color: var(--danger);
         }
 
-        /* Кнопка регистрации */
         .register-btn {
             width: 100%;
             padding: 16px;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 16px;
             font-size: 1.1em;
             font-weight: 600;
             cursor: pointer;
@@ -273,15 +265,18 @@
             transform: translateY(0);
         }
 
-        /* Сообщение об ошибке */
+        .register-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         .error-message {
             background: #fee2e2;
             color: var(--danger);
-            padding: 12px 16px;
-            border-radius: 12px;
+            padding: 15px 18px;
+            border-radius: 16px;
             margin-bottom: 25px;
-            font-size: 0.95em;
-            border-left: 4px solid var(--danger);
+            border-left: 5px solid var(--danger);
             animation: shake 0.5s;
         }
 
@@ -291,7 +286,34 @@
             20%, 40%, 60%, 80% { transform: translateX(5px); }
         }
 
-        /* Анимация загрузки */
+        .toast-notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 9999;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .toast-notification.error {
+            background: var(--danger);
+        }
+
+        .toast-notification.success {
+            background: var(--success);
+        }
+
+       
+
         .loading {
             display: none;
             position: fixed;
@@ -322,29 +344,13 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        /* Ссылка на вход */
-        .login-link {
-            text-align: center;
-            margin-top: 20px;
-            color: #666;
-        }
-        .login-link a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .login-link a:hover {
-            text-decoration: underline;
-        }
     </style>
-    <!-- Font Awesome для иконок -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="register-card">
         <div class="header">
-            <h1>📝 Регистрация</h1>
+            <h1> Регистрация</h1>
             <p>Уже есть аккаунт? <a href="{{ url_for('login') }}">Войти</a></p>
         </div>
         
@@ -357,19 +363,23 @@
         <form method="post" id="registerForm">
             <!-- Логин -->
             <div class="form-group">
-                <div style="position: relative;">
+                <div class="input-wrapper">
                     <i class="fas fa-user input-icon" id="userIcon"></i>
-                    <input type="text" name="username" id="username" placeholder="Логин" required autofocus
-                           style="width: 100%; padding: 14px 16px 14px 45px; border: 2px solid #e5e7eb; border-radius: 12px;">
+                    <input type="text" name="username" id="username" placeholder="Логин" required autofocus>
+                </div>
+                <div class="char-counter" id="usernameCounter">
+                    <span id="usernameCount">0</span>/20
                 </div>
             </div>
 
             <!-- ФИО -->
             <div class="form-group">
-                <div style="position: relative;">
+                <div class="input-wrapper">
                     <i class="fas fa-id-card input-icon" id="nameIcon"></i>
-                    <input type="text" name="full_name" id="full_name" placeholder="ФИО полностью" required
-                           style="width: 100%; padding: 14px 16px 14px 45px; border: 2px solid #e5e7eb; border-radius: 12px;">
+                    <input type="text" name="full_name" id="full_name" placeholder="ФИО полностью" required>
+                </div>
+                <div class="char-counter" id="fullnameCounter">
+                    <span id="fullnameCount">0</span>/50
                 </div>
             </div>
             
@@ -378,12 +388,16 @@
                 <div class="input-wrapper">
                     <i class="fas fa-lock input-icon" id="passwordIcon"></i>
                     <input type="password" name="password" id="password" placeholder="Пароль" required>
-                    <button type="button" class="copy-password" id="copyPasswordBtn" onclick="copyPassword()" title="Копировать пароль">
-                        <i class="far fa-copy"></i>
-                    </button>
-                    <button type="button" class="toggle-password" id="togglePassword" onclick="togglePassword('password', this)" title="Показать/скрыть пароль">
+                    <button type="button" class="toggle-password" onclick="togglePassword('password', this)" title="Показать/скрыть пароль">
                         <i class="far fa-eye"></i>
                     </button>
+                </div>
+                <div class="password-strength">
+                    <div class="password-strength-bar" id="passwordStrength"></div>
+                </div>
+                <div class="password-hint" id="passwordHint">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Введите пароль</span>
                 </div>
             </div>
             
@@ -396,12 +410,10 @@
                         <i class="far fa-eye"></i>
                     </button>
                 </div>
-            </div>
-            
-            <!-- Индикатор совпадения паролей -->
-            <div class="password-match" id="passwordMatch">
-                <i class="fas fa-info-circle"></i>
-                <span>Повторите пароль</span>
+                <div class="password-match" id="passwordMatch">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Повторите пароль</span>
+                </div>
             </div>
             
             <button type="submit" class="register-btn" id="submitBtn">
@@ -415,7 +427,225 @@
     </div>
 
     <script>
-        // Функция показа/скрытия пароля
+        const usernameInput = document.getElementById('username');
+        const fullnameInput = document.getElementById('full_name');
+        const passwordInput = document.getElementById('password');
+        const confirmInput = document.getElementById('confirm_password');
+        const registerForm = document.getElementById('registerForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        const usernameCount = document.getElementById('usernameCount');
+        const fullnameCount = document.getElementById('fullnameCount');
+
+        function showToast(message, type = 'error') {
+            const oldToast = document.querySelector('.toast-notification');
+            if (oldToast) oldToast.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type}`;
+            let icon = type === 'error' ? '<i class="fas fa-exclamation-circle"></i>' : 
+                       '<i class="fas fa-check-circle"></i>';
+            toast.innerHTML = `${icon} ${message}`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function updateCharCounter(input, counterSpan, maxLength) {
+            const length = input.value.length;
+            counterSpan.textContent = length;
+            
+            if (length >= maxLength - 2 && length < maxLength) {
+                counterSpan.parentElement.classList.add('warning');
+                counterSpan.parentElement.classList.remove('danger');
+            } else if (length >= maxLength) {
+                counterSpan.parentElement.classList.add('danger');
+                counterSpan.parentElement.classList.remove('warning');
+            } else {
+                counterSpan.parentElement.classList.remove('warning', 'danger');
+            }
+        }
+
+        function validateUsername() {
+            const value = usernameInput.value.trim();
+            const maxLength = 20;
+            
+            if (value.length === 0) {
+                usernameInput.classList.remove('valid', 'invalid');
+                document.getElementById('userIcon').classList.remove('active');
+                return false;
+            }
+            
+            if (value.length < 3) {
+                usernameInput.classList.add('invalid');
+                usernameInput.classList.remove('valid');
+                document.getElementById('userIcon').classList.add('active');
+                return false;
+            }
+            
+            if (value.length > maxLength) {
+                usernameInput.classList.add('invalid');
+                usernameInput.classList.remove('valid');
+                return false;
+            }
+            
+            usernameInput.classList.add('valid');
+            usernameInput.classList.remove('invalid');
+            document.getElementById('userIcon').classList.add('active');
+            return true;
+        }
+
+        function validateFullname() {
+            const value = fullnameInput.value.trim();
+            const maxLength = 50;
+            
+            if (value.length === 0) {
+                fullnameInput.classList.remove('valid', 'invalid');
+                document.getElementById('nameIcon').classList.remove('active');
+                return false;
+            }
+            
+            if (value.length < 2) {
+                fullnameInput.classList.add('invalid');
+                fullnameInput.classList.remove('valid');
+                document.getElementById('nameIcon').classList.add('active');
+                return false;
+            }
+            
+            if (value.length > maxLength) {
+                fullnameInput.classList.add('invalid');
+                fullnameInput.classList.remove('valid');
+                return false;
+            }
+            
+            fullnameInput.classList.add('valid');
+            fullnameInput.classList.remove('invalid');
+            document.getElementById('nameIcon').classList.add('active');
+            return true;
+        }
+
+        function checkPasswordStrength() {
+            const password = passwordInput.value;
+            const strengthBar = document.getElementById('passwordStrength');
+            const hint = document.getElementById('passwordHint');
+            
+            let strength = 0;
+            if (password.length >= 4) strength++;
+            if (password.match(/[a-z]/)) strength++;
+            if (password.match(/[A-Z]/)) strength++;
+            if (password.match(/[0-9]/)) strength++;
+            
+            strengthBar.className = 'password-strength-bar';
+            if (password.length === 0) {
+                strengthBar.style.width = '0';
+                hint.innerHTML = '<i class="fas fa-info-circle"></i> <span>Введите пароль</span>';
+            } else if (strength <= 1) {
+                strengthBar.classList.add('weak');
+                hint.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i> <span style="color: var(--danger);">Слабый пароль</span>';
+            } else if (strength <= 3) {
+                strengthBar.classList.add('medium');
+                hint.innerHTML = '<i class="fas fa-check-circle" style="color: var(--warning);"></i> <span style="color: var(--warning);">Средний пароль</span>';
+            } else {
+                strengthBar.classList.add('strong');
+                hint.innerHTML = '<i class="fas fa-check-circle" style="color: var(--success);"></i> <span style="color: var(--success);">Надёжный пароль</span>';
+            }
+        }
+
+        function checkPasswordMatch() {
+            const password = passwordInput.value;
+            const confirm = confirmInput.value;
+            const matchDiv = document.getElementById('passwordMatch');
+            
+            if (confirm.length === 0) {
+                matchDiv.innerHTML = '<i class="fas fa-info-circle"></i> <span>Повторите пароль</span>';
+                confirmInput.classList.remove('valid', 'invalid');
+                document.getElementById('confirmIcon').classList.remove('active');
+            } else if (password === confirm) {
+                matchDiv.innerHTML = '<i class="fas fa-check-circle match-success"></i> <span class="match-success">Пароли совпадают ✓</span>';
+                confirmInput.classList.add('valid');
+                confirmInput.classList.remove('invalid');
+                document.getElementById('confirmIcon').classList.add('active');
+            } else {
+                matchDiv.innerHTML = '<i class="fas fa-exclamation-circle match-error"></i> <span class="match-error">Пароли не совпадают ✗</span>';
+                confirmInput.classList.add('invalid');
+                confirmInput.classList.remove('valid');
+                document.getElementById('confirmIcon').classList.add('active');
+            }
+        }
+
+        function validatePassword() {
+            const value = passwordInput.value;
+            
+            if (value.length === 0) {
+                passwordInput.classList.remove('valid', 'invalid');
+                document.getElementById('passwordIcon').classList.remove('active');
+                return false;
+            }
+            
+            if (value.length < 4) {
+                passwordInput.classList.add('invalid');
+                passwordInput.classList.remove('valid');
+                document.getElementById('passwordIcon').classList.add('active');
+                return false;
+            }
+            
+            passwordInput.classList.add('valid');
+            passwordInput.classList.remove('invalid');
+            document.getElementById('passwordIcon').classList.add('active');
+            return true;
+        }
+
+        function updateButtonState() {
+            const isUsernameValid = validateUsername();
+            const isFullnameValid = validateFullname();
+            const isPasswordValid = validatePassword();
+            const isPasswordMatch = passwordInput.value === confirmInput.value && confirmInput.value.length > 0;
+            
+            submitBtn.disabled = !(isUsernameValid && isFullnameValid && isPasswordValid && isPasswordMatch);
+        }
+
+        // События для полей
+        usernameInput.addEventListener('input', function() {
+            const maxLength = 20;
+            if (this.value.length > maxLength) {
+                this.value = this.value.slice(0, maxLength);
+            }
+            updateCharCounter(this, usernameCount, maxLength);
+            validateUsername();
+            updateButtonState();
+        });
+
+        fullnameInput.addEventListener('input', function() {
+            const maxLength = 50;
+            if (this.value.length > maxLength) {
+                this.value = this.value.slice(0, maxLength);
+            }
+            updateCharCounter(this, fullnameCount, maxLength);
+            validateFullname();
+            updateButtonState();
+        });
+
+        passwordInput.addEventListener('input', function() {
+            checkPasswordStrength();
+            validatePassword();
+            checkPasswordMatch();
+            updateButtonState();
+        });
+
+        confirmInput.addEventListener('input', function() {
+            checkPasswordMatch();
+            updateButtonState();
+        });
+
+        // Инициализация счетчиков
+        updateCharCounter(usernameInput, usernameCount, 20);
+        updateCharCounter(fullnameInput, fullnameCount, 50);
+        checkPasswordStrength();
+
         function togglePassword(inputId, button) {
             const input = document.getElementById(inputId);
             const icon = button.querySelector('i');
@@ -424,145 +654,75 @@
                 input.type = 'text';
                 icon.classList.remove('fa-eye');
                 icon.classList.add('fa-eye-slash');
-                button.classList.add('active');
             } else {
                 input.type = 'password';
                 icon.classList.remove('fa-eye-slash');
                 icon.classList.add('fa-eye');
-                button.classList.remove('active');
             }
         }
-
-        // Функция копирования пароля
-        function copyPassword() {
-            const passwordInput = document.getElementById('password');
-            const copyBtn = document.getElementById('copyPasswordBtn');
-            const icon = copyBtn.querySelector('i');
-            
-            navigator.clipboard.writeText(passwordInput.value).then(function() {
-                icon.classList.remove('fa-copy');
-                icon.classList.add('fa-check');
-                copyBtn.classList.add('copied');
-                
-                showNotification('Пароль скопирован!');
-                
-                setTimeout(function() {
-                    icon.classList.remove('fa-check');
-                    icon.classList.add('fa-copy');
-                    copyBtn.classList.remove('copied');
-                }, 2000);
-            }).catch(function(err) {
-                showNotification('Ошибка при копировании', true);
-            });
-        }
-
-        // Показ уведомления
-        function showNotification(message, isError = false) {
-            const notification = document.createElement('div');
-            notification.style.position = 'fixed';
-            notification.style.bottom = '20px';
-            notification.style.left = '50%';
-            notification.style.transform = 'translateX(-50%)';
-            notification.style.background = isError ? 'var(--danger)' : 'var(--success)';
-            notification.style.color = 'white';
-            notification.style.padding = '10px 20px';
-            notification.style.borderRadius = '50px';
-            notification.style.zIndex = '10000';
-            notification.style.boxShadow = '0 5px 20px rgba(0,0,0,0.2)';
-            notification.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(function() {
-                notification.remove();
-            }, 2000);
-        }
-
-        // Проверка совпадения паролей
-        function checkPasswordMatch() {
-            const password = document.getElementById('password').value;
-            const confirm = document.getElementById('confirm_password').value;
-            const matchDiv = document.getElementById('passwordMatch');
-            
-            if (confirm.length === 0) {
-                matchDiv.innerHTML = '<i class="fas fa-info-circle"></i> <span>Повторите пароль</span>';
-            } else if (password === confirm) {
-                matchDiv.innerHTML = '<i class="fas fa-check-circle match-success"></i> <span class="match-success">Пароли совпадают ✓</span>';
-            } else {
-                matchDiv.innerHTML = '<i class="fas fa-exclamation-circle match-error"></i> <span class="match-error">Пароли не совпадают ✗</span>';
-            }
-        }
-
-        // Слушаем изменения в полях пароля
-        document.getElementById('password').addEventListener('input', function() {
-            checkPasswordMatch();
-            document.getElementById('passwordIcon').style.color = this.value ? 'var(--primary)' : 'var(--gray)';
-        });
-
-        document.getElementById('confirm_password').addEventListener('input', function() {
-            checkPasswordMatch();
-            document.getElementById('confirmIcon').style.color = this.value ? 'var(--primary)' : 'var(--gray)';
-        });
-
-        // Активация иконок
-        document.getElementById('username').addEventListener('input', function() {
-            document.getElementById('userIcon').style.color = this.value ? 'var(--primary)' : 'var(--gray)';
-        });
-
-        document.getElementById('full_name').addEventListener('input', function() {
-            document.getElementById('nameIcon').style.color = this.value ? 'var(--primary)' : 'var(--gray)';
-        });
 
         // Валидация перед отправкой
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            const password = document.getElementById('password').value;
-            const confirm = document.getElementById('confirm_password').value;
-            const username = document.getElementById('username').value;
-            const full_name = document.getElementById('full_name').value;
+        registerForm.addEventListener('submit', function(e) {
+            const password = passwordInput.value;
+            const confirm = confirmInput.value;
+            const username = usernameInput.value.trim();
+            const fullName = fullnameInput.value.trim();
             
-            if (!username || !full_name || !password || !confirm) {
+            if (!username) {
                 e.preventDefault();
-                showNotification('Заполните все поля!', true);
+                showToast('Введите логин', 'error');
+                return false;
+            }
+            
+            if (username.length < 3) {
+                e.preventDefault();
+                showToast('Логин должен быть не менее 3 символов', 'error');
+                return false;
+            }
+            
+            if (!fullName) {
+                e.preventDefault();
+                showToast('Введите ФИО', 'error');
+                return false;
+            }
+            
+            if (fullName.length < 2) {
+                e.preventDefault();
+                showToast('ФИО должно быть не менее 2 символов', 'error');
+                return false;
+            }
+            
+            if (!password) {
+                e.preventDefault();
+                showToast('Введите пароль', 'error');
+                return false;
+            }
+            
+            if (password.length < 4) {
+                e.preventDefault();
+                showToast('Пароль должен быть не менее 4 символов', 'error');
                 return false;
             }
             
             if (password !== confirm) {
                 e.preventDefault();
-                showNotification('Пароли не совпадают!', true);
+                showToast('Пароли не совпадают', 'error');
                 return false;
             }
-        });
-
-        // Показ загрузки при отправке формы
-        document.getElementById('registerForm').addEventListener('submit', function() {
+            
             document.getElementById('loading').classList.add('active');
         });
 
-        // Скрываем загрузку если страница загрузилась
-        window.addEventListener('load', function() {
-            document.getElementById('loading').classList.remove('active');
-        });
-
         // Подсказка о двойном клике для вставки
-        const confirmField = document.getElementById('confirm_password');
-        const hint = document.createElement('small');
-        hint.style.display = 'block';
-        hint.style.fontSize = '0.7em';
-        hint.style.color = 'var(--gray)';
-        hint.style.marginTop = '2px';
-        hint.style.marginLeft = '5px';
-        hint.innerHTML = '👆 Двойной клик для вставки скопированного пароля';
-        confirmField.parentElement.parentElement.appendChild(hint);
-
-        // Вставка пароля по двойному клику
-        confirmField.addEventListener('dblclick', function(e) {
+        confirmInput.addEventListener('dblclick', function(e) {
             e.preventDefault();
             navigator.clipboard.readText().then(function(text) {
-                confirmField.value = text;
+                confirmInput.value = text;
                 checkPasswordMatch();
-                showNotification('Пароль вставлен!');
+                updateButtonState();
+                showToast('Пароль вставлен', 'success');
             }).catch(function(err) {
-                showNotification('Не удалось вставить', true);
+                showToast('Не удалось вставить', 'error');
             });
         });
     </script>
