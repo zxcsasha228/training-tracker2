@@ -33,15 +33,7 @@
             <span>Упражнения</span>
         </a>
 
-        <!-- 👇 ЭТО 10 ЭТАП - проверка включена ли пасхалка -->
-        {% if easter_egg_enabled %}
-        <a href="{{ url_for('easter_egg') }}" class="menu-item {% if request.endpoint == 'easter_egg' %}active{% endif %}">
-            <i class="fas fa-egg"></i>
-            <span>Пасхалка</span>
-        </a>
-        {% endif %}
-        <!-- 👆 КОНЕЦ 10 ЭТАПА -->
-
+        
         <a href="{{ url_for('about') }}" class="menu-item {% if request.endpoint == 'about' %}active{% endif %}">
             <i class="fas fa-info-circle"></i>
             <span>О нас</span>

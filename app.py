@@ -67,6 +67,20 @@ def serve_upload(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
 
+# ========== ФУНКЦИЯ ВАЛИДАЦИИ ТРЕНИРОВКИ ==========
+
+def validate_workout_data(data):
+    """Проверка данных тренировки перед сохранением"""
+    errors = []
+    
+    if not data.get('name'):
+        errors.append('Название тренировки обязательно')
+    elif len(data['name']) > 100:
+        errors.append('Название тренировки не должно превышать 100 символов')
+    
+    if not data.get('date'):
+        errors.append('Дата тренировки обязательна')
+    
 
 
 
@@ -84,9 +98,14 @@ def serve_upload(filename):
 
 
 
-# ========== ОСНОВНЫЕ СТРАНИЦЫ ==========
 
 
+
+
+
+
+
+#region ========== ОСНОВНЫЕ СТРАНИЦЫ ==========
 
 @app.route('/profile/<int:user_id>')
 def profile_view(user_id):
@@ -220,8 +239,8 @@ def profile():
                          user=user, 
                          stats=stats,
                          is_admin=session.get('is_admin', 0))
-
-# ========== ТРЕНИРОВКИ ==========
+#endregion
+#region========== ТРЕНИРОВКИ ==========
 
 @app.route('/workout/create', methods=['GET', 'POST'])
 def create_workout():
@@ -363,7 +382,8 @@ def check_workout_exists(workout_id):
     
     workout = database.get_workout_session(workout_id, session['user_id'])
     return jsonify({'exists': workout is not None})
-# ========== УПРАЖНЕНИЯ ==========
+#endregion
+#region ========== УПРАЖНЕНИЯ ==========
 
 @app.route('/exercises')
 def exercises_library():
@@ -462,8 +482,8 @@ def delete_exercise(exercise_id):
     
     database.delete_exercise(exercise_id)
     return redirect(url_for('exercises_library'))
-
-# ========== АДМИН-ПАНЕЛЬ ==========
+#endregion
+#region ========== АДМИН-ПАНЕЛЬ ==========
 
 @app.route('/admin')
 def admin_panel():
@@ -626,8 +646,8 @@ def easter_egg_admin():
     return render_template('easter_egg_admin.html', 
                          media=media,
                          is_admin=session.get('is_admin', 0))
-
-# ========== ПИТАНИЕ ==========
+#endregion
+#region ========== ПИТАНИЕ ==========
 
 @app.route('/nutrition')
 def nutrition():
@@ -689,8 +709,8 @@ def delete_weight(entry_id):
         print(f"Ошибка при удалении: {e}")
     
     return redirect(url_for('nutrition'))
-
-# ========== API ДЛЯ ТАБЛИЦ ==========
+#endregion
+#region========== API ДЛЯ ТАБЛИЦ ==========
 
 @app.route('/api/table_data/<table_name>')
 def get_table_data(table_name):
@@ -901,8 +921,8 @@ def update_row(table_name, row_id):
     except Exception as e:
         print(f"Ошибка при обновлении строки: {e}")
         return jsonify({'success': False, 'error': str(e)})
-
-# ========== API ДЛЯ УПРАВЛЕНИЯ УПРАЖНЕНИЯМИ ТРЕНИРОВКИ ==========
+#endregion
+#region========== API ДЛЯ УПРАВЛЕНИЯ УПРАЖНЕНИЯМИ ТРЕНИРОВКИ ==========
 
 @app.route('/api/workout_exercises/<int:workout_id>')
 def get_workout_exercises_api(workout_id):
@@ -1001,8 +1021,8 @@ def delete_multiple_exercises(workout_id):
         database.delete_workout_exercise(exercise_id)
     
     return redirect(url_for('view_workout', workout_id=workout_id))
-
-# ========== API ДЛЯ БЖУ ==========
+#endregion
+#region========== API ДЛЯ БЖУ ==========
 
 @app.route('/api/get_user_bju_settings')
 def get_user_bju_settings():
@@ -1103,8 +1123,8 @@ def check_bju_updates():
                 return jsonify({'changed': True})
     
     return jsonify({'changed': False})
-
-# ========== API ДЛЯ СТАТИСТИКИ ==========
+#endregion
+#region ========== API ДЛЯ СТАТИСТИКИ ==========
 
 @app.route('/api/save_completed_workout', methods=['POST'])
 def save_completed_workout():
@@ -1140,8 +1160,8 @@ def exercise_progress(exercise_id):
         })
     
     return jsonify({'success': True, 'data': result})
-
-# ========== API ДЛЯ АДМИНКИ (ПИТАНИЕ) ==========
+#endregion
+#region ========== API ДЛЯ АДМИНКИ (ПИТАНИЕ) ==========
 
 @app.route('/api/admin/update_weight', methods=['POST'])
 def admin_update_weight():
@@ -1192,8 +1212,8 @@ def admin_reset_bju():
     data = request.get_json()
     success = database.admin_reset_bju_settings(data['settings_id'])
     return jsonify({'success': success})
-
-# ========== ПАСХАЛКА ==========
+#endregion
+#region ========== ПАСХАЛКА ==========
 
 @app.route('/easter-egg')
 def easter_egg():
@@ -1233,15 +1253,17 @@ def check_video():
     video_path = settings.get('path', '')
     full_path = os.path.join(UPLOAD_FOLDER, os.path.basename(video_path))
     return jsonify({'has_video': os.path.exists(full_path)})
-
-# ========== ЗАПУСК ==========
+#endregion
+#region========== ЗАПУСК ==========
 
 def open_browser():
     time.sleep(1)
     webbrowser.open('http://127.0.0.1:5000')
 
 if __name__ == '__main__':
+
     database.init_db()
+   
     
     try:
         database.init_exercises_table()
@@ -1299,3 +1321,4 @@ if __name__ == '__main__':
     
     threading.Thread(target=open_browser).start()
     app.run(host='127.0.0.1', port=5000, debug=False)
+    #endregion

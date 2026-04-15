@@ -634,7 +634,6 @@
                 <option value="gender_types">⚥ Типы пола</option>
                 <option value="activity_levels">📊 Уровни активности</option>
                 <option value="goal_types">🎯 Цели</option>
-                <option value="easter_egg_settings">🥚 Пасхалка</option>
             </select>
         </div>
         
@@ -1563,6 +1562,71 @@ function openAddModal() {
         </div>
     `;
 }
+  else if (currentTable === 'completed_workouts') {
+    formHtml = `
+        <div class="form-group">
+            <label>ID пользователя</label>
+            <input type="number" name="user_id" placeholder="ID пользователя" required>
+        </div>
+        <div class="form-group">
+            <label>ID тренировки</label>
+            <input type="number" name="workout_id" placeholder="ID тренировки" required>
+        </div>
+        <div class="form-group">
+            <label>Название тренировки</label>
+            <input type="text" name="workout_name" placeholder="Например: Тренировка спины" required>
+        </div>
+        <div class="form-group">
+            <label>Дата тренировки</label>
+            <input type="date" name="date" required>
+        </div>
+        <div class="form-group">
+            <label>Длительность (минуты)</label>
+            <input type="number" name="duration" placeholder="Например: 45" required>
+        </div>
+        <div class="form-group">
+            <label>Завершена</label>
+            <input type="datetime-local" name="completed_at">
+        </div>
+    `;
+}
+   else if (currentTable === 'completed_sets') {
+    formHtml = `
+        <div class="form-group">
+            <label>ID пользователя</label>
+            <input type="number" name="user_id" placeholder="ID пользователя" required>
+        </div>
+        <div class="form-group">
+            <label>ID тренировки</label>
+            <input type="number" name="workout_id" placeholder="ID тренировки" required>
+        </div>
+        <div class="form-group">
+            <label>ID упражнения</label>
+            <input type="number" name="exercise_id" placeholder="ID упражнения" required>
+        </div>
+        <div class="form-group">
+            <label>Название упражнения</label>
+            <input type="text" name="exercise_name" placeholder="Например: Жим лежа" required>
+        </div>
+        <div class="form-group">
+            <label>Вес (кг)</label>
+            <input type="number" step="0.5" name="weight" placeholder="Например: 60.5" required>
+        </div>
+        <div class="form-group">
+            <label>Количество повторений</label>
+            <input type="number" name="reps" placeholder="Например: 12" required>
+        </div>
+        <div class="form-group">
+            <label>Дата тренировки</label>
+            <input type="date" name="workout_date" required>
+        </div>
+        <div class="form-group">
+            <label>Выполнено</label>
+            <input type="datetime-local" name="completed_at">
+        </div>
+    `;
+}
+
     else if (currentTable === 'workout_sessions') {
         formHtml = `
             <div class="form-group">
@@ -1951,14 +2015,7 @@ function saveNewRecord() {
         'updated_at': 'Обновлено'
     };
 
-        }else if (currentLookupTable === 'easter_egg_settings') {
-    columnNames = {
-        'id': 'ID',
-        'media_path': 'Путь к медиа',
-        'media_type': 'Тип',
-        'enabled': 'Статус',
-        'updated_at': 'Обновлено'
-    };
+       
         } else if (currentLookupTable === 'goal_types') {
             columnNames = {
                 'id': 'ID',
