@@ -8,6 +8,7 @@ from datetime import datetime
 from werkzeug.utils import secure_filename
 import database
 
+
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here-change-this'
 
@@ -1320,5 +1321,5 @@ if __name__ == '__main__':
         print(f"Ошибка при миграции БД: {e}")
     
     threading.Thread(target=open_browser).start()
-    app.run(host='127.0.0.1', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=False)
     #endregion
