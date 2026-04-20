@@ -1103,6 +1103,55 @@ def get_user_bju_settings():
     
     return jsonify({'success': False})
 
+@app.route('/add_weight_ajax', methods=['POST'])
+def add_weight_ajax():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Не авторизован'})
+    
+    data = request.get_json()
+    date = data.get('date')
+    weight = data.get('weight')
+    notes = data.get('notes', '')
+    
+    if not date or not weight:
+        return jsonify({'success': False, 'error': 'Не все поля заполнены'})
+    
+    try:
+        weight = float(weight)
+        success = database.add_weight_entry(session['user_id'], date, weight, notes)
+        if success:
+            # Получаем ID новой записи
+            with database.get_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute('SELECT id FROM weight_tracking WHERE user_id = ? AND date = ?', (session['user_id'], date))
+                row = cursor.fetchone()
+                entry_id = row['id'] if row else None
+            return jsonify({'success': True, 'entry_id': entry_id})
+        else:
+            return jsonify({'success': False, 'error': 'Ошибка при сохранении'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/delete_weight_ajax', methods=['POST'])
+def delete_weight_ajax():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Не авторизован'})
+    
+    data = request.get_json()
+    entry_id = data.get('entry_id')
+    
+    if not entry_id:
+        return jsonify({'success': False, 'error': 'Не указан ID записи'})
+    
+    try:
+        with database.get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM weight_tracking WHERE id = ? AND user_id = ?', (entry_id, session['user_id']))
+            conn.commit()
+            return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
 @app.route('/api/update_bju_settings', methods=['POST'])
 def update_bju_settings():
     if 'user_id' not in session:

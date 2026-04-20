@@ -1,15 +1,10 @@
 <!-- Боковое меню -->
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
-        <button class="mobile-menu-close" onclick="closeMobileSidebar()">
-            <i class="fas fa-times"></i>
-        </button>
-        <a href="{{ url_for('easter_egg') }}" style="text-decoration: none; color: white;">
-            <div class="logo">
-                <i class="fas fa-dumbbell" style="color: var(--primary);"></i>
-                <span>FitTrack</span>
-            </div>
-        </a>
+        <div class="logo">
+            <i class="fas fa-dumbbell"></i>
+            <span>FitTrack</span>
+        </div>
         <button class="sidebar-toggle" onclick="toggleSidebar()">
             <i class="fas fa-chevron-left" id="toggleIcon"></i>
         </button>
@@ -36,7 +31,6 @@
             <span>Упражнения</span>
         </a>
 
-        
         <a href="{{ url_for('about') }}" class="menu-item {% if request.endpoint == 'about' %}active{% endif %}">
             <i class="fas fa-info-circle"></i>
             <span>О нас</span>
@@ -48,8 +42,6 @@
             <span>Админ-панель</span>
         </a>
         {% endif %}
-
-        
     </div>
 
     <div class="sidebar-footer">
@@ -66,112 +58,199 @@
             <span>Выйти</span>
         </a>
     </div>
-    <div class="sidebar-overlay" onclick="closeMobileSidebar()"></div>
 </div>
 
+<!-- Отдельная кнопка гамбургера для мобилок (вне сайдбара) -->
+<button class="mobile-menu-btn" onclick="toggleMobileSidebar()">
+    <i class="fas fa-bars"></i>
+</button>
+
+<!-- Затемнение -->
+<div class="sidebar-overlay" onclick="closeMobileSidebar()"></div>
+
 <style>
-
-
-/* Мобильные стили для сайдбара */
-.mobile-menu-close {
-    display: none;
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: rgba(255,255,255,0.2);
-    border: none;
-    color: white;
-    width: 40px;
-    height: 40px;
-    border-radius: 20px;
-    font-size: 20px;
-    cursor: pointer;
-}
-
-.sidebar-overlay {
-    display: none;
+/* Базовые стили сайдбара */
+.sidebar {
     position: fixed;
-    top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 998;
+    top: 0;
+    height: 100vh;
+    width: 280px;
+    background: linear-gradient(135deg, #1e2937 0%, #0f172a 100%);
+    color: white;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+    transition: left 0.3s ease, width 0.3s ease;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
+/* На десктопе сайдбар всегда виден в полном размере */
+@media (min-width: 769px) {
+    .sidebar {
+        left: 0 !important;
+    }
+}
+
+/* На мобилках сайдбар скрыт по умолчанию */
 @media (max-width: 768px) {
     .sidebar {
-        position: fixed;
-        left: -280px;
-        top: 0;
-        bottom: 0;
-        z-index: 999;
-        transition: left 0.3s ease;
+        left: -80px !important;
+        width: 80px;
     }
     
     .sidebar.mobile-open {
-        left: 0;
+        left: 0 !important;
+        width: 80px;
     }
     
-    .mobile-menu-close {
-        display: flex;
-        align-items: center;
+    /* На мобилках скрываем текст */
+    .sidebar .logo span,
+    .sidebar .menu-item span,
+    .sidebar .profile-name,
+    .sidebar .logout-button span,
+    .sidebar .profile-arrow,
+    .sidebar .sidebar-toggle {
+        display: none !important;
+    }
+    
+    .sidebar .logo i {
+        margin: 0 auto;
+    }
+    
+    .sidebar .logo {
         justify-content: center;
+        padding: 0;
     }
     
-    .sidebar-overlay.mobile-open {
-        display: block;
+    .sidebar .menu-item {
+        justify-content: center;
+        padding: 12px;
+        margin: 5px 10px;
+    }
+    
+    .sidebar .menu-item i {
+        margin: 0;
+        font-size: 1.3em;
+    }
+    
+    .sidebar .profile-button {
+        justify-content: center;
+        padding: 12px;
+    }
+    
+    .sidebar .profile-button i {
+        margin: 0;
+        font-size: 1.4em;
+    }
+    
+    .sidebar .logout-button {
+        justify-content: center;
+        padding: 12px;
+    }
+    
+    .sidebar .logout-button i {
+        margin: 0;
+        font-size: 1.3em;
+    }
+    
+    .sidebar .sidebar-header {
+        justify-content: center;
+        padding: 20px 10px;
     }
 }
 
-/* Тёмная тема */
-body.dark-theme {
-    --primary: #818cf8;
-    --primary-dark: #6366f1;
-    --secondary: #a78bfa;
-    --success: #34d399;
-    --danger: #f87171;
-    --warning: #fbbf24;
-    --dark: #f3f4f6;
-    --light: #1f2937;
-    --gray: #9ca3af;
-    --gray-light: #4b5563;
+.sidebar.collapsed {
+    width: 80px;
 }
 
-
-body.dark-theme .container,
-body.dark-theme .content-container,
-body.dark-theme .modal-content,
-body.dark-theme .workout-card,
-body.dark-theme .exercise-card,
-body.dark-theme .stat-card {
-    background: rgba(31, 41, 55, 0.95);
-    backdrop-filter: blur(10px);
-    color: #f3f4f6;
+.sidebar.collapsed .logo span,
+.sidebar.collapsed .menu-item span,
+.sidebar.collapsed .profile-name,
+.sidebar.collapsed .logout-button span,
+.sidebar.collapsed .profile-arrow {
+    display: none;
 }
 
-body.dark-theme .sidebar {
-    background: linear-gradient(135deg, #0f172a, #020617);
+.sidebar.collapsed .profile-button {
+    justify-content: center;
+    padding: 12px;
 }
 
-body.dark-theme input,
-body.dark-theme select,
-body.dark-theme textarea {
-    background: #374151;
-    border-color: #4b5563;
-    color: #f3f4f6;
+.sidebar.collapsed .profile-button i {
+    margin: 0;
+    font-size: 1.5em;
 }
 
-
-body.dark-theme input:focus,
-body.dark-theme select:focus,
-body.dark-theme textarea:focus {
-    border-color: var(--primary);
+.sidebar.collapsed .logout-button {
+    justify-content: center;
+    padding: 12px;
 }
 
+.sidebar.collapsed .logout-button i {
+    margin: 0;
+    font-size: 1.3em;
+}
 
-   
-    .theme-toggle {
+.sidebar.collapsed .sidebar-toggle {
+    display: flex;
+}
+
+.sidebar-header {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.3em;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+}
+
+.logo i {
+    font-size: 1.5em;
+}
+
+.sidebar-toggle {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+
+.sidebar-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.sidebar.collapsed .sidebar-toggle i {
+    transform: rotate(180deg);
+}
+
+.sidebar-menu {
+    flex: 1;
+    padding: 20px 0;
+    overflow-y: auto;
+}
+
+.menu-item {
     display: flex;
     align-items: center;
     gap: 15px;
@@ -179,383 +258,202 @@ body.dark-theme textarea:focus {
     color: rgba(255, 255, 255, 0.8);
     text-decoration: none;
     transition: all 0.3s;
-    margin: 10px 10px 0;
+    margin: 0 10px;
     border-radius: 10px;
-    cursor: pointer;
+    white-space: nowrap;
+}
+
+.menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    transform: translateX(5px);
+}
+
+.menu-item.active {
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    color: white;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+}
+
+.menu-item i {
+    width: 24px;
+    font-size: 1.2em;
+    flex-shrink: 0;
+}
+
+.sidebar-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.profile-button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    text-decoration: none;
+    color: white;
+    transition: all 0.3s;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.theme-toggle:hover {
+.profile-button:hover {
     background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    border-color: #6366f1;
+}
+
+.profile-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.profile-info i {
+    font-size: 1.4em;
+    color: #6366f1;
+}
+
+.profile-name {
+    font-weight: 500;
+    font-size: 0.95em;
     color: white;
 }
 
-.theme-toggle i {
-    width: 24px;
+.profile-arrow {
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.5);
+    transition: transform 0.3s;
+}
+
+.profile-button:hover .profile-arrow {
+    transform: translateX(3px);
+    color: #6366f1;
+}
+
+.logout-button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    color: #ff8a8a;
+    text-decoration: none;
+    border-radius: 12px;
+    transition: all 0.3s;
+    background: rgba(255, 138, 138, 0.05);
+    border: 1px solid rgba(255, 138, 138, 0.2);
+}
+
+.logout-button:hover {
+    background: rgba(255, 138, 138, 0.1);
+    transform: translateY(-2px);
+    border-color: #ff8a8a;
+}
+
+.logout-button i {
     font-size: 1.2em;
-    color: rgba(255, 255, 255, 0.6);
+    width: 24px;
+    color: #ff8a8a;
 }
 
-.theme-toggle:hover i {
-    color: white;
-}
+/* ========================================
+   МОБИЛЬНЫЕ СТИЛИ
+   ======================================== */
 
-.sidebar.collapsed .theme-toggle span {
+/* Кнопка гамбургера (отдельно от сайдбара) */
+.mobile-menu-btn {
     display: none;
-}
-
-.sidebar.collapsed .theme-toggle {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1001;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    align-items: center;
     justify-content: center;
-    padding: 12px;
 }
 
+/* Затемнение */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+}
 
-    .sidebar {
-        position: fixed;
-        left: 0;
-        top: 0;
-        height: 100vh;
-        width: 280px;
-        background: linear-gradient(135deg, #1e2937 0%, #0f172a 100%);
-        color: white;
-        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
-        transition: all 0.3s ease;
-        z-index: 1000;
+@media (max-width: 768px) {
+    /* Показываем кнопку гамбургера */
+    .mobile-menu-btn {
         display: flex;
-        flex-direction: column;
     }
-
-    .sidebar.collapsed {
+    
+    /* Сайдбар скрыт по умолчанию (слева за экраном) */
+    .sidebar {
+        left: -80px !important;
         width: 80px;
     }
-
-    .sidebar.collapsed .logo span,
-    .sidebar.collapsed .menu-item span:not(.active span),
-    .sidebar.collapsed .profile-name,
-    .sidebar.collapsed .logout-button span,
-    .sidebar.collapsed .profile-arrow {
-        display: none;
+    
+    /* При открытии */
+    .sidebar.mobile-open {
+        left: 0 !important;
+        width: 80px;
     }
-
-    .sidebar.collapsed .profile-button {
-        justify-content: center;
-        padding: 12px;
+    
+    /* Затемнение при открытом меню */
+    .sidebar-overlay.mobile-open {
+        display: block;
     }
-
-    .sidebar.collapsed .profile-button i {
-        margin: 0;
-        font-size: 1.5em;
-    }
-
-    .sidebar.collapsed .logout-button {
-        justify-content: center;
-        padding: 12px;
-    }
-
-    .sidebar.collapsed .logout-button i {
-        margin: 0;
-        font-size: 1.3em;
-    }
-
-    /* Для активного пункта меню показываем текст даже в свернутом состоянии */
-    .sidebar.collapsed .menu-item.active span {
-        display: inline-block;
-        margin-left: 10px;
-        white-space: nowrap;
-    }
-
-    .sidebar-header {
-        padding: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .logo {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 1.3em;
-        font-weight: bold;
-        color: white;
-    }
-
-    .logo i {
-        font-size: 1.5em;
-    }
-
-    .sidebar-toggle {
-        background: rgba(255, 255, 255, 0.1);
-        border: none;
-        color: white;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s;
-        outline: none;
-    }
-
-    .sidebar-toggle:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: scale(1.1);
-    }
-
-    .sidebar-toggle:focus {
-        outline: none;
-    }
-
-    .sidebar-toggle i {
-        transition: transform 0.3s;
-    }
-
-    .sidebar.collapsed .sidebar-toggle i {
-        transform: rotate(180deg);
-    }
-
-    .sidebar-menu {
-        flex: 1;
-        padding: 20px 0;
-        overflow-y: auto;
-    }
-
-    .menu-item {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        padding: 12px 20px;
-        color: rgba(255, 255, 255, 0.8);
-        text-decoration: none;
-        transition: all 0.3s;
-        position: relative;
-        overflow: hidden;
-        margin: 0 10px;
-        border-radius: 10px;
-        outline: none;
-        white-space: nowrap;
-    }
-
-    .menu-item:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: white;
-        transform: translateX(5px);
-        outline: none;
-    }
-
-    .menu-item:focus {
-        outline: none;
-    }
-
-    .menu-item.active {
-        background: linear-gradient(90deg, var(--primary), var(--secondary));
-        color: white;
-        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-    }
-
-    .menu-item i {
-        width: 24px;
-        font-size: 1.2em;
-        color: rgba(255, 255, 255, 0.6);
-        flex-shrink: 0;
-    }
-
-    .menu-item:hover i {
-        color: white;
-    }
-
-    .menu-item.active i {
-        color: white;
-    }
-
-    /* Футер с профилем и выходом */
-    .sidebar-footer {
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 15px;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .profile-button {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 12px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 12px;
-        text-decoration: none;
-        color: white;
-        transition: all 0.3s;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .profile-button:hover {
-        background: rgba(255, 255, 255, 0.1);
-        transform: translateY(-2px);
-        border-color: var(--primary);
-    }
-
-    .profile-info {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .profile-info i {
-        font-size: 1.4em;
-        color: var(--primary);
-    }
-
-    .profile-name {
-        font-weight: 500;
-        font-size: 0.95em;
-        color: white;
-    }
-
-    .profile-arrow {
-        font-size: 0.9em;
-        color: rgba(255, 255, 255, 0.5);
-        transition: transform 0.3s;
-    }
-
-    .profile-button:hover .profile-arrow {
-        transform: translateX(3px);
-        color: var(--primary);
-    }
-
-    .logout-button {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 10px 12px;
-        color: #ff8a8a;
-        text-decoration: none;
-        border-radius: 12px;
-        transition: all 0.3s;
-        background: rgba(255, 138, 138, 0.05);
-        border: 1px solid rgba(255, 138, 138, 0.2);
-    }
-
-    .logout-button:hover {
-        background: rgba(255, 138, 138, 0.1);
-        transform: translateY(-2px);
-        border-color: #ff8a8a;
-    }
-
-    .logout-button i {
-        font-size: 1.2em;
-        width: 24px;
-        color: #ff8a8a;
-    }
-
-    .logout-button span {
-        font-size: 0.95em;
-        font-weight: 500;
-    }
-
-    /* Основной контент с отступом для меню */
+    
+    /* Основной контент - добавляем отступ сверху для гамбургера */
     .main-content {
-        margin-left: 280px;
-        transition: margin-left 0.3s ease;
-        min-height: 100vh;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding-top: 70px !important;
+        margin-left: 0 !important;
     }
+}
 
-    .main-content.expanded {
-        margin-left: 80px;
-    }
+/* ========================================
+   ТЁМНАЯ ТЕМА
+   ======================================== */
 
-    /* Кнопка для мобильного меню */
-    .mobile-menu-btn {
-        display: none;
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        z-index: 1001;
-        width: 45px;
-        height: 45px;
-        background: var(--primary);
-        border: none;
-        border-radius: 12px;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2em;
-        color: white;
-        cursor: pointer;
-        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-        outline: none;
-    }
+body.dark-theme .sidebar {
+    background: linear-gradient(135deg, #0f172a, #020617);
+}
 
-    .mobile-menu-btn:focus {
-        outline: none;
-    }
-
-    /* Адаптация для мобильных */
-    @media (max-width: 768px) {
-        .sidebar {
-            transform: translateX(-100%);
-            transition: transform 0.3s;
-        }
-        
-        .sidebar.active {
-            transform: translateX(0);
-        }
-        
-        .main-content {
-            margin-left: 0 !important;
-        }
-        
-        .main-content.expanded {
-            margin-left: 0 !important;
-        }
-        
-        .mobile-menu-btn {
-            display: flex;
-        }
-    }
-
-    /* Убираем outline со всех кнопок и ссылок */
-    button,
-    a,
-    .menu-item,
-    .sidebar-toggle,
-    .mobile-menu-btn,
-    .profile-button,
-    .logout-button {
-        -webkit-tap-highlight-color: transparent;
-        -webkit-focus-ring-color: transparent;
-        outline: none;
-    }
-
-    button::-moz-focus-inner,
-    a::-moz-focus-inner {
-        border: 0;
-    }
+/* Убираем outline */
+button, a, .menu-item, .sidebar-toggle, .mobile-menu-btn, .profile-button, .logout-button {
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+}
 </style>
 
 <script>
-
-    function toggleMobileSidebar() {
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.toggle('mobile-open');
-    overlay.classList.toggle('mobile-open');
-    }
-
-    function closeMobileSidebar() {
-        const sidebar = document.querySelector('.sidebar');
-        const overlay = document.querySelector('.sidebar-overlay');
-        sidebar.classList.remove('mobile-open');
-        overlay.classList.remove('mobile-open');
-    }
-
+    // Переключение сайдбара (сворачивание на десктопе)
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.querySelector('.main-content');
+        
+        // На мобилках не сворачиваем, только на десктопе
+        if (window.innerWidth <= 768) {
+            return;
+        }
+        
         const isCollapsed = sidebar.classList.contains('collapsed');
         
         if (isCollapsed) {
@@ -570,82 +468,57 @@ body.dark-theme textarea:focus {
             }
         }
         
-        // Сохраняем состояние в localStorage
         localStorage.setItem('sidebar_collapsed', !isCollapsed);
     }
 
-    function toggleMobileMenu() {
+    // Открытие мобильного сайдбара
+    function toggleMobileSidebar() {
         const sidebar = document.getElementById('sidebar');
-        sidebar.classList.toggle('active');
+        const overlay = document.querySelector('.sidebar-overlay');
+        
+        sidebar.classList.add('mobile-open');
+        overlay.classList.add('mobile-open');
     }
 
-    // Переключение тёмной темы
-function toggleTheme() {
-    const body = document.body;
-    const themeIcon = document.getElementById('themeIcon');
-    const isDark = body.classList.toggle('dark-theme');
-    
-    // Меняем иконку
-    if (isDark) {
-        themeIcon.classList.remove('fa-moon');
-        themeIcon.classList.add('fa-sun');
-    } else {
-        themeIcon.classList.remove('fa-sun');
-        themeIcon.classList.add('fa-moon');
+    // Закрытие мобильного сайдбара
+    function closeMobileSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        
+        sidebar.classList.remove('mobile-open');
+        overlay.classList.remove('mobile-open');
     }
-    
-    // Сохраняем выбор
-    localStorage.setItem('dark_theme', isDark);
-}
 
-// Загружаем сохранённую тему
-document.addEventListener('DOMContentLoaded', function() {
-    const savedTheme = localStorage.getItem('dark_theme') === 'true';
-    const themeIcon = document.getElementById('themeIcon');
-    
-    if (savedTheme) {
-        document.body.classList.add('dark-theme');
-        if (themeIcon) {
-            themeIcon.classList.remove('fa-moon');
-            themeIcon.classList.add('fa-sun');
-        }
-    }
-});
-    // Загружаем состояние меню при загрузке страницы
+    // Загрузка сохранённого состояния
     document.addEventListener('DOMContentLoaded', function() {
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.querySelector('.main-content');
-        const savedState = localStorage.getItem('sidebar_collapsed');
         
-        // Применяем сохранённое состояние
-        if (savedState === 'true') {
-            sidebar.classList.add('collapsed');
-            if (mainContent) {
-                mainContent.classList.add('expanded');
-            }
-        } else {
-            sidebar.classList.remove('collapsed');
-            if (mainContent) {
-                mainContent.classList.remove('expanded');
+        // На десктопе загружаем состояние сворачивания
+        if (window.innerWidth > 768) {
+            const savedState = localStorage.getItem('sidebar_collapsed');
+            if (savedState === 'true') {
+                sidebar.classList.add('collapsed');
+                if (mainContent) {
+                    mainContent.classList.add('expanded');
+                }
             }
         }
         
-        // Добавляем кнопку для мобильного меню
-        if (window.innerWidth <= 768) {
-            if (!document.querySelector('.mobile-menu-btn')) {
-                const mobileBtn = document.createElement('button');
-                mobileBtn.className = 'mobile-menu-btn';
-                mobileBtn.innerHTML = '<i class="fas fa-bars"></i>';
-                mobileBtn.onclick = toggleMobileMenu;
-                document.body.appendChild(mobileBtn);
-            }
-            
-            // Закрываем меню при клике на ссылку
-            document.querySelectorAll('.menu-item, .profile-button, .logout-button').forEach(item => {
-                item.addEventListener('click', () => {
-                    document.getElementById('sidebar').classList.remove('active');
-                });
+        // Закрываем мобильное меню при клике на ссылку
+        document.querySelectorAll('.menu-item, .profile-button, .logout-button').forEach(item => {
+            item.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    closeMobileSidebar();
+                }
             });
-        }
+        });
+        
+        // При изменении размера окна закрываем мобильное меню
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                closeMobileSidebar();
+            }
+        });
     });
 </script>

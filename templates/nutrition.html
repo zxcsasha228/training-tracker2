@@ -25,18 +25,6 @@
             box-sizing: border-box;
         }
 
-
-        .setting-item input.input-error {
-    border-color: var(--danger) !important;
-    background: rgba(239, 68, 68, 0.1) !important;
-    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
-}
-
-.form-group input.input-error {
-    border-color: var(--danger) !important;
-    background: rgba(239, 68, 68, 0.1) !important;
-}
-
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -63,6 +51,7 @@
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 30px;
+            overflow-x: hidden;
         }
 
         .header {
@@ -83,45 +72,6 @@
             -webkit-text-fill-color: transparent;
         }
 
-        .header h1 i {
-            margin-right: 10px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 0.95em;
-            font-weight: 600;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, var(--success), #059669);
-            color: white;
-        }
-
-        .btn-gray {
-            background: var(--gray);
-            color: white;
-        }
-
-        .btn:hover {
-            filter: brightness(1.1);
-            transform: translateY(-2px);
-        }
-
-        /* Карточки статистики */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -158,7 +108,6 @@
 
         .stat-content {
             flex: 1;
-            min-width: 0;
         }
 
         .stat-content h3 {
@@ -173,42 +122,12 @@
             color: var(--dark);
         }
 
-        .stat-trend {
-            font-size: 0.85em;
-            color: var(--gray);
-            margin-top: 5px;
-        }
-
-        .stat-trend.up {
-            color: var(--success);
-        }
-
-        .stat-trend.down {
-            color: var(--danger);
-        }
-
-        /* График */
         .chart-container {
             background: white;
             border-radius: 20px;
             padding: 25px;
             margin-bottom: 30px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .chart-title {
-            font-size: 1.3em;
-            color: var(--dark);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .chart-title i {
-            color: var(--primary);
         }
 
         .chart-wrapper {
@@ -216,14 +135,12 @@
             position: relative;
         }
 
-        /* Калькулятор БЖУ */
         .bju-calculator {
             background: white;
             border-radius: 20px;
             padding: 25px;
             margin-bottom: 30px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            border: 1px solid rgba(0,0,0,0.05);
         }
 
         .calculator-header {
@@ -248,16 +165,10 @@
             width: 40px;
             height: 40px;
             cursor: pointer;
-            transition: all 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
-        }
-
-        .calculator-toggle:hover {
-            transform: scale(1.1) rotate(10deg);
         }
 
         .calculator-title {
@@ -283,10 +194,8 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.3s;
             background: transparent;
             color: var(--gray);
-            white-space: nowrap;
         }
 
         .tab-btn.active {
@@ -308,12 +217,6 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            transition: all 0.3s;
-        }
-
-        .result-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
 
         .result-icon {
@@ -328,7 +231,7 @@
 
         .result-icon i {
             font-size: 1.5em;
-            color: white;
+            color: white !important;
         }
 
         .result-content {
@@ -338,19 +241,12 @@
         .result-label {
             color: var(--gray);
             font-size: 0.85em;
-            margin-bottom: 3px;
         }
 
         .result-value {
             font-size: 1.8em;
             font-weight: bold;
             color: var(--dark);
-            line-height: 1.2;
-        }
-
-        .result-unit {
-            color: var(--gray);
-            font-size: 0.8em;
         }
 
         .calculator-settings {
@@ -384,32 +280,28 @@
             border-radius: 10px;
             font-size: 1em;
             background: white;
-            transition: all 0.3s;
         }
 
         .setting-item select:focus,
         .setting-item input:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
 
-        /* Красная подсветка при ошибке */
-        .setting-item input.input-error {
-            border-color: var(--danger);
-            background: rgba(239, 68, 68, 0.05);
+        .input-error {
+            border-color: var(--danger) !important;
+            background: rgba(239, 68, 68, 0.1) !important;
         }
 
         .calculator-info {
             display: flex;
             align-items: center;
             gap: 8px;
-            color: var(--gray);
-            font-size: 0.9em;
             padding: 10px;
             background: #f0f9ff;
             border-radius: 10px;
             color: #0369a1;
+            font-size: 0.9em;
         }
 
         .calculator-body {
@@ -420,17 +312,11 @@
             display: none;
         }
 
-        .bju-calculator.collapsed {
-            padding-bottom: 15px;
-        }
-
-        /* Календарь */
         .calendar-container {
             background: var(--light);
             border-radius: 16px;
             padding: 15px;
             margin-bottom: 20px;
-            transition: all 0.3s;
         }
 
         .calendar-container.collapsed .calendar-weekdays,
@@ -442,7 +328,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 0;
         }
 
         .calendar-header-left {
@@ -459,17 +344,10 @@
             width: 32px;
             height: 32px;
             cursor: pointer;
-            transition: all 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--gray);
-        }
-
-        .calendar-toggle:hover, .calendar-nav:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-            transform: scale(1.1);
         }
 
         .calendar-month-year {
@@ -505,7 +383,6 @@
             border: 2px solid transparent;
             border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s;
             font-weight: 500;
             font-size: 0.9em;
             position: relative;
@@ -558,11 +435,6 @@
             border: 2px solid #e5e7eb;
             border-radius: 10px;
             font-size: 1em;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--primary);
         }
 
         .submit-btn {
@@ -619,27 +491,82 @@
             color: var(--gray);
         }
 
-       /* ========================================
-   МОБИЛЬНАЯ АДАПТАЦИЯ ДЛЯ ПОЛЕЙ
-   ======================================== */
+        .warning-toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--warning);
+            color: var(--dark);
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 9999;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease-out;
+            max-width: 90%;
+            text-align: center;
+        }
 
+        .success-toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--success);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 9999;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease-out;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* ========================================
+   МОБИЛЬНАЯ АДАПТАЦИЯ
+   ======================================== */
 @media (max-width: 768px) {
-    /* Контейнер с настройками */
-    .calculator-settings {
-        padding: 15px;
-        overflow-x: hidden;
+    .main-content {
+        margin-left: 0 !important;
+        padding: 20px 16px 80px 16px;
+    }
+    .container {
+        padding: 20px 16px;
+    }
+    .stats-grid {
+        grid-template-columns: 1fr;
     }
     
-    /* Сетка настроек - на мобилках в колонку */
+    /* ===== ФИКС ДЛЯ ПОЛЕЙ КАЛЬКУЛЯТОРА НА МОБИЛКЕ ===== */
     .settings-row {
         display: flex;
         flex-direction: column;
         gap: 12px;
     }
     
-    /* Каждый пункт настроек */
     .setting-item {
         width: 100%;
+        margin-bottom: 0;
     }
     
     .setting-item label {
@@ -652,11 +579,18 @@
     .setting-item input {
         width: 100%;
         padding: 12px;
-        font-size: 16px; /* Предотвращает зум на iOS */
+        font-size: 16px;
         box-sizing: border-box;
+        border-radius: 12px;
     }
     
-    /* Вкладки цели - на всю ширину */
+    /* Вкладки калькулятора */
+    .calculator-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
     .calculator-tabs {
         width: 100%;
         display: flex;
@@ -671,96 +605,72 @@
         font-size: 0.8em;
         padding: 8px 6px;
         white-space: normal;
-        word-break: keep-all;
     }
     
     /* Результаты БЖУ */
     .bju-results {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
         gap: 10px;
     }
     
     .result-card {
         padding: 12px;
-        gap: 10px;
+        gap: 12px;
     }
     
     .result-icon {
-        width: 40px;
-        height: 40px;
+        width: 45px;
+        height: 45px;
         flex-shrink: 0;
+    }
+    
+    .result-icon i {
+        font-size: 1.2em;
     }
     
     .result-value {
         font-size: 1.3em;
     }
     
-    /* Шапка калькулятора */
-    .calculator-header {
+    .chart-wrapper {
+        height: 280px;
+    }
+    
+    .form-row {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
     }
     
-    .calculator-header-left {
+    .form-group {
         width: 100%;
-        justify-content: space-between;
-    }
-}
-
-@media (max-width: 480px) {
-    .bju-results {
-        grid-template-columns: 1fr;
     }
     
-    .setting-item select,
-    .setting-item input {
+    .submit-btn {
+        width: 100%;
+    }
+    
+    /* Календарь */
+    .calendar-weekdays {
+        font-size: 0.7em;
+    }
+    
+    .calendar-day {
+        font-size: 0.75em;
+    }
+    
+    /* Таблица */
+    .history-table {
+        overflow-x: auto;
+    }
+    
+    th, td {
         padding: 10px;
+        font-size: 0.85em;
     }
 }
-
-        @media (max-width: 480px) {
-            .main-content {
-                padding: 15px 12px 80px 12px;
-            }
-            
-            /* Чтобы контент не вылезал за пределы */
-.container {
-    max-width: 1000px;
-    margin: 0 auto;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 24px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    padding: 30px;
-    overflow-x: hidden; /* ← добавить эту строку */
-}
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .bju-results {
-                grid-template-columns: 1fr;
-            }
-            
-            .chart-wrapper {
-                height: 240px;
-            }
-        }
-
-        /* Планшеты */
-        @media (min-width: 768px) and (max-width: 1024px) {
-            .main-content {
-                margin-left: 80px !important;
-                padding: 20px 24px;
-            }
-        }
     </style>
 </head>
 <body>
-    <!-- Скрытые поля с данными -->
     <input type="hidden" id="gendersData" value='{{ genders|tojson }}'>
     <input type="hidden" id="activitiesData" value='{{ activities|tojson }}'>
     <input type="hidden" id="goalsData" value='{{ goals|tojson }}'>
@@ -774,52 +684,41 @@
                 <h1><i class="fas fa-apple-alt"></i> Питание</h1>
             </div>
 
-            <!-- Статистика -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-weight-scale"></i></div>
                     <div class="stat-content">
                         <h3>Текущий вес</h3>
                         <div class="stat-number">{{ stats.last_weight|default('—', true) }} кг</div>
-                        <div class="stat-trend">{{ stats.last_date|default('', true) }}</div>
                     </div>
                 </div>
-
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-arrow-down"></i></div>
                     <div class="stat-content">
                         <h3>Минимальный вес</h3>
                         <div class="stat-number">{{ stats.min_weight|default('—', true) }} кг</div>
-                        <div class="stat-trend">{{ stats.min_date|default('', true) }}</div>
                     </div>
                 </div>
-
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-arrow-up"></i></div>
                     <div class="stat-content">
                         <h3>Максимальный вес</h3>
                         <div class="stat-number">{{ stats.max_weight|default('—', true) }} кг</div>
-                        <div class="stat-trend">{{ stats.max_date|default('', true) }}</div>
                     </div>
                 </div>
-
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-calendar"></i></div>
                     <div class="stat-content">
                         <h3>Записей</h3>
                         <div class="stat-number">{{ stats.total_entries|default(0) }}</div>
-                        <div class="stat-trend {% if stats.change_30d and stats.change_30d < 0 %}down{% elif stats.change_30d and stats.change_30d > 0 %}up{% endif %}">
-                            {% if stats.change_30d %}{{ stats.change_30d }} кг за 30 дней{% endif %}
-                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Калькулятор БЖУ -->
             <div class="bju-calculator" id="bjuCalculator">
                 <div class="calculator-header">
                     <div class="calculator-header-left">
-                        <button type="button" class="calculator-toggle" onclick="toggleCalculator()">
+                        <button class="calculator-toggle" onclick="toggleCalculator()">
                             <i class="fas fa-chevron-up" id="calculatorToggleIcon"></i>
                         </button>
                         <div class="calculator-title">
@@ -828,12 +727,7 @@
                     </div>
                     <div class="calculator-tabs" id="calculatorTabs"></div>
                 </div>
-
                 <div class="calculator-body" id="calculatorBody">
-                    <div class="current-weight-info">
-                        <span>Текущий вес: <strong id="currentWeight">{{ stats.last_weight|default(70) }} кг</strong></span>
-                    </div>
-
                     <div class="bju-results">
                         <div class="result-card">
                             <div class="result-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);"><i class="fas fa-fire"></i></div>
@@ -868,53 +762,41 @@
                             </div>
                         </div>
                     </div>
-
-                   <div class="calculator-settings">
-    <div class="settings-row">
-        <div class="setting-item">
-            <label>Активность</label>
-            <select id="activityLevel" onchange="saveSettings()"></select>
-        </div>
-        <div class="setting-item">
-            <label>Возраст (15-100)</label>
-            <input type="number" id="age" value="30" 
-                   min="15" max="100" 
-                   step="1"
-                   oninput="validateAgeHeight(this, 15, 100, 'age')"
-                   onchange="validateAgeHeight(this, 15, 100, 'age')">
-        </div>
-        <div class="setting-item">
-            <label>Рост (140-220 см)</label>
-            <input type="number" id="height" value="175" 
-                   min="140" max="220" 
-                   step="1"
-                   oninput="validateAgeHeight(this, 140, 220, 'height')"
-                   onchange="validateAgeHeight(this, 140, 220, 'height')">
-        </div>
-        <div class="setting-item">
-            <label>Пол</label>
-            <select id="gender" onchange="saveSettings()"></select>
-        </div>
-    </div>
-</div>
-
+                    <div class="calculator-settings">
+                        <div class="settings-row">
+                            <div class="setting-item">
+                                <label>Активность</label>
+                                <select id="activityLevel" onchange="saveSettings()"></select>
+                            </div>
+                            <div class="setting-item">
+                                <label>Возраст (15-100)</label>
+                                <input type="number" id="age" value="30" onblur="validateAge()" onchange="saveSettingsWithValidation()">
+                            </div>
+                            <div class="setting-item">
+                                <label>Рост (140-220 см)</label>
+                                <input type="number" id="height" value="175" onblur="validateHeight()" onchange="saveSettingsWithValidation()">
+                            </div>
+                            <div class="setting-item">
+                                <label>Пол</label>
+                                <select id="gender" onchange="saveSettings()"></select>
+                            </div>
+                        </div>
+                    </div>
                     <div class="calculator-info" id="bjuDescription">
                         <i class="fas fa-info-circle"></i> <span id="bjuText">Загрузка...</span>
                     </div>
                 </div>
             </div>
 
-            <!-- График -->
             <div class="chart-container">
                 <div class="chart-title"><i class="fas fa-chart-line"></i> Динамика веса</div>
                 <div class="chart-wrapper"><canvas id="weightChart"></canvas></div>
             </div>
 
-            <!-- Календарь -->
             <div class="calendar-container collapsed" id="calendarContainer">
                 <div class="calendar-header">
                     <div class="calendar-header-left">
-                        <button type="button" class="calendar-toggle" onclick="toggleCalendar()">
+                        <button class="calendar-toggle" onclick="toggleCalendar()">
                             <i class="fas fa-chevron-down" id="toggleIcon"></i>
                         </button>
                         <button class="calendar-nav" onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
@@ -926,49 +808,49 @@
                 <div class="calendar-days" id="calendarDays"></div>
             </div>
             
-            <input type="hidden" name="date" id="selectedDate" value="{{ today }}">
-            
             <div class="weight-entry-form" id="weightEntryForm" style="display: none;">
                 <div class="form-row">
                     <div class="form-group">
-    <input type="number" step="0.1" name="weight" id="weightInput" 
-           placeholder="Вес (кг)" min="20" max="300"
-           oninput="validateWeightInput(this)"
-           onchange="validateWeightInput(this)">
-</div>
-                    <div class="form-group">
-                        <input type="text" name="notes" id="notesInput" placeholder="Заметки">
+                        <input type="number" step="0.1" id="weightInput" placeholder="Вес (кг)" onblur="validateWeight()">
                     </div>
-                    <button type="button" class="submit-btn" onclick="submitWeight()"><i class="fas fa-check"></i> Сохранить</button>
+                    <div class="form-group">
+                        <input type="text" id="notesInput" placeholder="Заметки">
+                    </div>
+                    <button class="submit-btn" onclick="submitWeightWithValidation()">
+                        <i class="fas fa-check"></i> Сохранить
+                    </button>
                 </div>
             </div>
 
-            <!-- История -->
             <div class="history-table">
                 <div class="table-title"><i class="fas fa-history"></i> История изменений</div>
-                {% if entries %}
-                <div style="overflow-x: auto;">
-                    <table>
-                        <thead><tr><th>Дата</th><th>Вес (кг)</th><th>Заметки</th><th></th></tr></thead>
-                        <tbody>
-                            {% for entry in entries %}
-                            <tr>
-                                <td>{{ entry.date }}</td>
-                                <td><strong>{{ entry.weight }} кг</strong></td>
-                                <td>{{ entry.notes or '—' }}</td>
-                                <td>
-                                    <form action="{{ url_for('delete_weight', entry_id=entry.id) }}" method="post" onsubmit="return confirm('Удалить запись?')">
-                                        <button type="submit" class="delete-btn"><i class="fas fa-trash"></i></button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <div id="historyContainer">
+                    {% if entries %}
+                    <div style="overflow-x: auto;">
+                        <table id="weightHistoryTable">
+                            <thead>
+                                <tr><th>Дата</th><th>Вес (кг)</th><th>Заметки</th><th></th></tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in entries %}
+                                <tr id="weight-row-{{ entry.id }}">
+                                    <td>{{ entry.date }}</td>
+                                    <td><strong>{{ entry.weight }} кг</strong></td>
+                                    <td>{{ entry.notes or '—' }}</td>
+                                    <td>
+                                        <button class="delete-btn" onclick="deleteWeightEntry({{ entry.id }}, '{{ entry.date }}', {{ entry.weight }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state" id="emptyHistory"><i class="fas fa-weight-scale"></i><p>У вас пока нет записей о весе</p></div>
+                    {% endif %}
                 </div>
-                {% else %}
-                <div class="empty-state"><i class="fas fa-weight-scale"></i><p>У вас пока нет записей о весе</p></div>
-                {% endif %}
             </div>
         </div>
     </div>
@@ -976,366 +858,561 @@
     {% include 'active_workout_banner.html' %}
 
     <script>
-    // ========== КОНСТАНТЫ ОГРАНИЧЕНИЙ ==========
-    const AGE_MIN = 15;
-    const AGE_MAX = 100;
-    const HEIGHT_MIN = 140;
-    const HEIGHT_MAX = 220;
-    const WEIGHT_MIN = 20;
-    const WEIGHT_MAX = 300;
+        // ========== КОНСТАНТЫ ОГРАНИЧЕНИЙ ==========
+        const AGE_MIN = 15, AGE_MAX = 100;
+        const HEIGHT_MIN = 140, HEIGHT_MAX = 220;
+        const WEIGHT_MIN = 20, WEIGHT_MAX = 300;
 
-    // ========== ДАННЫЕ ==========
-    const weightData = [
-        {% for entry in entries|reverse %}
-            { date: '{{ entry.date }}', weight: {{ entry.weight }} }{% if not loop.last %},{% endif %}
-        {% endfor %}
-    ];
-    const weightDates = [
-        {% for entry in entries %}
-            '{{ entry.date }}'{% if not loop.last %},{% endif %}
-        {% endfor %}
-    ];
-    
-    let currentDate = new Date();
-    let selectedDate = '{{ today }}';
-    let weightChart = null;
-    let currentGoal = 1;
-    let settingsLoaded = false;
-    let goals = [];
+        // ========== ДАННЫЕ ==========
+        let weightData = [{% for entry in entries|reverse %}{ date: '{{ entry.date }}', weight: {{ entry.weight }} }{% if not loop.last %},{% endif %}{% endfor %}];
+        let weightDates = [{% for entry in entries %}'{{ entry.date }}'{% if not loop.last %},{% endif %}{% endfor %}];
+        let weightEntries = [
+            {% for entry in entries %}
+            { id: {{ entry.id }}, date: '{{ entry.date }}', weight: {{ entry.weight }}, notes: '{{ entry.notes or '' }}' }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ];
+        
+        let currentDate = new Date();
+        let selectedDate = '{{ today }}';
+        let weightChart = null;
+        let currentGoal = 1;
+        let settingsLoaded = false;
+        let goals = [];
 
-    // ========== ВАЛИДАЦИЯ С ОГРАНИЧЕНИЯМИ ==========
-    function validateAgeHeight(input, min, max) {
-        let value = parseInt(input.value);
-        
-        if (isNaN(value)) {
-            input.value = min;
-            input.classList.add('input-error');
-            setTimeout(() => input.classList.remove('input-error'), 1500);
-            if (typeof saveSettings === 'function') saveSettings();
-            return;
+        // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+        function showWarningToast(message) {
+            const oldToast = document.querySelector('.warning-toast');
+            if (oldToast) oldToast.remove();
+            const toast = document.createElement('div');
+            toast.className = 'warning-toast';
+            toast.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => { if (toast) toast.remove(); }, 2500);
         }
-        
-        if (value < min) {
-            input.value = min;
-            input.classList.add('input-error');
-            setTimeout(() => input.classList.remove('input-error'), 1500);
-            if (typeof saveSettings === 'function') saveSettings();
-            return;
-        }
-        
-        if (value > max) {
-            input.value = max;
-            input.classList.add('input-error');
-            setTimeout(() => input.classList.remove('input-error'), 1500);
-            if (typeof saveSettings === 'function') saveSettings();
-            return;
-        }
-        
-        input.classList.remove('input-error');
-        if (typeof saveSettings === 'function') saveSettings();
-    }
 
-    function validateWeight(input) {
-        let value = parseFloat(input.value);
-        
-        if (isNaN(value)) {
-            input.value = WEIGHT_MIN;
-            input.classList.add('input-error');
-            setTimeout(() => input.classList.remove('input-error'), 1500);
-            return;
+        function showSuccessToast(message) {
+            const oldToast = document.querySelector('.success-toast');
+            if (oldToast) oldToast.remove();
+            const toast = document.createElement('div');
+            toast.className = 'success-toast';
+            toast.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => { if (toast) toast.remove(); }, 2500);
         }
-        
-        if (value < WEIGHT_MIN) {
-            input.value = WEIGHT_MIN;
-            input.classList.add('input-error');
-            setTimeout(() => input.classList.remove('input-error'), 1500);
-        } else if (value > WEIGHT_MAX) {
-            input.value = WEIGHT_MAX;
-            input.classList.add('input-error');
-            setTimeout(() => input.classList.remove('input-error'), 1500);
-        } else {
+
+        // ========== ВАЛИДАЦИЯ ==========
+        function validateAge() {
+            const input = document.getElementById('age');
+            if (!input) return;
+            let value = parseInt(input.value);
+            if (isNaN(value) || input.value === '') {
+                input.value = AGE_MIN;
+                showWarningToast(`Возраст должен быть от ${AGE_MIN} до ${AGE_MAX} лет. Установлено ${AGE_MIN}.`);
+                input.classList.add('input-error');
+                setTimeout(() => input.classList.remove('input-error'), 2000);
+                return;
+            }
+            if (value < AGE_MIN) {
+                input.value = AGE_MIN;
+                showWarningToast(`Возраст не может быть меньше ${AGE_MIN} лет. Установлено ${AGE_MIN}.`);
+                input.classList.add('input-error');
+                setTimeout(() => input.classList.remove('input-error'), 2000);
+                return;
+            }
+            if (value > AGE_MAX) {
+                input.value = AGE_MAX;
+                showWarningToast(`Возраст не может быть больше ${AGE_MAX} лет. Установлено ${AGE_MAX}.`);
+                input.classList.add('input-error');
+                setTimeout(() => input.classList.remove('input-error'), 2000);
+                return;
+            }
             input.classList.remove('input-error');
         }
-    }
 
-    // ========== ФОРМАТИРОВАНИЕ ДАТЫ ==========
-    function formatDate(date) {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
-    
-    // ========== КАЛЕНДАРЬ ==========
-    function renderCalendar() {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
-        document.getElementById('calendarMonthYear').textContent = new Intl.DateTimeFormat('ru-RU', { month: 'long', year: 'numeric' }).format(currentDate);
-        
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-        let startDay = firstDay.getDay() - 1;
-        if (startDay < 0) startDay = 6;
-        
-        const daysHtml = [];
-        const prevMonthLastDay = new Date(year, month, 0).getDate();
-        for (let i = 0; i < startDay; i++) {
-            daysHtml.push(`<div class="calendar-day other-month">${prevMonthLastDay - startDay + i + 1}</div>`);
+        function validateHeight() {
+            const input = document.getElementById('height');
+            if (!input) return;
+            let value = parseInt(input.value);
+            if (isNaN(value) || input.value === '') {
+                input.value = HEIGHT_MIN;
+                showWarningToast(`Рост должен быть от ${HEIGHT_MIN} до ${HEIGHT_MAX} см. Установлено ${HEIGHT_MIN}.`);
+                input.classList.add('input-error');
+                setTimeout(() => input.classList.remove('input-error'), 2000);
+                return;
+            }
+            if (value < HEIGHT_MIN) {
+                input.value = HEIGHT_MIN;
+                showWarningToast(`Рост не может быть меньше ${HEIGHT_MIN} см. Установлено ${HEIGHT_MIN}.`);
+                input.classList.add('input-error');
+                setTimeout(() => input.classList.remove('input-error'), 2000);
+                return;
+            }
+            if (value > HEIGHT_MAX) {
+                input.value = HEIGHT_MAX;
+                showWarningToast(`Рост не может быть больше ${HEIGHT_MAX} см. Установлено ${HEIGHT_MAX}.`);
+                input.classList.add('input-error');
+                setTimeout(() => input.classList.remove('input-error'), 2000);
+                return;
+            }
+            input.classList.remove('input-error');
         }
-        
-        const today = formatDate(new Date());
-        for (let i = 1; i <= lastDay.getDate(); i++) {
-            const dateStr = formatDate(new Date(year, month, i));
-            const hasWeight = weightDates.includes(dateStr);
-            const isToday = dateStr === today;
-            const isSelected = dateStr === selectedDate;
-            let classes = 'calendar-day';
-            if (hasWeight) classes += ' has-weight';
-            if (isToday) classes += ' today';
-            if (isSelected) classes += ' selected';
-            daysHtml.push(`<div class="${classes}" onclick="selectDate('${dateStr}')">${i}</div>`);
+
+        function validateWeight() {
+            const input = document.getElementById('weightInput');
+            if (!input) return;
+            let value = parseFloat(input.value);
+            if (isNaN(value) || input.value === '') {
+                input.value = WEIGHT_MIN;
+                showWarningToast(`Вес должен быть от ${WEIGHT_MIN} до ${WEIGHT_MAX} кг. Установлено ${WEIGHT_MIN}.`);
+                input.classList.add('input-error');
+                setTimeout(() => input.classList.remove('input-error'), 2000);
+                return;
+            }
+            if (value < WEIGHT_MIN) {
+                input.value = WEIGHT_MIN;
+                showWarningToast(`Вес не может быть меньше ${WEIGHT_MIN} кг. Установлено ${WEIGHT_MIN}.`);
+                input.classList.add('input-error');
+                setTimeout(() => input.classList.remove('input-error'), 2000);
+                return;
+            }
+            if (value > WEIGHT_MAX) {
+                input.value = WEIGHT_MAX;
+                showWarningToast(`Вес не может быть больше ${WEIGHT_MAX} кг. Установлено ${WEIGHT_MAX}.`);
+                input.classList.add('input-error');
+                setTimeout(() => input.classList.remove('input-error'), 2000);
+                return;
+            }
+            input.classList.remove('input-error');
         }
-        
-        const remainingCells = 42 - daysHtml.length;
-        for (let i = 1; i <= remainingCells; i++) {
-            daysHtml.push(`<div class="calendar-day other-month">${i}</div>`);
+
+        function saveSettingsWithValidation() {
+            validateAge();
+            validateHeight();
+            saveSettings();
         }
-        document.getElementById('calendarDays').innerHTML = daysHtml.join('');
-    }
-    
-    function changeMonth(delta) {
-        currentDate.setMonth(currentDate.getMonth() + delta);
-        renderCalendar();
-    }
-    
-    function selectDate(dateStr) {
-        selectedDate = dateStr;
-        document.getElementById('selectedDate').value = dateStr;
-        document.getElementById('weightEntryForm').style.display = 'block';
-        document.getElementById('weightInput').value = '';
-        document.getElementById('notesInput').value = '';
-        renderCalendar();
-    }
-    
-    function toggleCalendar() {
-        const container = document.getElementById('calendarContainer');
-        const icon = document.getElementById('toggleIcon');
-        container.classList.toggle('collapsed');
-        icon.className = container.classList.contains('collapsed') ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
-    }
-    
-    function toggleCalculator() {
-        const calculator = document.getElementById('bjuCalculator');
-        const icon = document.getElementById('calculatorToggleIcon');
-        calculator.classList.toggle('collapsed');
-        icon.className = calculator.classList.contains('collapsed') ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
-    }
-    
-    function submitWeight() {
-        let weight = parseFloat(document.getElementById('weightInput').value);
-        if (isNaN(weight)) {
-            alert('Введите вес');
-            return;
-        }
-        weight = Math.min(WEIGHT_MAX, Math.max(WEIGHT_MIN, weight));
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '{{ url_for("add_weight") }}';
-        form.style.display = 'none';
-        form.innerHTML = `<input type="hidden" name="date" value="${selectedDate}"><input type="hidden" name="weight" value="${weight}"><input type="hidden" name="notes" value="${document.getElementById('notesInput').value}">`;
-        document.body.appendChild(form);
-        form.submit();
-    }
-    
-    // ========== БЖУ КАЛЬКУЛЯТОР ==========
-    function loadSettings() {
-        fetch('/api/get_user_bju_settings')
+
+        // ========== УДАЛЕНИЕ ЗАПИСИ (БЕЗ ПЕРЕЗАГРУЗКИ) ==========
+        function deleteWeightEntry(entryId, date, weight) {
+            if (!confirm('Удалить эту запись?')) return;
+            
+            fetch('/delete_weight_ajax', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ entry_id: entryId })
+            })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    document.getElementById('age').value = Math.min(AGE_MAX, Math.max(AGE_MIN, data.age));
-                    document.getElementById('height').value = Math.min(HEIGHT_MAX, Math.max(HEIGHT_MIN, data.height));
+                    // Удаляем строку из таблицы
+                    const row = document.getElementById(`weight-row-${entryId}`);
+                    if (row) row.remove();
                     
-                    const genders = JSON.parse(document.getElementById('gendersData').value);
-                    const genderSelect = document.getElementById('gender');
-                    genderSelect.innerHTML = '';
-                    genders.forEach(g => {
-                        const opt = document.createElement('option');
-                        opt.value = g.id;
-                        opt.textContent = g.display_name;
-                        if (g.id == data.gender_id) opt.selected = true;
-                        genderSelect.appendChild(opt);
-                    });
+                    // Удаляем из массивов данных
+                    const indexInData = weightData.findIndex(d => d.date === date);
+                    if (indexInData !== -1) weightData.splice(indexInData, 1);
                     
-                    const activities = JSON.parse(document.getElementById('activitiesData').value);
-                    const activitySelect = document.getElementById('activityLevel');
-                    activitySelect.innerHTML = '';
-                    activities.forEach(a => {
-                        const opt = document.createElement('option');
-                        opt.value = a.id;
-                        opt.textContent = a.display_name;
-                        if (a.id == data.activity_id) opt.selected = true;
-                        activitySelect.appendChild(opt);
-                    });
+                    const indexInDates = weightDates.indexOf(date);
+                    if (indexInDates !== -1) weightDates.splice(indexInDates, 1);
                     
-                    goals = JSON.parse(document.getElementById('goalsData').value);
-                    const tabsContainer = document.getElementById('calculatorTabs');
-                    tabsContainer.innerHTML = '';
-                    goals.forEach(g => {
-                        const btn = document.createElement('button');
-                        btn.className = 'tab-btn';
-                        btn.id = `tab-${g.id}`;
-                        btn.onclick = () => setGoal(g.id);
-                        btn.innerHTML = g.display_name;
-                        if (g.id == data.goal_id) {
-                            btn.classList.add('active');
-                            currentGoal = g.id;
-                        }
-                        tabsContainer.appendChild(btn);
-                    });
+                    const indexInEntries = weightEntries.findIndex(e => e.id === entryId);
+                    if (indexInEntries !== -1) weightEntries.splice(indexInEntries, 1);
                     
-                    settingsLoaded = true;
-                    calculateBJU();
-                }
-            });
-    }
-    
-    function saveSettings() {
-        if (!settingsLoaded) return;
-        const age = parseInt(document.getElementById('age').value) || AGE_MIN;
-        const height = parseInt(document.getElementById('height').value) || HEIGHT_MIN;
-        
-        fetch('/api/update_bju_settings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                age: Math.min(AGE_MAX, Math.max(AGE_MIN, age)),
-                height: Math.min(HEIGHT_MAX, Math.max(HEIGHT_MIN, height)),
-                gender_id: parseInt(document.getElementById('gender').value),
-                activity_id: parseInt(document.getElementById('activityLevel').value),
-                goal_id: currentGoal
-            })
-        }).then(() => calculateBJU());
-    }
-    
-    function setGoal(goalId) {
-        currentGoal = goalId;
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        document.getElementById(`tab-${goalId}`).classList.add('active');
-        saveSettings();
-    }
-    
-    function calculateBJU() {
-        const weight = parseFloat('{{ stats.last_weight|default(70) }}') || 70;
-        const age = Math.min(AGE_MAX, Math.max(AGE_MIN, parseInt(document.getElementById('age').value) || 30));
-        const height = Math.min(HEIGHT_MAX, Math.max(HEIGHT_MIN, parseInt(document.getElementById('height').value) || 175));
-        const genderSelect = document.getElementById('gender');
-        const genderText = genderSelect.options[genderSelect.selectedIndex]?.text || '👨 Мужской';
-        const activityId = parseInt(document.getElementById('activityLevel').value);
-        
-        const activities = JSON.parse(document.getElementById('activitiesData').value);
-        const activity = activities.find(a => a.id === activityId) || { value: 1.55 };
-        
-        let bmr = genderText.includes('Мужской') 
-            ? 10 * weight + 6.25 * height - 5 * age + 5
-            : 10 * weight + 6.25 * height - 5 * age - 161;
-        
-        let calories = Math.round(bmr * activity.value);
-        let proteinMultiplier, fatMultiplier, goalText = '';
-        
-        if (currentGoal == 2) {
-            calories = Math.round(calories * 0.85);
-            proteinMultiplier = 2.2;
-            fatMultiplier = 0.8;
-            goalText = 'Для похудения';
-        } else if (currentGoal == 3) {
-            calories = Math.round(calories * 1.15);
-            proteinMultiplier = 2.0;
-            fatMultiplier = 1.0;
-            goalText = 'Для набора массы';
-        } else {
-            proteinMultiplier = 1.8;
-            fatMultiplier = 0.9;
-            goalText = 'Для поддержания веса';
-        }
-        
-        const protein = Math.round(weight * proteinMultiplier);
-        const fat = Math.round(weight * fatMultiplier);
-        const carbs = Math.round((calories - (protein * 4) - (fat * 9)) / 4);
-        
-        document.getElementById('calories').textContent = calories;
-        document.getElementById('protein').textContent = protein;
-        document.getElementById('fat').textContent = fat;
-        document.getElementById('carbs').textContent = carbs;
-        document.getElementById('bjuText').textContent = `${goalText} ${calories} ккал/день (Б:${protein}г, Ж:${fat}г, У:${carbs}г)`;
-    }
-    
-    // ========== ГРАФИК ==========
-    function renderChart() {
-        const ctx = document.getElementById('weightChart').getContext('2d');
-        if (weightChart) weightChart.destroy();
-        if (weightData.length > 0) {
-            weightChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: weightData.map(d => d.date),
-                    datasets: [{
-                        label: 'Вес (кг)',
-                        data: weightData.map(d => d.weight),
-                        borderColor: '#6366f1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                        borderWidth: 3,
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: '#6366f1',
-                        pointBorderColor: 'white',
-                        pointBorderWidth: 2,
-                        pointRadius: 5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: false, title: { display: true, text: 'Вес (кг)' } },
-                        x: { title: { display: true, text: 'Дата' }, ticks: { maxRotation: 45, minRotation: 45 } }
+                    // Обновляем график и календарь
+                    renderChart();
+                    renderCalendar();
+                    
+                    // Если таблица стала пустой, показываем empty-state
+                    const tbody = document.querySelector('#weightHistoryTable tbody');
+                    if (tbody && tbody.children.length === 0) {
+                        const historyContainer = document.getElementById('historyContainer');
+                        historyContainer.innerHTML = '<div class="empty-state"><i class="fas fa-weight-scale"></i><p>У вас пока нет записей о весе</p></div>';
                     }
+                    
+                    // Обновляем статистику
+                    updateStatsAfterDelete();
+                    
+                    showSuccessToast('Запись удалена');
+                } else {
+                    showWarningToast(data.error || 'Ошибка при удалении');
                 }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showWarningToast('Ошибка при удалении');
             });
         }
-    }
-    
-    // ========== ИНИЦИАЛИЗАЦИЯ ==========
-    document.addEventListener('DOMContentLoaded', function() {
-        const mainContent = document.getElementById('mainContent');
-        const savedState = localStorage.getItem('sidebar_collapsed');
-        if (savedState === 'true') mainContent.classList.add('expanded');
-        
-        renderCalendar();
-        renderChart();
-        loadSettings();
-        if ('{{ today }}') selectDate('{{ today }}');
-        
-        // Навешиваем обработчики для полей с ограничениями
-        const ageInput = document.getElementById('age');
-        if (ageInput) {
-            ageInput.addEventListener('input', function() { validateAgeHeight(this, AGE_MIN, AGE_MAX); });
-            ageInput.addEventListener('change', function() { validateAgeHeight(this, AGE_MIN, AGE_MAX); });
+
+        function updateStatsAfterDelete() {
+            // Обновляем счётчик записей
+            const entriesCount = weightEntries.length;
+            const statsCard = document.querySelector('.stats-grid .stat-card:last-child .stat-number');
+            if (statsCard) statsCard.textContent = entriesCount;
+            
+            // Обновляем текущий вес (последний)
+            if (weightData.length > 0) {
+                const lastWeight = weightData[weightData.length - 1].weight;
+                const currentWeightSpan = document.querySelector('.stats-grid .stat-card:first-child .stat-number');
+                if (currentWeightSpan) currentWeightSpan.textContent = lastWeight + ' кг';
+            } else {
+                const currentWeightSpan = document.querySelector('.stats-grid .stat-card:first-child .stat-number');
+                if (currentWeightSpan) currentWeightSpan.textContent = '— кг';
+            }
+        }
+
+        // ========== СОХРАНЕНИЕ ВЕСА (БЕЗ ПЕРЕЗАГРУЗКИ, НО С ОБНОВЛЕНИЕМ) ==========
+        function submitWeightWithValidation() {
+            validateWeight();
+            let weight = parseFloat(document.getElementById('weightInput').value);
+            if (isNaN(weight)) {
+                showWarningToast('Введите корректный вес');
+                return;
+            }
+            
+            const date = selectedDate;
+            const notes = document.getElementById('notesInput').value || '';
+            
+            console.log('Сохраняем вес для даты:', date, 'вес:', weight);
+            
+            if (!date) {
+                showWarningToast('Выберите дату в календаре');
+                return;
+            }
+            
+            fetch('/add_weight_ajax', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ date: date, weight: weight, notes: notes })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Обновляем локальные данные
+                    const existingIndex = weightData.findIndex(d => d.date === date);
+                    if (existingIndex !== -1) {
+                        weightData[existingIndex].weight = weight;
+                        // Обновляем существующую запись
+                        const entryIndex = weightEntries.findIndex(e => e.date === date);
+                        if (entryIndex !== -1) {
+                            weightEntries[entryIndex].weight = weight;
+                            weightEntries[entryIndex].notes = notes;
+                        }
+                    } else {
+                        weightData.push({ date: date, weight: weight });
+                        weightDates.push(date);
+                        weightData.sort((a, b) => new Date(a.date) - new Date(b.date));
+                        weightEntries.push({ id: data.entry_id, date: date, weight: weight, notes: notes });
+                        weightEntries.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    }
+                    
+                    // Обновляем график и календарь
+                    renderChart();
+                    renderCalendar();
+                    
+                    // Обновляем таблицу истории
+                    updateHistoryTable();
+                    
+                    // Обновляем статистику
+                    updateStatsAfterAdd(weight);
+                    
+                    // Очищаем форму
+                    document.getElementById('weightInput').value = '';
+                    document.getElementById('notesInput').value = '';
+                    
+                    showSuccessToast(`Вес ${weight} кг сохранён для ${date}`);
+                } else {
+                    showWarningToast(data.error || 'Ошибка при сохранении');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showWarningToast('Ошибка при сохранении');
+            });
+        }
+
+        function updateStatsAfterAdd(weight) {
+            // Обновляем счётчик записей
+            const entriesCount = weightEntries.length;
+            const statsCard = document.querySelector('.stats-grid .stat-card:last-child .stat-number');
+            if (statsCard) statsCard.textContent = entriesCount;
+            
+            // Обновляем текущий вес
+            const currentWeightSpan = document.querySelector('.stats-grid .stat-card:first-child .stat-number');
+            if (currentWeightSpan) currentWeightSpan.textContent = weight + ' кг';
+        }
+
+        function updateHistoryTable() {
+            const historyContainer = document.getElementById('historyContainer');
+            if (weightEntries.length === 0) {
+                historyContainer.innerHTML = '<div class="empty-state"><i class="fas fa-weight-scale"></i><p>У вас пока нет записей о весе</p></div>';
+                return;
+            }
+            
+            // Сортируем по дате (новые сверху)
+            const sorted = [...weightEntries].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            let html = '<div style="overflow-x: auto;"><table id="weightHistoryTable"><thead><tr><th>Дата</th><th>Вес (кг)</th><th>Заметки</th><th></th></tr></thead><tbody>';
+            for (const entry of sorted) {
+                html += `
+                    <tr id="weight-row-${entry.id}">
+                        <td>${entry.date}</td>
+                        <td><strong>${entry.weight} кг</strong></td>
+                        <td>${entry.notes || '—'}</td>
+                        <td>
+                            <button class="delete-btn" onclick="deleteWeightEntry(${entry.id}, '${entry.date}', ${entry.weight})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }
+            html += '</tbody></table></div>';
+            historyContainer.innerHTML = html;
+        }
+
+        // ========== ФОРМАТИРОВАНИЕ ДАТЫ ==========
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
         
-        const heightInput = document.getElementById('height');
-        if (heightInput) {
-            heightInput.addEventListener('input', function() { validateAgeHeight(this, HEIGHT_MIN, HEIGHT_MAX); });
-            heightInput.addEventListener('change', function() { validateAgeHeight(this, HEIGHT_MIN, HEIGHT_MAX); });
+        // ========== КАЛЕНДАРЬ ==========
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            document.getElementById('calendarMonthYear').textContent = new Intl.DateTimeFormat('ru-RU', { month: 'long', year: 'numeric' }).format(currentDate);
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            let startDay = firstDay.getDay() - 1;
+            if (startDay < 0) startDay = 6;
+            
+            const daysHtml = [];
+            const prevMonthLastDay = new Date(year, month, 0).getDate();
+            for (let i = 0; i < startDay; i++) {
+                daysHtml.push(`<div class="calendar-day other-month">${prevMonthLastDay - startDay + i + 1}</div>`);
+            }
+            
+            const today = formatDate(new Date());
+            for (let i = 1; i <= lastDay.getDate(); i++) {
+                const dateStr = formatDate(new Date(year, month, i));
+                const hasWeight = weightDates.includes(dateStr);
+                const isToday = dateStr === today;
+                const isSelected = dateStr === selectedDate;
+                let classes = 'calendar-day';
+                if (hasWeight) classes += ' has-weight';
+                if (isToday) classes += ' today';
+                if (isSelected) classes += ' selected';
+                daysHtml.push(`<div class="${classes}" onclick="selectDate('${dateStr}')">${i}</div>`);
+            }
+            
+            const remainingCells = 42 - daysHtml.length;
+            for (let i = 1; i <= remainingCells; i++) {
+                daysHtml.push(`<div class="calendar-day other-month">${i}</div>`);
+            }
+            document.getElementById('calendarDays').innerHTML = daysHtml.join('');
         }
         
-        const weightInput = document.getElementById('weightInput');
-        if (weightInput) {
-            weightInput.addEventListener('input', function() { validateWeight(this); });
-            weightInput.addEventListener('change', function() { validateWeight(this); });
+        function changeMonth(delta) {
+            currentDate.setMonth(currentDate.getMonth() + delta);
+            renderCalendar();
         }
-    });
-</script>
+        
+        function selectDate(dateStr) {
+            selectedDate = dateStr;
+            document.getElementById('weightEntryForm').style.display = 'block';
+            document.getElementById('weightInput').value = '';
+            document.getElementById('notesInput').value = '';
+            renderCalendar();
+            console.log('Выбрана дата:', dateStr);
+        }
+        
+        function toggleCalendar() {
+            const container = document.getElementById('calendarContainer');
+            const icon = document.getElementById('toggleIcon');
+            container.classList.toggle('collapsed');
+            icon.className = container.classList.contains('collapsed') ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+        }
+        
+        function toggleCalculator() {
+            const calculator = document.getElementById('bjuCalculator');
+            const icon = document.getElementById('calculatorToggleIcon');
+            calculator.classList.toggle('collapsed');
+            icon.className = calculator.classList.contains('collapsed') ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+        }
+        
+        // ========== БЖУ КАЛЬКУЛЯТОР ==========
+        function loadSettings() {
+            fetch('/api/get_user_bju_settings')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('age').value = data.age;
+                        document.getElementById('height').value = data.height;
+                        
+                        const genders = JSON.parse(document.getElementById('gendersData').value);
+                        const genderSelect = document.getElementById('gender');
+                        genderSelect.innerHTML = '';
+                        genders.forEach(g => {
+                            const opt = document.createElement('option');
+                            opt.value = g.id;
+                            opt.textContent = g.display_name;
+                            if (g.id == data.gender_id) opt.selected = true;
+                            genderSelect.appendChild(opt);
+                        });
+                        
+                        const activities = JSON.parse(document.getElementById('activitiesData').value);
+                        const activitySelect = document.getElementById('activityLevel');
+                        activitySelect.innerHTML = '';
+                        activities.forEach(a => {
+                            const opt = document.createElement('option');
+                            opt.value = a.id;
+                            opt.textContent = a.display_name;
+                            if (a.id == data.activity_id) opt.selected = true;
+                            activitySelect.appendChild(opt);
+                        });
+                        
+                        goals = JSON.parse(document.getElementById('goalsData').value);
+                        const tabsContainer = document.getElementById('calculatorTabs');
+                        tabsContainer.innerHTML = '';
+                        goals.forEach(g => {
+                            const btn = document.createElement('button');
+                            btn.className = 'tab-btn';
+                            btn.id = `tab-${g.id}`;
+                            btn.onclick = () => setGoal(g.id);
+                            btn.innerHTML = g.display_name;
+                            if (g.id == data.goal_id) {
+                                btn.classList.add('active');
+                                currentGoal = g.id;
+                            }
+                            tabsContainer.appendChild(btn);
+                        });
+                        
+                        settingsLoaded = true;
+                        calculateBJU();
+                    }
+                });
+        }
+        
+        function saveSettings() {
+            if (!settingsLoaded) return;
+            fetch('/api/update_bju_settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    age: parseInt(document.getElementById('age').value) || AGE_MIN,
+                    height: parseInt(document.getElementById('height').value) || HEIGHT_MIN,
+                    gender_id: parseInt(document.getElementById('gender').value),
+                    activity_id: parseInt(document.getElementById('activityLevel').value),
+                    goal_id: currentGoal
+                })
+            }).then(() => calculateBJU());
+        }
+        
+        function setGoal(goalId) {
+            currentGoal = goalId;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${goalId}`).classList.add('active');
+            saveSettings();
+        }
+        
+        function calculateBJU() {
+            const weight = parseFloat('{{ stats.last_weight|default(70) }}') || 70;
+            const age = parseInt(document.getElementById('age').value) || 30;
+            const height = parseInt(document.getElementById('height').value) || 175;
+            const genderSelect = document.getElementById('gender');
+            const genderText = genderSelect.options[genderSelect.selectedIndex]?.text || '👨 Мужской';
+            const activityId = parseInt(document.getElementById('activityLevel').value);
+            
+            const activities = JSON.parse(document.getElementById('activitiesData').value);
+            const activity = activities.find(a => a.id === activityId) || { value: 1.55 };
+            
+            let bmr = genderText.includes('Мужской') 
+                ? 10 * weight + 6.25 * height - 5 * age + 5
+                : 10 * weight + 6.25 * height - 5 * age - 161;
+            
+            let calories = Math.round(bmr * activity.value);
+            let proteinMultiplier, fatMultiplier, goalText = '';
+            
+            if (currentGoal == 2) {
+                calories = Math.round(calories * 0.85);
+                proteinMultiplier = 2.2;
+                fatMultiplier = 0.8;
+                goalText = 'Для похудения';
+            } else if (currentGoal == 3) {
+                calories = Math.round(calories * 1.15);
+                proteinMultiplier = 2.0;
+                fatMultiplier = 1.0;
+                goalText = 'Для набора массы';
+            } else {
+                proteinMultiplier = 1.8;
+                fatMultiplier = 0.9;
+                goalText = 'Для поддержания веса';
+            }
+            
+            const protein = Math.round(weight * proteinMultiplier);
+            const fat = Math.round(weight * fatMultiplier);
+            const carbs = Math.round((calories - (protein * 4) - (fat * 9)) / 4);
+            
+            document.getElementById('calories').textContent = calories;
+            document.getElementById('protein').textContent = protein;
+            document.getElementById('fat').textContent = fat;
+            document.getElementById('carbs').textContent = carbs;
+            document.getElementById('bjuText').textContent = `${goalText} ${calories} ккал/день (Б:${protein}г, Ж:${fat}г, У:${carbs}г)`;
+        }
+        
+        // ========== ГРАФИК ==========
+        function renderChart() {
+            const ctx = document.getElementById('weightChart').getContext('2d');
+            if (weightChart) weightChart.destroy();
+            if (weightData.length > 0) {
+                weightChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: weightData.map(d => d.date),
+                        datasets: [{
+                            label: 'Вес (кг)',
+                            data: weightData.map(d => d.weight),
+                            borderColor: '#6366f1',
+                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#6366f1',
+                            pointBorderColor: 'white',
+                            pointBorderWidth: 2,
+                            pointRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: false, title: { display: true, text: 'Вес (кг)' } },
+                            x: { title: { display: true, text: 'Дата' }, ticks: { maxRotation: 45, minRotation: 45 } }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            const mainContent = document.getElementById('mainContent');
+            const savedState = localStorage.getItem('sidebar_collapsed');
+            if (savedState === 'true') mainContent.classList.add('expanded');
+            
+            renderCalendar();
+            renderChart();
+            loadSettings();
+            selectDate('{{ today }}');
+        });
+    </script>
 </body>
 </html>
