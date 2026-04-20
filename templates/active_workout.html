@@ -351,6 +351,17 @@
             color: var(--success);
         }
 
+        /* Красная подсветка при ошибке (без тултипа) */
+        .input-field input.input-error {
+            color: var(--danger) !important;
+            font-weight: bold;
+        }
+
+        .input-field.input-field-error {
+            border-color: var(--danger);
+            background: var(--danger-light);
+        }
+
         .complete-btn {
             background: var(--gray-light);
             border: none;
@@ -696,8 +707,8 @@
             <div class="header">
                 <h1><i class="fas fa-play-circle"></i> {{ workout.name }}</h1>
                 <div class="header-right">
-                    <a href="{{ url_for('view_workout', workout_id=workout.id) }}" class="btn btn-gray" onclick="return confirmExit()">
-                        <i class="fas fa-sign-out-alt"></i> Выйти
+                    <a href="{{ url_for('view_workout', workout_id=workout.id) }}" class="btn btn-gray">
+                        <i class="fas fa-arrow-left"></i> Назад
                     </a>
                 </div>
             </div>
@@ -763,6 +774,14 @@
     </div>
 
     <script>
+        // ========================================
+        // КОНСТАНТЫ И НАСТРОЙКИ
+        // ========================================
+        const MAX_WEIGHT = 600;    // Максимальный вес в кг
+        const MAX_REPS = 100;      // Максимальное количество повторений
+        const MIN_WEIGHT = 0;
+        const MIN_REPS = 1;
+
         // Состояние сайдбара
         const mainContent = document.getElementById('mainContent');
         const savedState = localStorage.getItem('sidebar_collapsed');
@@ -814,6 +833,98 @@
             localStorage.setItem(`workout_${userId}_${workoutId}_timer`, seconds.toString());
         }
 
+        // ========================================
+        // ФУНКЦИИ ОГРАНИЧЕНИЯ И ВАЛИДАЦИИ (без всплывающих плашек)
+        // ========================================
+        
+        function validateWeightInput(input) {
+            let value = parseFloat(input.value);
+            let field = input.closest('.input-field');
+            
+            // Пустое значение или NaN
+            if (isNaN(value) || input.value === '') {
+                input.value = 0;
+                field.classList.remove('input-field-error');
+                input.classList.remove('input-error');
+                return;
+            }
+            
+            // Проверка на минимум
+            if (value < MIN_WEIGHT) {
+                input.value = MIN_WEIGHT;
+                field.classList.add('input-field-error');
+                input.classList.add('input-error');
+                return;
+            }
+            
+            // Проверка на максимум
+            if (value > MAX_WEIGHT) {
+                input.value = MAX_WEIGHT;
+                field.classList.add('input-field-error');
+                input.classList.add('input-error');
+                return;
+            }
+            
+            // Всё хорошо — убираем красную подсветку
+            field.classList.remove('input-field-error');
+            input.classList.remove('input-error');
+            
+            // Округляем до 0.5
+            input.value = Math.round(value * 2) / 2;
+        }
+        
+        function validateRepsInput(input) {
+            let value = parseInt(input.value);
+            let field = input.closest('.input-field');
+            
+            // Пустое значение или NaN
+            if (isNaN(value) || input.value === '') {
+                input.value = MIN_REPS;
+                field.classList.remove('input-field-error');
+                input.classList.remove('input-error');
+                return;
+            }
+            
+            // Проверка на минимум
+            if (value < MIN_REPS) {
+                input.value = MIN_REPS;
+                field.classList.add('input-field-error');
+                input.classList.add('input-error');
+                return;
+            }
+            
+            // Проверка на максимум
+            if (value > MAX_REPS) {
+                input.value = MAX_REPS;
+                field.classList.add('input-field-error');
+                input.classList.add('input-error');
+                return;
+            }
+            
+            // Всё хорошо — убираем красную подсветку
+            field.classList.remove('input-field-error');
+            input.classList.remove('input-error');
+        }
+        
+        function setupInputListeners(setDiv) {
+            const weightInput = setDiv.querySelector('.weight-input');
+            const repsInput = setDiv.querySelector('.reps-input');
+            
+            if (weightInput) {
+                weightInput.addEventListener('blur', function() { validateWeightInput(this); });
+                weightInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') this.blur();
+                });
+            }
+            
+            if (repsInput) {
+                repsInput.addEventListener('blur', function() { validateRepsInput(this); });
+                repsInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') this.blur();
+                });
+            }
+        }
+
         // Функции для работы с подходами
         function addSet(exerciseId, setData = null) {
             const container = document.getElementById(`sets-${exerciseId}`);
@@ -829,8 +940,6 @@
             const exerciseCard = document.getElementById(`exercise-${exerciseId}`);
             const exerciseLibId = setData?.exercise_lib_id || exerciseCard?.dataset.exerciseLibId;
             
-            console.log(`Создаём подход: локальный ID ${exerciseId}, библиотечный ID ${exerciseLibId}`);
-            
             const weight = setData ? setData.weight : 0;
             const reps = setData ? setData.reps : 10;
             const isCompleted = setData ? setData.completed : false;
@@ -842,11 +951,11 @@
                 <div class="set-number">#${setNumber}</div>
                 <div class="set-inputs">
                     <div class="input-field">
-                        <input type="number" value="${weight}" step="0.5" min="0" class="weight-input" inputmode="decimal">
+                        <input type="number" value="${weight}" step="0.5" min="${MIN_WEIGHT}" max="${MAX_WEIGHT}" class="weight-input" inputmode="decimal">
                         <div class="input-label">кг</div>
                     </div>
                     <div class="input-field">
-                        <input type="number" value="${reps}" min="1" class="reps-input" inputmode="numeric">
+                        <input type="number" value="${reps}" min="${MIN_REPS}" max="${MAX_REPS}" class="reps-input" inputmode="numeric">
                         <div class="input-label">раз</div>
                     </div>
                 </div>
@@ -865,6 +974,9 @@
             
             wrapper.appendChild(setDiv);
             container.appendChild(wrapper);
+            
+            // Добавляем обработчики для валидации
+            setupInputListeners(setDiv);
             
             updateExerciseStats(exerciseId);
             saveWorkoutState();
@@ -978,11 +1090,25 @@
                 const sets = [];
                 
                 card.querySelectorAll('.set-card').forEach(set => {
-                    const weight = set.querySelector('.weight-input').value;
-                    const reps = set.querySelector('.reps-input').value;
+                    let weight = set.querySelector('.weight-input').value;
+                    let reps = set.querySelector('.reps-input').value;
                     const completed = set.classList.contains('completed');
                     
-                    sets.push({ weight, reps, completed });
+                    // Применяем ограничения перед сохранением
+                    let weightNum = parseFloat(weight);
+                    let repsNum = parseInt(reps);
+                    
+                    if (isNaN(weightNum)) weightNum = 0;
+                    if (isNaN(repsNum)) repsNum = MIN_REPS;
+                    
+                    weightNum = Math.min(MAX_WEIGHT, Math.max(MIN_WEIGHT, weightNum));
+                    repsNum = Math.min(MAX_REPS, Math.max(MIN_REPS, repsNum));
+                    
+                    sets.push({ 
+                        weight: weightNum, 
+                        reps: repsNum, 
+                        completed 
+                    });
                 });
                 
                 workoutState.exercises.push({
@@ -995,7 +1121,6 @@
             
             localStorage.setItem(`workout_${userId}_${workoutId}`, JSON.stringify(workoutState));
             localStorage.setItem(`workout_${userId}_${workoutId}_timer`, seconds.toString());
-            console.log('Состояние сохранено');
         }
 
         function loadWorkoutState() {
@@ -1035,15 +1160,6 @@
         function saveBeforeLeave() {
             saveWorkoutState();
             saveTimer();
-        }
-
-        function confirmExit() {
-            if (confirm('Выйти из тренировки? Прогресс будет сохранён.')) {
-                saveWorkoutState();
-                saveTimer();
-                return true;
-            }
-            return false;
         }
 
         // Инициализация
@@ -1123,34 +1239,38 @@
 
         function collectWorkoutData() {
             const data = [];
-            console.log('=== СБОР ДАННЫХ ТРЕНИРОВКИ ===');
             
             document.querySelectorAll('.exercise-card').forEach(card => {
                 const exerciseLibId = card.dataset.exerciseLibId;
                 const exerciseName = card.querySelector('.exercise-name').textContent;
                 
-                console.log(`Карточка: ${exerciseName}, library ID: ${exerciseLibId}`);
-                
                 if (!exerciseLibId) return;
                 
                 card.querySelectorAll('.set-card').forEach(set => {
-                    const weight = set.querySelector('.weight-input')?.value;
-                    const reps = set.querySelector('.reps-input')?.value;
+                    let weight = set.querySelector('.weight-input')?.value;
+                    let reps = set.querySelector('.reps-input')?.value;
                     const completed = set.classList.contains('completed');
                     
-                    if (completed && parseFloat(weight) > 0) {
-                        data.push({
-                            exercise_id: parseInt(exerciseLibId),
-                            exercise_name: exerciseName,
-                            weight: parseFloat(weight),
-                            reps: parseInt(reps)
-                        });
-                        console.log(`    ✅ Добавлен подход: ID ${exerciseLibId}, ${weight}kg x ${reps}`);
+                    if (completed && weight && reps) {
+                        let weightNum = parseFloat(weight);
+                        let repsNum = parseInt(reps);
+                        
+                        // Финальная проверка перед отправкой
+                        if (!isNaN(weightNum) && !isNaN(repsNum) && weightNum > 0 && repsNum > 0) {
+                            weightNum = Math.min(MAX_WEIGHT, Math.max(MIN_WEIGHT, weightNum));
+                            repsNum = Math.min(MAX_REPS, Math.max(MIN_REPS, repsNum));
+                            
+                            data.push({
+                                exercise_id: parseInt(exerciseLibId),
+                                exercise_name: exerciseName,
+                                weight: weightNum,
+                                reps: repsNum
+                            });
+                        }
                     }
                 });
             });
             
-            console.log('Итоговые данные:', data);
             return data;
         }
 

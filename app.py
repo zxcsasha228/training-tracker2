@@ -206,16 +206,13 @@ def stats():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
-    stats_data = database.get_user_stats(session['user_id'])
+    stats_data = database.get_user_stats(session['user_id'])  # ← теперь возвращает все поля
     recent_workouts = database.get_recent_workouts(session['user_id'])
-    
-    easter_egg_enabled = database.get_easter_egg_enabled()  # 👈 ПОЛУЧАЕМ
     
     return render_template('stats.html', 
                          stats=stats_data,
                          recent_workouts=recent_workouts,
-                         is_admin=session.get('is_admin', 0),
-                         easter_egg_enabled=easter_egg_enabled)  # 👈 ПЕРЕДАЁМ
+                         is_admin=session.get('is_admin', 0))
 
 @app.route('/about')
 def about():

@@ -737,50 +737,80 @@ def save_completed_workout(user_id, workout_id, workout_name, duration, sets_dat
 
 # Получить статистику пользователя
 def get_user_stats(user_id):
+    """Получить расширенную статистику пользователя"""
     try:
         with get_db() as conn:
             cursor = conn.cursor()
             
             # Количество завершённых тренировок
             cursor.execute('''
-                SELECT COUNT(DISTINCT workout_id) as count 
+                SELECT COUNT(*) as count 
                 FROM completed_workouts 
                 WHERE user_id = ?
             ''', (user_id,))
-            workouts_count = cursor.fetchone()['count']
+            completed_workouts = cursor.fetchone()['count']
             
-            # Общее время тренировок (в минутах)
+            # Общее время тренировок в секундах
             cursor.execute('''
-                SELECT SUM(duration) as total 
+                SELECT SUM(duration) as total_seconds 
                 FROM completed_workouts 
                 WHERE user_id = ?
             ''', (user_id,))
-            total_duration = cursor.fetchone()['total'] or 0
-            total_minutes = total_duration // 60
+            total_seconds = cursor.fetchone()['total_seconds'] or 0
             
-            # Упражнения - группируем по ID (теперь они должны быть одинаковыми)
+            total_hours = total_seconds // 3600
+            total_minutes = (total_seconds % 3600) // 60
+            
+            # Общее количество подходов
             cursor.execute('''
-                SELECT exercise_id, exercise_name 
+                SELECT COUNT(*) as count 
                 FROM completed_sets 
                 WHERE user_id = ?
-                GROUP BY exercise_id
-                ORDER BY exercise_name
             ''', (user_id,))
-            exercises = cursor.fetchall()
+            total_sets = cursor.fetchone()['count']
+            
+            # Дата регистрации пользователя
+            cursor.execute('SELECT created_at FROM users WHERE id = ?', (user_id,))
+            user = cursor.fetchone()
+            created_at = user['created_at'] if user else None
+            if created_at:
+                created_at = created_at.split(' ')[0]  # Берём только дату
+            
+            # Список упражнений для графика (уникальные)
+            cursor.execute('''
+                SELECT DISTINCT cs.exercise_id, e.name as exercise_name
+                FROM completed_sets cs
+                JOIN exercises e ON cs.exercise_id = e.id
+                WHERE cs.user_id = ?
+                ORDER BY e.name
+            ''', (user_id,))
+            exercises = [dict(row) for row in cursor.fetchall()]
+            
+            # Общее время в минутах (для обратной совместимости)
+            total_duration = total_seconds // 60
             
             return {
-                'workouts_count': workouts_count,
-                'total_duration': total_minutes,
-                'exercises': exercises
+                'completed_workouts': completed_workouts,
+                'total_hours': total_hours,
+                'total_minutes': total_minutes,
+                'total_sets': total_sets,
+                'created_at': created_at,
+                'total_duration': total_duration,
+                'exercises': exercises,
+                'workouts_count': completed_workouts  # для обратной совместимости
             }
     except Exception as e:
         print(f"Ошибка при получении статистики: {e}")
         return {
-            'workouts_count': 0,
+            'completed_workouts': 0,
+            'total_hours': 0,
+            'total_minutes': 0,
+            'total_sets': 0,
+            'created_at': None,
             'total_duration': 0,
-            'exercises': []
+            'exercises': [],
+            'workouts_count': 0
         }
-    
 # Получить данные для графика упражнения
 def get_exercise_progress(user_id, exercise_id):
     try:
