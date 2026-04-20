@@ -3,7 +3,7 @@
 <head>
     <title>Редактировать упражнение</title>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
@@ -28,8 +28,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            margin: 0;
-            padding: 0;
+            overflow-x: hidden;
         }
 
         .main-content {
@@ -60,6 +59,8 @@
             margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 2px solid rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         .header h1 {
@@ -93,6 +94,10 @@
             filter: brightness(1.1);
         }
 
+        .btn-gray:active {
+            transform: scale(0.96);
+        }
+
         .btn-warning {
             background: linear-gradient(135deg, var(--warning), #fbbf24);
             color: var(--dark);
@@ -101,6 +106,10 @@
         .btn-warning:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-warning:active {
+            transform: scale(0.96);
         }
 
         .file-upload {
@@ -117,6 +126,10 @@
         .file-upload:hover {
             border-color: var(--warning);
             background: rgba(245, 158, 11, 0.05);
+        }
+
+        .file-upload:active {
+            transform: scale(0.98);
         }
 
         .file-upload i {
@@ -308,24 +321,101 @@
             }
         }
 
+        /* ========================================
+           МОБИЛЬНАЯ АДАПТАЦИЯ
+           ======================================== */
+        
         @media (max-width: 768px) {
             .main-content {
-                margin-left: 0;
-                padding: 60px 20px 20px;
+                margin-left: 0 !important;
+                padding: 20px 16px 80px 16px;
             }
             
             .container {
-                padding: 30px 20px;
+                padding: 24px 18px;
+                border-radius: 20px;
             }
             
             .header {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.5em;
+            }
+            
+            .header .btn-gray {
+                width: 100%;
+                justify-content: center;
+                padding: 10px 16px;
+            }
+            
+            .file-upload {
+                padding: 20px;
+            }
+            
+            .file-upload i {
+                font-size: 2em;
+            }
+            
+            .file-upload p {
+                font-size: 0.9em;
+            }
+            
+            input, select {
+                padding: 12px 16px;
+                font-size: 16px;
+                border-radius: 14px;
+            }
+            
+            .char-counter {
+                font-size: 0.7em;
             }
             
             .button-group {
                 flex-direction: column;
+                gap: 12px;
+            }
+            
+            .btn-warning {
+                padding: 12px 20px;
+            }
+            
+            .current-image img {
+                max-width: 100px;
+                max-height: 100px;
+            }
+            
+            .image-preview {
+                max-width: 120px;
+                max-height: 120px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 15px 12px 80px 12px;
+            }
+            
+            .container {
+                padding: 20px 14px;
+            }
+            
+            .header h1 {
+                font-size: 1.3em;
+            }
+            
+            input, select {
+                padding: 11px 14px;
+            }
+        }
+
+        /* Планшеты */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .main-content {
+                margin-left: 80px !important;
+                padding: 20px 24px;
             }
         }
     </style>
@@ -420,6 +510,13 @@
     {% include 'active_workout_banner.html' %}
 
     <script>
+        // Состояние сайдбара
+        const mainContent = document.getElementById('mainContent');
+        const savedState = localStorage.getItem('sidebar_collapsed');
+        if (savedState === 'true') {
+            mainContent.classList.add('expanded');
+        }
+
         const exerciseNameInput = document.getElementById('exerciseName');
         const charCountSpan = document.getElementById('charCount');
         const charCounterDiv = document.querySelector('.char-counter');
@@ -554,12 +651,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             updateCharCounter();
             validateField();
-            
-            const mainContent = document.getElementById('mainContent');
-            const savedState = localStorage.getItem('sidebar_collapsed');
-            if (savedState === 'true') {
-                mainContent.classList.add('expanded');
-            }
         });
     </script>
 </body>
