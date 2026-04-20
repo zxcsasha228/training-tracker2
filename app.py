@@ -657,6 +657,14 @@ def admin_nutrition_data():
                          users=users,
                          is_admin=session.get('is_admin', 0))
 
+@app.route('/api/admin_stats')
+def admin_stats_api():
+    if 'user_id' not in session or not session.get('is_admin'):
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+    
+    stats = database.get_admin_stats()
+    return jsonify({'success': True, 'stats': stats})
+
 @app.route('/admin/lookups')
 def lookup_tables():
     if 'user_id' not in session or not session.get('is_admin'):

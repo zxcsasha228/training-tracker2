@@ -748,6 +748,20 @@
 
     // ========== ОСНОВНЫЕ ТАБЛИЦЫ ==========
 
+    // Обновление статистики в админ-панели (вызывается после изменений)
+function updateAdminStats() {
+    fetch('/api/admin_stats')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Обновляем карточки статистики в админ-панели
+                // Это нужно будет сделать через sessionStorage или редирект
+                sessionStorage.setItem('admin_stats_updated', 'true');
+            }
+        })
+        .catch(error => console.error('Ошибка обновления статистики:', error));
+}
+
     // Смена таблицы
     function changeTable() {
         currentTable = document.getElementById('tableSelect').value;
@@ -805,174 +819,243 @@
     }
 
     // Отрисовка заголовков
-    function renderHeader() {
-        const header = document.getElementById('tableHeader');
-        const currentTable = document.getElementById('tableSelect').value;
-        
-        if (allData.length === 0) {
-            header.innerHTML = '<tr><th>Нет данных</th></tr>';
-            return;
-        }
-        
-        const columns = Object.keys(allData[0]);
-        let displayColumns = [...columns];
-        let columnNames = {};
-        
-        // Русские названия для разных таблиц
-        if (currentTable === 'workout_sessions') {
-            displayColumns = [
-                'id',
-                'user_id',
-                'full_name',
-                'name',
-                'date',
-                'notes',
-                'created_at'
-            ];
-            columnNames = {
-                'id': 'ID',
-                'user_id': 'ID пользователя',
-                'full_name': 'ФИО пользователя',
-                'name': 'Название тренировки',
-                'date': 'Дата',
-                'notes': 'Заметки',
-                'created_at': 'Дата создания'
-            };
-        }
-        else if (currentTable === 'exercises') {
-            displayColumns = [
-                'id',
-                'name',
-                'muscle_group',
-                'image',
-                'created_by',
-                'created_at'
-            ];
-            columnNames = {
-                'id': 'ID',
-                'name': 'Название упражнения',
-                'muscle_group': 'Группа мышц',
-                'image': 'Изображение',
-                'created_by': 'Создал',
-                'created_at': 'Дата создания'
-            };
-        }
-        else if (currentTable === 'weight_tracking') {
-            displayColumns = [
-                'id',
-                'user_id',
-                'full_name',
-                'date',
-                'weight',
-                'notes',
-                'created_at'
-            ];
-            columnNames = {
-                'id': 'ID',
-                'user_id': 'ID пользователя',
-                'full_name': 'ФИО',
-                'date': 'Дата замера',
-                'weight': 'Вес (кг)',
-                'notes': 'Заметки',
-                'created_at': 'Дата записи'
-            };
-        }
-        else if (currentTable === 'bju_settings') {
-            displayColumns = [
-                'id',
-                'user_id',
-                'full_name',
-                'age',
-                'height',
-                'gender_id',
-                'activity_id',
-                'goal_id',
-                'updated_at'
-            ];
-            columnNames = {
-                'id': 'ID',
-                'user_id': 'ID пользователя',
-                'full_name': 'ФИО',
-                'age': 'Возраст',
-                'height': 'Рост (см)',
-                'gender_id': 'Пол',
-                'activity_id': 'Активность',
-                'goal_id': 'Цель',
-                'updated_at': 'Последнее обновление'
-            };
-        }
-        else if (currentTable === 'users') {
-            displayColumns = [
-                'id',
-                'username',
-                 'password',
-                'full_name',
-                'is_admin',
-                'created_at'
-            ];
-            columnNames = {
-                'id': 'ID',
-                'username': 'Логин',
-                 'password': 'Пароль',
-                'full_name': 'ФИО',
-                'is_admin': 'Администратор',
-                'created_at': 'Дата регистрации'
-            };
-        }
-        else if (currentTable === 'completed_workouts') {
-            displayColumns = [
-                'id',
-                'user_id',
-                'full_name',
-                'workout_name',
-                'date',
-                'duration',
-                'completed_at'
-            ];
-            columnNames = {
-                'id': 'ID',
-                'user_id': 'ID пользователя',
-                'full_name': 'ФИО',
-                'workout_name': 'Название тренировки',
-                'date': 'Дата тренировки',
-                'duration': 'Длительность',
-                'completed_at': 'Завершена'
-            };
-        }
-        else if (currentTable === 'completed_sets') {
-            displayColumns = [
-                'id',
-                'user_id',
-                'full_name',
-                'exercise_name',
-                'weight',
-                'reps',
-                'workout_date',
-                'completed_at'
-            ];
-            columnNames = {
-                'id': 'ID',
-                'user_id': 'ID пользователя',
-                'full_name': 'ФИО',
-                'exercise_name': 'Упражнение',
-                'weight': 'Вес (кг)',
-                'reps': 'Повторения',
-                'workout_date': 'Дата тренировки',
-                'completed_at': 'Выполнено'
-            };
-        }
-        
-        let html = '<tr><th class="checkbox-cell"><input type="checkbox" class="select-all" onclick="toggleAll()"></th>';
-        
-        displayColumns.forEach(col => {
-            let displayName = columnNames[col] || col;
-            html += `<th onclick="sortBy('${col}')">${displayName} <i class="fas fa-sort"></i></th>`;
-        });
-        
-        html += '<th>Действия</th></tr>';
-        header.innerHTML = html;
+function renderHeader() {
+    const header = document.getElementById('tableHeader');
+    const currentTable = document.getElementById('tableSelect').value;
+    
+    if (allData.length === 0) {
+        header.innerHTML = '<tr><th>Нет данных</th></tr>';
+        return;
     }
-
+    
+    const columns = Object.keys(allData[0]);
+    let displayColumns = [...columns];
+    let columnNames = {};
+    
+    // Русские названия для разных таблиц
+    if (currentTable === 'workout_sessions') {
+        displayColumns = [
+            'id',
+            'user_id',
+            'full_name',
+            'name',
+            'date',
+            'notes',
+            'created_at'
+        ];
+        columnNames = {
+            'id': 'ID',
+            'user_id': 'ID пользователя',
+            'full_name': 'ФИО пользователя',
+            'name': 'Название тренировки',
+            'date': 'Дата',
+            'notes': 'Заметки',
+            'created_at': 'Дата создания'
+        };
+    }
+    else if (currentTable === 'exercises') {
+        displayColumns = [
+            'id',
+            'name',
+            'muscle_group',
+            'image',
+            'created_by',
+            'created_at'
+        ];
+        columnNames = {
+            'id': 'ID',
+            'name': 'Название упражнения',
+            'muscle_group': 'Группа мышц',
+            'image': 'Изображение',
+            'created_by': 'Создал',
+            'created_at': 'Дата создания'
+        };
+    }
+    else if (currentTable === 'weight_tracking') {
+        displayColumns = [
+            'id',
+            'user_id',
+            'full_name',
+            'date',
+            'weight',
+            'notes',
+            'created_at'
+        ];
+        columnNames = {
+            'id': 'ID',
+            'user_id': 'ID пользователя',
+            'full_name': 'ФИО',
+            'date': 'Дата замера',
+            'weight': 'Вес (кг)',
+            'notes': 'Заметки',
+            'created_at': 'Дата записи'
+        };
+    }
+    else if (currentTable === 'bju_settings') {
+        displayColumns = [
+            'id',
+            'user_id',
+            'full_name',
+            'age',
+            'height',
+            'gender_id',
+            'activity_id',
+            'goal_id',
+            'updated_at'
+        ];
+        columnNames = {
+            'id': 'ID',
+            'user_id': 'ID пользователя',
+            'full_name': 'ФИО',
+            'age': 'Возраст',
+            'height': 'Рост (см)',
+            'gender_id': 'Пол',
+            'activity_id': 'Активность',
+            'goal_id': 'Цель',
+            'updated_at': 'Последнее обновление'
+        };
+    }
+    else if (currentTable === 'users') {
+        displayColumns = [
+            'id',
+            'username',
+            'password',
+            'full_name',
+            'is_admin',
+            'created_at'
+        ];
+        columnNames = {
+            'id': 'ID',
+            'username': 'Логин',
+            'password': 'Пароль',
+            'full_name': 'ФИО',
+            'is_admin': 'Администратор',
+            'created_at': 'Дата регистрации'
+        };
+    }
+    else if (currentTable === 'completed_workouts') {
+        displayColumns = [
+            'id',
+            'user_id',
+            'full_name',
+            'workout_name',
+            'date',
+            'duration',
+            'completed_at'
+        ];
+        columnNames = {
+            'id': 'ID',
+            'user_id': 'ID пользователя',
+            'full_name': 'ФИО',
+            'workout_name': 'Название тренировки',
+            'date': 'Дата тренировки',
+            'duration': 'Длительность (сек)',
+            'completed_at': 'Завершена'
+        };
+    }
+    else if (currentTable === 'completed_sets') {
+        displayColumns = [
+            'id',
+            'user_id',
+            'full_name',
+            'exercise_name',
+            'weight',
+            'reps',
+            'workout_date',
+            'completed_at'
+        ];
+        columnNames = {
+            'id': 'ID',
+            'user_id': 'ID пользователя',
+            'full_name': 'ФИО',
+            'exercise_name': 'Упражнение',
+            'weight': 'Вес (кг)',
+            'reps': 'Повторения',
+            'workout_date': 'Дата тренировки',
+            'completed_at': 'Выполнено'
+        };
+    }
+    else if (currentTable === 'about_content') {
+        displayColumns = [
+            'id',
+            'section_key',
+            'section_title',
+            'section_content',
+            'icon',
+            'sort_order',
+            'updated_at'
+        ];
+        columnNames = {
+            'id': 'ID',
+            'section_key': 'Ключ секции',
+            'section_title': 'Заголовок',
+            'section_content': 'Содержание',
+            'icon': 'Иконка',
+            'sort_order': 'Порядок',
+            'updated_at': 'Обновлено'
+        };
+    }
+    else if (currentTable === 'gender_types') {
+        displayColumns = ['id', 'name', 'display_name', 'icon', 'sort_order'];
+        columnNames = {
+            'id': 'ID',
+            'name': 'Код',
+            'display_name': 'Название',
+            'icon': 'Иконка',
+            'sort_order': 'Порядок'
+        };
+    }
+    else if (currentTable === 'activity_levels') {
+        displayColumns = ['id', 'name', 'display_name', 'value', 'icon', 'description', 'sort_order'];
+        columnNames = {
+            'id': 'ID',
+            'name': 'Код',
+            'display_name': 'Название',
+            'value': 'Коэффициент',
+            'icon': 'Иконка',
+            'description': 'Описание',
+            'sort_order': 'Порядок'
+        };
+    }
+    else if (currentTable === 'goal_types') {
+        displayColumns = ['id', 'name', 'display_name', 'icon', 'description', 'sort_order'];
+        columnNames = {
+            'id': 'ID',
+            'name': 'Код',
+            'display_name': 'Название',
+            'icon': 'Иконка',
+            'description': 'Описание',
+            'sort_order': 'Порядок'
+        };
+    }
+    else if (currentTable === 'easter_egg_settings') {
+        displayColumns = ['id', 'media_path', 'media_type', 'enabled', 'updated_at'];
+        columnNames = {
+            'id': 'ID',
+            'media_path': 'Путь к медиа',
+            'media_type': 'Тип',
+            'enabled': 'Включено',
+            'updated_at': 'Обновлено'
+        };
+    }
+    else {
+        // Для остальных таблиц используем стандартные названия
+        displayColumns = columns;
+        columns.forEach(col => {
+            columnNames[col] = col;
+        });
+    }
+    
+    let html = '<tr><th class="checkbox-cell"><input type="checkbox" class="select-all" onclick="toggleAll()"></th>';
+    
+    displayColumns.forEach(col => {
+        let displayName = columnNames[col] || col;
+        html += `<th onclick="sortBy('${col}')">${displayName} <i class="fas fa-sort"></i></th>`;
+    });
+    
+    html += '<th>Действия</th></tr>';
+    header.innerHTML = html;
+}
     // Отрисовка тела таблицы
 function renderBody(data) {
     const tbody = document.getElementById('tableBody');
@@ -1500,23 +1583,22 @@ if (currentTable === 'users' && column === 'password') {
         }
     }
 
-    // Удаление одной записи
     function deleteRow(id) {
-        if (confirm('Удалить запись?')) {
-            fetch(`/api/delete_row/${currentTable}/${id}`, {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    loadTableData();
-                } else {
-                    alert('Ошибка удаления');
-                }
-            });
-        }
+    if (confirm('Удалить запись?')) {
+        fetch(`/api/delete_row/${currentTable}/${id}`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                loadTableData();
+                updateAdminStats();  // ← ДОБАВИТЬ ЭТУ СТРОКУ
+            } else {
+                alert('Ошибка удаления');
+            }
+        });
     }
-
+}
     // Редактирование строки
     function editRow(id) {
         const rowData = allData.find(row => row.id == id);
@@ -1974,70 +2056,69 @@ function saveNewRecord() {
     }
 
     // Отрисовка заголовков справочника
-    function renderLookupHeader() {
-        const header = document.getElementById('lookupTableHeader');
-        
-        if (lookupAllData.length === 0) {
-            header.innerHTML = '<tr><th>Нет данных</th></tr>';
-            return;
-        }
-        
-        const columns = Object.keys(lookupAllData[0]);
-        let columnNames = {};
-        
-        // Русские названия для колонок
-        if (currentLookupTable === 'gender_types') {
-            columnNames = {
-                'id': 'ID',
-                'name': 'Код',
-                'display_name': 'Название',
-                'icon': 'Иконка',
-                'sort_order': 'Порядок'
-            };
-
-        
-        } else if (currentLookupTable === 'activity_levels') {
-            columnNames = {
-                'id': 'ID',
-                'name': 'Код',
-                'display_name': 'Название',
-                'value': 'Коэф.',
-                'icon': 'Иконка',
-                'description': 'Описание',
-                'sort_order': 'Порядок'
-            };
-         } else if (currentLookupTable === 'easter_egg_settings') {
-    columnNames = {
-        'id': 'ID',
-        'media_path': 'Путь к медиа',
-        'media_type': 'Тип',
-        'enabled': 'Статус',
-        'updated_at': 'Обновлено'
-    };
-
-       
-        } else if (currentLookupTable === 'goal_types') {
-            columnNames = {
-                'id': 'ID',
-                'name': 'Код',
-                'display_name': 'Название',
-                'icon': 'Иконка',
-                'description': 'Описание',
-                'sort_order': 'Порядок'
-            };
-        }
-        
-        let html = '<tr><th class="checkbox-cell"><input type="checkbox" class="select-all" onclick="toggleLookupAll()"></th>';
-        
-        columns.forEach(col => {
-            let displayName = columnNames[col] || col;
-            html += `<th onclick="sortLookupBy('${col}')">${displayName} <i class="fas fa-sort"></i></th>`;
-        });
-        
-        html += '<th>Действия</th></tr>';
-        header.innerHTML = html;
+function renderLookupHeader() {
+    const header = document.getElementById('lookupTableHeader');
+    
+    if (lookupAllData.length === 0) {
+        header.innerHTML = '<tr><th>Нет данных</th></tr>';
+        return;
     }
-
+    
+    const columns = Object.keys(lookupAllData[0]);
+    let columnNames = {};
+    
+    // Русские названия для колонок справочников
+    if (currentLookupTable === 'gender_types') {
+        columnNames = {
+            'id': 'ID',
+            'name': 'Код',
+            'display_name': 'Название',
+            'icon': 'Иконка',
+            'sort_order': 'Порядок'
+        };
+    } else if (currentLookupTable === 'activity_levels') {
+        columnNames = {
+            'id': 'ID',
+            'name': 'Код',
+            'display_name': 'Название',
+            'value': 'Коэффициент',
+            'icon': 'Иконка',
+            'description': 'Описание',
+            'sort_order': 'Порядок'
+        };
+    } else if (currentLookupTable === 'goal_types') {
+        columnNames = {
+            'id': 'ID',
+            'name': 'Код',
+            'display_name': 'Название',
+            'icon': 'Иконка',
+            'description': 'Описание',
+            'sort_order': 'Порядок'
+        };
+    } else if (currentLookupTable === 'easter_egg_settings') {
+        columnNames = {
+            'id': 'ID',
+            'media_path': 'Путь к медиа',
+            'media_type': 'Тип',
+            'enabled': 'Включено',
+            'updated_at': 'Обновлено'
+        };
+    } else {
+        columns.forEach(col => {
+            columnNames[col] = col;
+        });
+    }
+    
+    let html = '<tr><th class="checkbox-cell"><input type="checkbox" class="select-all" onclick="toggleLookupAll()"></th>';
+    
+    columns.forEach(col => {
+        let displayName = columnNames[col] || col;
+        html += `<th onclick="sortLookupBy('${col}')">${displayName} <i class="fas fa-sort"></i></th>`;
+    });
+    
+    html += '<th>Действия</th></tr>';
+    header.innerHTML = html;
+}
     // Отрисовка тела таблицы справочника
 function renderLookupBody(data) {
     const tbody = document.getElementById('lookupTableBody');
@@ -2480,18 +2561,18 @@ function clearLookupSelection() {
 
 // Выполнение массового действия в справочнике
 function executeLookupBulkAction() {
-    const action = document.getElementById('lookupBulkAction').value;
+      const action = document.getElementById('bulkAction').value;
     
-    if (lookupSelectedRows.size === 0) {
+    if (selectedRows.size === 0) {
         alert('Выберите записи');
         return;
     }
     
-    const ids = Array.from(lookupSelectedRows);
+    const ids = Array.from(selectedRows);
     
     if (action === 'delete') {
         if (confirm(`Удалить ${ids.length} записей?`)) {
-            fetch(`/api/bulk_delete/${currentLookupTable}`, {
+            fetch(`/api/bulk_delete/${currentTable}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2501,13 +2582,22 @@ function executeLookupBulkAction() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    lookupSelectedRows.clear();
-                    loadLookupTableData();
+                    selectedRows.clear();
+                    loadTableData();
+                    updateAdminStats();  // ← ДОБАВИТЬ ЭТУ СТРОКУ
                 } else {
                     alert('Ошибка удаления');
                 }
             });
         }
+    } else if (action === 'export') {
+        const selectedData = allData.filter(row => ids.includes(String(row.id)));
+        const blob = new Blob([JSON.stringify(selectedData, null, 2)], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${currentTable}_export.json`;
+        a.click();
     }
 }
     
