@@ -308,20 +308,71 @@ def init_exercises_table():
     except Exception as e:
         print(f"Ошибка при создании таблицы exercises: {e}")
 
-def get_all_exercises():
-    """Получить все упражнения"""
+def add_video_column_to_exercises():
+    """Добавляет колонку video_url в таблицу exercises, если её нет"""
     try:
         with get_db() as conn:
             cursor = conn.cursor()
-            cursor.execute('''
-                SELECT id, name, image, muscle_group, created_by, created_at 
-                FROM exercises 
-                ORDER BY name
-            ''')
-            return cursor.fetchall()
+            cursor.execute("PRAGMA table_info(exercises)")
+            columns = [col[1] for col in cursor.fetchall()]
+            
+            if 'video_url' not in columns:
+                cursor.execute("ALTER TABLE exercises ADD COLUMN video_url TEXT")
+                print("✅ Добавлена колонка video_url в таблицу exercises")
+            else:
+                print("⏩ Колонка video_url уже существует")
+            conn.commit()
     except Exception as e:
-        print(f"Ошибка при получении упражнений: {e}")
-        return []
+        print(f"Ошибка при добавлении колонки video_url: {e}")
+
+
+def add_exercise(name, image, muscle_group, created_by, video_url=None):
+    """Добавить новое упражнение"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            
+            cursor.execute('SELECT id FROM exercises WHERE name = ? COLLATE NOCASE', (name,))
+            existing = cursor.fetchone()
+            
+            if existing:
+                print(f"Упражнение '{name}' уже существует с ID {existing['id']}")
+                return False
+            
+            cursor.execute('''
+                INSERT INTO exercises (name, image, muscle_group, created_by, video_url)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (name, image, muscle_group, created_by, video_url))
+            return True
+    except Exception as e:
+        print(f"Ошибка при добавлении упражнения: {e}")
+        return False
+
+
+def update_exercise(exercise_id, name, image, muscle_group, video_url=None):
+    """Обновить упражнение"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            
+            if image:
+                cursor.execute('''
+                    UPDATE exercises 
+                    SET name = ?, image = ?, muscle_group = ?, video_url = ?
+                    WHERE id = ?
+                ''', (name, image, muscle_group, video_url, exercise_id))
+            else:
+                cursor.execute('''
+                    UPDATE exercises 
+                    SET name = ?, muscle_group = ?, video_url = ?
+                    WHERE id = ?
+                ''', (name, muscle_group, video_url, exercise_id))
+            
+            return True
+    except Exception as e:
+        print(f"Ошибка при обновлении упражнения: {e}")
+        return False
+
 
 def get_exercise(exercise_id):
     """Получить упражнение по ID"""
@@ -331,67 +382,30 @@ def get_exercise(exercise_id):
             cursor.execute('SELECT * FROM exercises WHERE id = ?', (exercise_id,))
             exercise = cursor.fetchone()
             if exercise:
-                # Преобразуем в dict для удобства
                 result = dict(exercise)
-                # Проверяем путь к картинке
-                if result.get('image'):
-                    # Убеждаемся, что путь начинается с 'uploads/'
-                    if not result['image'].startswith('uploads/'):
-                        result['image'] = f"uploads/{result['image']}"
+                if result.get('image') and not result['image'].startswith('uploads/'):
+                    result['image'] = f"uploads/{result['image']}"
                 return result
             return None
     except Exception as e:
         print(f"Ошибка при получении упражнения: {e}")
         return None
 
-def add_exercise(name, image, muscle_group, created_by):
-    """Добавить новое упражнение"""
-    try:
-        with get_db() as conn:
-            cursor = conn.cursor()
-            
-            # Проверяем, есть ли уже упражнение с таким названием
-            cursor.execute('SELECT id FROM exercises WHERE name = ? COLLATE NOCASE', (name,))
-            existing = cursor.fetchone()
-            
-            if existing:
-                print(f"Упражнение '{name}' уже существует с ID {existing['id']}")
-                return False
-            
-            cursor.execute('''
-                INSERT INTO exercises (name, image, muscle_group, created_by)
-                VALUES (?, ?, ?, ?)
-            ''', (name, image, muscle_group, created_by))
-            return True
-    except Exception as e:
-        print(f"Ошибка при добавлении упражнения: {e}")
-        return False
 
-def update_exercise(exercise_id, name, image, muscle_group):
-    """Обновить упражнение"""
+def get_all_exercises():
+    """Получить все упражнения"""
     try:
         with get_db() as conn:
             cursor = conn.cursor()
-            
-            # Если передано новое изображение, обновляем его
-            if image:
-                cursor.execute('''
-                    UPDATE exercises 
-                    SET name = ?, image = ?, muscle_group = ?
-                    WHERE id = ?
-                ''', (name, image, muscle_group, exercise_id))
-            else:
-                cursor.execute('''
-                    UPDATE exercises 
-                    SET name = ?, muscle_group = ?
-                    WHERE id = ?
-                ''', (name, muscle_group, exercise_id))
-            
-            return True
+            cursor.execute('''
+                SELECT id, name, image, muscle_group, video_url, created_by, created_at 
+                FROM exercises 
+                ORDER BY name
+            ''')
+            return cursor.fetchall()
     except Exception as e:
-        print(f"Ошибка при обновлении упражнения: {e}")
-        return False
-    
+        print(f"Ошибка при получении упражнений: {e}")
+        return []
 def delete_exercise(exercise_id):
     """Удалить упражнение"""
     try:
@@ -1550,6 +1564,36 @@ def init_lookup_tables():
     except Exception as e:
         print(f"Ошибка при создании справочных таблиц: {e}")
 
+
+def add_video_column_to_exercises():
+    """Добавляет колонку video_url в таблицу exercises, если её нет"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            # Проверяем, существует ли колонка video_url
+            cursor.execute("PRAGMA table_info(exercises)")
+            columns = [col[1] for col in cursor.fetchall()]
+            
+            if 'video_url' not in columns:
+                cursor.execute("ALTER TABLE exercises ADD COLUMN video_url TEXT")
+                print("✅ Добавлена колонка video_url в таблицу exercises")
+            else:
+                print("⏩ Колонка video_url уже существует")
+            conn.commit()
+    except Exception as e:
+        print(f"Ошибка при добавлении колонки video_url: {e}")
+
+def update_user_field(user_id, field, value):
+    """Обновить поле пользователя"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute(f'UPDATE users SET {field} = ? WHERE id = ?', (value, user_id))
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"Ошибка при обновлении {field}: {e}")
+        return False
 
 # Функции для получения данных из справочников
 def get_gender_types():

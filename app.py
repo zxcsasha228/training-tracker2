@@ -237,6 +237,46 @@ def profile():
                          user=user, 
                          stats=stats,
                          is_admin=session.get('is_admin', 0))
+
+@app.route('/api/update_profile', methods=['POST'])
+def update_profile():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
+    
+    data = request.get_json()
+    user_id = data.get('user_id')
+    field = data.get('field')
+    value = data.get('value', '').strip()
+    
+    # Проверяем, что пользователь редактирует свой профиль
+    if int(user_id) != session['user_id'] and not session.get('is_admin'):
+        return jsonify({'success': False, 'error': 'Нет прав'}), 403
+    
+    if field == 'full_name':
+        if not value or len(value) < 2:
+            return jsonify({'success': False, 'error': 'ФИО должно содержать минимум 2 символа'})
+        if len(value) > 100:
+            return jsonify({'success': False, 'error': 'ФИО не может превышать 100 символов'})
+        
+        success = database.update_user_field(user_id, 'full_name', value)
+        if success:
+            return jsonify({'success': True})
+        return jsonify({'success': False, 'error': 'Ошибка при сохранении'})
+    
+    return jsonify({'success': False, 'error': 'Неизвестное поле'})
+
+
+@app.route('/api/refresh_session', methods=['POST'])
+def refresh_session():
+    if 'user_id' not in session:
+        return jsonify({'success': False})
+    
+    data = request.get_json()
+    if 'username' in data:
+        session['username'] = data['username']
+    
+    return jsonify({'success': True})
+
 #endregion
 #region========== ТРЕНИРОВКИ ==========
 
@@ -404,6 +444,7 @@ def add_exercise():
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
         muscle_group = request.form.get('muscle_group', '').strip()
+        video_url = request.form.get('video_url', '').strip()
         
         if not name or not muscle_group:
             return render_template('add_exercise.html', 
@@ -419,7 +460,8 @@ def add_exercise():
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 image = f"uploads/{filename}"
         
-        success = database.add_exercise(name, image, muscle_group, session['user_id'])
+        # Передаём video_url в функцию
+        success = database.add_exercise(name, image, muscle_group, session['user_id'], video_url if video_url else None)
         if success:
             return redirect(url_for('exercises_library'))
         else:
@@ -429,6 +471,7 @@ def add_exercise():
     
     return render_template('add_exercise.html',
                          is_admin=session.get('is_admin', 0))
+
 
 @app.route('/exercises/edit/<int:exercise_id>', methods=['GET', 'POST'])
 def edit_exercise(exercise_id):
@@ -442,6 +485,7 @@ def edit_exercise(exercise_id):
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
         muscle_group = request.form.get('muscle_group', '').strip()
+        video_url = request.form.get('video_url', '').strip()
         
         if not name or not muscle_group:
             return render_template('edit_exercise.html', 
@@ -466,7 +510,8 @@ def edit_exercise(exercise_id):
                         except:
                             pass
         
-        database.update_exercise(exercise_id, name, image, muscle_group)
+        # Передаём video_url в функцию
+        database.update_exercise(exercise_id, name, image, muscle_group, video_url if video_url else None)
         return redirect(url_for('exercises_library'))
     
     return render_template('edit_exercise.html', 
@@ -1316,6 +1361,13 @@ if __name__ == '__main__':
         print("Миграция базы данных выполнена")
     except Exception as e:
         print(f"Ошибка при миграции БД: {e}")
+    try:
+        database.add_video_column_to_exercises()
+        print("Таблица exercises обновлена (добавлена колонка video_url)")
+    except Exception as e:
+        print(f"Ошибка при обновлении exercises: {e}")
+
+        
     
     threading.Thread(target=open_browser).start()
     app.run(host='0.0.0.0', port=5000, debug=False)

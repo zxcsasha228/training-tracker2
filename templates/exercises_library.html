@@ -63,6 +63,112 @@
             flex-wrap: wrap;
             gap: 15px;
         }
+        
+        .video-preview-btn {
+            background: none;
+            border: none;
+            color: #ff0000;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-left: 8px;
+            transition: transform 0.2s;
+        }
+
+        .video-preview-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* Модальное окно видео */
+.video-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.video-modal.active {
+    display: flex;
+}
+
+.video-modal-content {
+    background: white;
+    border-radius: 20px;
+    max-width: 800px;
+    width: 100%;
+    overflow: hidden;
+    animation: modalSlideUp 0.3s ease-out;
+}
+
+.video-modal-header {
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #ff0000, #cc0000);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.video-modal-header h3 {
+    margin: 0;
+    font-size: 1.2em;
+}
+
+.video-modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5em;
+    cursor: pointer;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+
+.video-modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+}
+
+.video-modal-body {
+    padding: 0;
+}
+
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 */
+    height: 0;
+    overflow: hidden;
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+@media (max-width: 768px) {
+    .video-modal {
+        padding: 10px;
+    }
+    
+    .video-modal-header h3 {
+        font-size: 1em;
+    }
+}
 
         .header h1 {
             font-size: 2.5em;
@@ -502,7 +608,14 @@
                         {% endif %}
                     </div>         
                     
-                    <div class="exercise-name">{{ exercise.name }}</div>
+                    <div class="exercise-name">
+                        {{ exercise.name }}
+                        {% if exercise.video_url %}
+                        <button class="video-preview-btn" onclick="openVideoModal('{{ exercise.video_url }}', '{{ exercise.name }}')" title="Смотреть видео">
+                            <i class="fab fa-youtube"></i>
+                        </button>
+                        {% endif %}
+                    </div>
                     
                     <div class="muscle-group">
                         <i class="fas fa-bolt"></i> {{ exercise.muscle_group }}
@@ -537,6 +650,74 @@
     </div>
 
     <script>
+
+        // Функция для получения embed URL из YouTube ссылки
+function getYouTubeEmbedUrl(url) {
+    if (!url) return null;
+    
+    // Поддерживаемые форматы:
+    // https://www.youtube.com/watch?v=VIDEO_ID
+    // https://youtu.be/VIDEO_ID
+    // https://www.youtube.com/embed/VIDEO_ID
+    
+    let videoId = null;
+    
+    // Формат youtube.com/watch?v=
+    if (url.includes('youtube.com/watch')) {
+        const urlParams = new URLSearchParams(url.split('?')[1]);
+        videoId = urlParams.get('v');
+    }
+    // Формат youtu.be/
+    else if (url.includes('youtu.be/')) {
+        videoId = url.split('youtu.be/')[1].split('?')[0];
+    }
+    // Формат youtube.com/embed/
+    else if (url.includes('youtube.com/embed/')) {
+        videoId = url.split('embed/')[1].split('?')[0];
+    }
+    
+    if (videoId) {
+        return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+    }
+    
+    return null;
+}
+
+function openVideoModal(videoUrl, exerciseName) {
+    const embedUrl = getYouTubeEmbedUrl(videoUrl);
+    
+    if (!embedUrl) {
+        alert('Не удалось распознать ссылку на видео. Убедитесь, что это корректная YouTube ссылка.');
+        return;
+    }
+    
+    document.getElementById('videoModalTitle').textContent = `${exerciseName} - техника выполнения`;
+    document.getElementById('videoFrame').src = embedUrl;
+    document.getElementById('videoModal').classList.add('active');
+}
+
+function closeVideoModal() {
+    const modal = document.getElementById('videoModal');
+    const iframe = document.getElementById('videoFrame');
+    iframe.src = ''; // Останавливаем видео
+    modal.classList.remove('active');
+}
+
+// Закрытие по клику вне окна
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('videoModal');
+    if (event.target === modal) {
+        closeVideoModal();
+    }
+});
+
+// Закрытие по Escape
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeVideoModal();
+    }
+});
+
         // Состояние сайдбара
         const mainContent = document.getElementById('mainContent');
         const savedState = localStorage.getItem('sidebar_collapsed');
@@ -593,5 +774,28 @@
     </script>
     
     {% include 'active_workout_banner.html' %}
+    <!-- Модальное окно для видео -->
+<div class="video-modal" id="videoModal">
+    <div class="video-modal-content">
+        <div class="video-modal-header">
+            <h3 id="videoModalTitle">Видео-инструкция</h3>
+            <button class="video-modal-close" onclick="closeVideoModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="video-modal-body">
+            <div class="video-container" id="videoContainer">
+                <iframe id="videoFrame" 
+                        width="100%" 
+                        height="400" 
+                        src="" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                </iframe>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

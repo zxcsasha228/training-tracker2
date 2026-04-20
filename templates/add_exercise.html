@@ -461,6 +461,21 @@
                         <option value="Ягодицы">Ягодицы</option>
                     </select>
                 </div>
+                
+                <!-- Ссылка на видео -->
+                <div class="form-group">
+                    <label>
+                        <i class="fab fa-youtube"></i> Видео-инструкция
+                    </label>
+                    <input type="url" 
+                        name="video_url" 
+                        id="videoUrl"
+                        placeholder="https://www.youtube.com/watch?v=... или https://youtu.be/..."
+                        value="{{ exercise.video_url if exercise else '' }}">
+                    <div class="hint-text" style="font-size: 0.75em; color: var(--gray); margin-top: 5px;">
+                        <i class="fas fa-info-circle"></i> Вставьте ссылку на YouTube видео с правильным выполнением упражнения
+                    </div>
+                </div>
 
                 <button type="submit" class="btn btn-success" id="submitBtn">
                     <i class="fas fa-save"></i> Сохранить упражнение

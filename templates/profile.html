@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Мой профиль</title>
+    <title>Профиль пользователя</title>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
@@ -28,8 +28,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            margin: 0;
-            padding: 0;
+            overflow-x: hidden;
         }
 
         .main-content {
@@ -42,73 +41,83 @@
         .main-content.expanded {
             margin-left: 80px;
         }
+        .char-counter {
+    font-size: 0.7em;
+    color: var(--gray);
+    margin-top: 4px;
+    text-align: right;
+}
 
-        .content-container {
-            max-width: 900px;
+.char-counter.warning {
+    color: var(--warning);
+}
+
+.char-counter.danger {
+    color: var(--danger);
+}
+
+        .container {
+            max-width: 800px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-            animation: slideUp 0.6s ease-out;
+            padding: 30px;
         }
 
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Баннер для админа */
-        .admin-view-banner {
-            background: rgba(99, 102, 241, 0.1);
-            padding: 15px 20px;
-            border-radius: 12px;
-            margin-bottom: 25px;
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border: 1px solid rgba(99, 102, 241, 0.3);
-        }
-
-        .admin-view-banner i {
-            color: var(--primary);
-            margin-right: 8px;
-        }
-
-        .admin-view-banner .btn {
-            padding: 8px 20px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 0.9em;
-        }
-
-        .admin-view-banner .btn:hover {
-            filter: brightness(1.1);
-            transform: translateY(-2px);
-        }
-
-        /* Шапка профиля */
-        .profile-header {
-            display: flex;
-            align-items: center;
-            gap: 30px;
-            margin-bottom: 40px;
-            padding-bottom: 30px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
             border-bottom: 2px solid rgba(0,0,0,0.05);
             flex-wrap: wrap;
+            gap: 15px;
         }
 
-        .profile-avatar {
-            position: relative;
+        .header h1 {
+            font-size: 2em;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-gray {
+            background: var(--gray);
+            color: white;
+        }
+
+        .btn-gray:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        .btn-gray:active {
+            transform: scale(0.96);
+        }
+
+        .avatar-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .avatar {
             width: 120px;
             height: 120px;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
@@ -116,185 +125,359 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            margin: 0 auto 15px;
             box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
         }
 
-        .profile-avatar i {
-            font-size: 4em;
+        .avatar i {
+            font-size: 3.5em;
             color: white;
         }
 
-        .profile-title h1 {
-            font-size: 2.2em;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 5px;
-        }
-
-        .profile-title .username {
-            color: var(--gray);
-            font-size: 1.1em;
-            margin-bottom: 5px;
-        }
-
-        .profile-title .role-badge {
-            display: inline-block;
-            padding: 6px 16px;
-            background: rgba(99, 102, 241, 0.1);
-            color: var(--primary);
-            border-radius: 30px;
-            font-size: 0.9em;
-            font-weight: 600;
-        }
-
-        /* Сетка информации */
-        .info-grid {
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
-        .info-card {
-            background: var(--light);
-            border-radius: 20px;
-            padding: 25px;
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
             display: flex;
             align-items: center;
-            gap: 20px;
-            transition: all 0.3s;
+            gap: 15px;
             border: 1px solid rgba(0,0,0,0.05);
         }
 
-        .info-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.15);
-            border-color: var(--primary);
-        }
-
-        .info-icon {
-            width: 60px;
-            height: 60px;
+        .stat-icon {
+            width: 50px;
+            height: 50px;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 16px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
-        .info-icon i {
-            font-size: 1.8em;
+        .stat-icon i {
+            font-size: 1.5em;
             color: white;
         }
 
-        .info-content h3 {
+        .stat-content {
+            flex: 1;
+        }
+        
+        @media (max-width: 768px) {
+    .char-counter {
+        font-size: 0.65em;
+    }
+}
+
+        .stat-content h3 {
             color: var(--gray);
-            font-size: 0.9em;
+            font-size: 0.85em;
             margin-bottom: 5px;
         }
 
-        .info-content p {
-            font-size: 1.3em;
-            font-weight: 600;
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
             color: var(--dark);
         }
 
-        /* Секция статистики */
-        .stats-section {
+        .info-card {
             background: white;
             border-radius: 20px;
             padding: 25px;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
         }
 
-        .section-title {
+        .info-title {
             font-size: 1.2em;
             color: var(--dark);
             margin-bottom: 20px;
             display: flex;
             align-items: center;
             gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(0,0,0,0.05);
         }
 
-        .section-title i {
+        .info-title i {
             color: var(--primary);
         }
 
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 20px;
-            background: var(--light);
-            border-radius: 16px;
-        }
-
-        .stat-value {
-            font-size: 2em;
-            font-weight: bold;
-            color: var(--primary);
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            color: var(--gray);
-            font-size: 0.9em;
-        }
-
-        /* Кнопка редактирования */
-        .edit-profile-btn {
-            display: inline-flex;
-            align-items: center;
+        .info-row {
+            display: flex;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            flex-wrap: wrap;
             gap: 10px;
-            padding: 14px 30px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            align-items: center;
+        }
+
+        .info-label {
+            width: 100px;
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        .info-value {
+            flex: 1;
+            color: var(--dark);
+            font-weight: 500;
+            word-break: break-word;
+        }
+
+        .info-value.editable {
+            background: var(--light);
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .info-value.editable:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+        }
+
+        .edit-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 1em;
+            padding: 5px 10px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .edit-btn:hover {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .save-btn {
+            background: var(--success);
             color: white;
             border: none;
-            border-radius: 50px;
-            font-size: 1em;
-            font-weight: 600;
+            padding: 5px 15px;
+            border-radius: 8px;
             cursor: pointer;
-            text-decoration: none;
+            font-size: 0.85em;
             transition: all 0.3s;
-            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .save-btn:hover {
+            filter: brightness(1.1);
+        }
+
+        .edit-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
             margin-top: 20px;
         }
 
-        .edit-profile-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 25px rgba(99, 102, 241, 0.4);
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.3s;
         }
 
-        /* Адаптация для мобильных */
+        .action-btn.logout {
+            background: var(--danger);
+            color: white;
+        }
+
+        .action-btn.logout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .action-btn.logout:active {
+            transform: scale(0.97);
+        }
+
+        .toast-notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 9999;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .toast-notification.error {
+            background: var(--danger);
+        }
+
+        .toast-notification.success {
+            background: var(--success);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* ========================================
+           МОБИЛЬНАЯ АДАПТАЦИЯ
+           ======================================== */
+        
         @media (max-width: 768px) {
             .main-content {
-                margin-left: 0;
-                padding: 60px 20px 20px;
+                margin-left: 0 !important;
+                padding: 20px 16px 80px 16px;
             }
             
-            .profile-header {
+            .container {
+                padding: 20px 16px;
+                border-radius: 20px;
+            }
+            
+            .header {
                 flex-direction: column;
-                text-align: center;
+                align-items: flex-start;
             }
             
-            .info-grid {
-                grid-template-columns: 1fr;
+            .header h1 {
+                font-size: 1.6em;
             }
             
-            .stats-row {
-                grid-template-columns: 1fr;
+            .avatar {
+                width: 80px;
+                height: 80px;
             }
-
-            .admin-view-banner {
+            
+            .avatar i {
+                font-size: 2.5em;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .stat-card {
+                padding: 15px;
+            }
+            
+            .stat-icon {
+                width: 45px;
+                height: 45px;
+            }
+            
+            .stat-number {
+                font-size: 1.3em;
+            }
+            
+            .info-card {
+                padding: 18px;
+            }
+            
+            .info-title {
+                font-size: 1.1em;
+            }
+            
+            .info-label {
+                width: 100%;
+                font-size: 0.85em;
+            }
+            
+            .info-value {
+                width: 100%;
+                font-size: 1em;
+            }
+            
+            .action-buttons {
                 flex-direction: column;
                 gap: 10px;
+            }
+            
+            .action-btn {
+                padding: 12px;
+            }
+            
+            .edit-controls {
+                flex-direction: column;
+            }
+            
+            .edit-controls .save-btn,
+            .edit-controls .edit-btn {
+                width: 100%;
                 text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 15px 12px 80px 12px;
+            }
+            
+            .container {
+                padding: 16px 12px;
+            }
+            
+            .header h1 {
+                font-size: 1.4em;
+            }
+            
+            .info-card {
+                padding: 15px;
+            }
+        }
+
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .main-content {
+                margin-left: 80px !important;
+                padding: 20px 24px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
@@ -304,91 +487,101 @@
     {% include 'sidebar.html' %}
     
     <div class="main-content" id="mainContent">
-        <div class="content-container">
-            {% if view_as_admin %}
-            <!-- Баннер для админа -->
-            <div class="admin-view-banner">
-                <span>
-                    <i class="fas fa-crown"></i> 
-                    Вы просматриваете профиль пользователя <strong>{{ user.full_name or user.username }}</strong>
-                </span>
-                <a href="{{ url_for('admin_panel') }}" class="btn">
-                    <i class="fas fa-arrow-left"></i> Назад в админку
+        <div class="container">
+            <div class="header">
+                <h1><i class="fas fa-user-circle"></i> Мой профиль</h1>
+                {% if view_as_admin %}
+                <a href="{{ url_for('admin_panel') }}" class="btn btn-gray">
+                    <i class="fas fa-arrow-left"></i> Назад
                 </a>
+                {% endif %}
             </div>
-            {% endif %}
 
-            <!-- Шапка профиля -->
-            <div class="profile-header">
-                <div class="profile-avatar">
+            <div class="avatar-section">
+                <div class="avatar">
                     <i class="fas fa-user"></i>
                 </div>
-                <div class="profile-title">
-                    <h1>{{ user.full_name or user.username }}</h1>
-                    <div class="username">@{{ user.username }}</div>
-                    {% if user.is_admin %}
-                        <span class="role-badge">
-                            <i class="fas fa-crown"></i> Администратор
-                        </span>
-                    {% else %}
-                        <span class="role-badge">
-                            <i class="fas fa-user"></i> Пользователь
-                        </span>
-                    {% endif %}
-                </div>
             </div>
 
-            <!-- Основная информация -->
-            <div class="info-grid">
-                <div class="info-card">
-                    <div class="info-icon">
-                        <i class="fas fa-id-card"></i>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-dumbbell"></i>
                     </div>
-                    <div class="info-content">
-                        <h3>ID пользователя</h3>
-                        <p>#{{ user.id }}</p>
+                    <div class="stat-content">
+                        <h3>Всего тренировок</h3>
+                        <div class="stat-number">{{ stats.workouts_count|default(0) }}</div>
                     </div>
                 </div>
-
-                <div class="info-card">
-                    <div class="info-icon">
-                        <i class="fas fa-calendar"></i>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
                     </div>
-                    <div class="info-content">
+                    <div class="stat-content">
+                        <h3>Общее время тренировок</h3>
+                        <div class="stat-number">{{ stats.total_duration|default(0) }} мин</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="stat-content">
                         <h3>Дата регистрации</h3>
-                        <p>{{ user.created_at }}</p>
-                    </div>
-                </div>
-
-                <div class="info-card">
-                    <div class="info-icon">
-                        <i class="fas fa-envelope"></i>
-                    </div>
-                    <div class="info-content">
-                        <h3>Email</h3>
-                        <p>—</p>
-                    </div>
-                </div>
-
-                <!-- Карточка с логином для информации -->
-                <div class="info-card">
-                    <div class="info-icon">
-                        <i class="fas fa-user-tag"></i>
-                    </div>
-                    <div class="info-content">
-                        <h3>Логин</h3>
-                        <p>{{ user.username }}</p>
+                        <div class="stat-number" style="font-size: 1.1em;">{{ user.created_at.split()[0] if user.created_at else '—' }}</div>
                     </div>
                 </div>
             </div>
 
-            
-            <!-- Кнопка редактирования (пока неактивна) -->
-            <div style="text-align: center;">
-                <button class="edit-profile-btn" onclick="alert('Редактирование профиля будет доступно позже')">
-                    <i class="fas fa-edit"></i>
-                    Редактировать профиль
-                </button>
+            <div class="info-card">
+                <div class="info-title">
+                    <i class="fas fa-info-circle"></i>
+                    Личная информация
+                </div>
+                
+                <!-- Логин (только для просмотра) -->
+                <div class="info-row">
+                    <div class="info-label"><i class="fas fa-user"></i> Логин:</div>
+                    <div class="info-value">{{ user.username }}</div>
+                </div>
+                
+                <!-- ФИО (редактируемое) -->
+<div class="info-row" id="fullnameRow">
+    <div class="info-label"><i class="fas fa-id-card"></i> ФИО:</div>
+    <div class="info-value" id="fullnameValue">{{ user.full_name or 'Не указано' }}</div>
+    <div class="edit-controls" id="fullnameControls" style="display: none;">
+        <input type="text" id="fullnameInput" value="{{ user.full_name or '' }}" 
+               maxlength="100" minlength="2"
+               placeholder="Введите ФИО (2-40 символов)"
+               class="info-value editable" style="width: 100%;">
+        <div class="char-counter" id="fullnameCounter" style="font-size: 0.7em; color: var(--gray); margin-top: 4px;">
+            <span id="fullnameCount">{{ user.full_name|length if user.full_name else 0 }}</span>/40
+        </div>
+        <button class="save-btn" onclick="saveFullname()">Сохранить</button>
+        <button class="edit-btn" onclick="cancelEdit()">Отмена</button>
+    </div>
+    <button class="edit-btn" id="fullnameEditBtn" onclick="editField()">
+        <i class="fas fa-pen"></i> Редактировать
+    </button>
+</div>
+                
+                <!-- Статус -->
+                <div class="info-row">
+                    <div class="info-label"><i class="fas fa-shield-alt"></i> Статус:</div>
+                    <div class="info-value">
+                        {% if user.is_admin %}
+                        <span style="color: var(--warning);"><i class="fas fa-crown"></i> Администратор</span>
+                        {% else %}
+                        <span style="color: var(--success);"><i class="fas fa-user"></i> Пользователь</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <a href="{{ url_for('logout') }}" class="action-btn logout" onclick="return confirm('Выйти из аккаунта?')">
+                    <i class="fas fa-sign-out-alt"></i> Выйти
+                </a>
             </div>
         </div>
     </div>
@@ -396,16 +589,125 @@
     {% include 'active_workout_banner.html' %}
 
     <script>
-        // Синхронизация состояния сайдбара
-        document.addEventListener('DOMContentLoaded', function() {
-            const mainContent = document.getElementById('mainContent');
-            const savedState = localStorage.getItem('sidebar_collapsed');
+        const mainContent = document.getElementById('mainContent');
+        const savedState = localStorage.getItem('sidebar_collapsed');
+        if (savedState === 'true') {
+            mainContent.classList.add('expanded');
+        }
+
+        function showToast(message, type = 'success') {
+            const oldToast = document.querySelector('.toast-notification');
+            if (oldToast) oldToast.remove();
             
-            if (savedState === 'true') {
-                mainContent.classList.add('expanded');
-            }
-        });
-    </script>
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type}`;
+            let icon = type === 'error' ? '<i class="fas fa-exclamation-circle"></i>' : '<i class="fas fa-check-circle"></i>';
+            toast.innerHTML = `${icon} ${message}`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function updateCharCounter() {
+    const input = document.getElementById('fullnameInput');
+    const countSpan = document.getElementById('fullnameCount');
+    const counterDiv = document.getElementById('fullnameCounter');
+    const length = input.value.length;
     
+    countSpan.textContent = length;
+    
+    if (length >= 35 && length < 40) {
+        counterDiv.classList.add('warning');
+        counterDiv.classList.remove('danger');
+    } else if (length >= 40) {
+        counterDiv.classList.add('danger');
+        counterDiv.classList.remove('warning');
+    } else {
+        counterDiv.classList.remove('warning', 'danger');
+    }
+}
+
+function limitInput() {
+    const input = document.getElementById('fullnameInput');
+    if (input.value.length > 40) {
+        input.value = input.value.slice(0, 40);
+        updateCharCounter();
+        showToast('Максимум 40 символов', 'warning');
+    }
+}
+
+function editField() {
+    document.getElementById('fullnameValue').style.display = 'none';
+    document.getElementById('fullnameEditBtn').style.display = 'none';
+    document.getElementById('fullnameControls').style.display = 'flex';
+    
+    // Добавляем обработчики для счётчика
+    const input = document.getElementById('fullnameInput');
+    input.addEventListener('input', function() {
+        updateCharCounter();
+        limitInput();
+    });
+    updateCharCounter();
+}
+
+function cancelEdit() {
+    document.getElementById('fullnameValue').style.display = 'block';
+    document.getElementById('fullnameEditBtn').style.display = 'inline-flex';
+    document.getElementById('fullnameControls').style.display = 'none';
+    
+    // Восстанавливаем исходное значение
+    document.getElementById('fullnameInput').value = document.getElementById('fullnameValue').textContent;
+}
+
+function saveFullname() {
+    const newFullname = document.getElementById('fullnameInput').value.trim();
+    const userId = document.getElementById('userId').value;
+    
+    if (!newFullname) {
+        showToast('ФИО не может быть пустым', 'error');
+        return;
+    }
+    
+    if (newFullname.length < 2) {
+        showToast('ФИО должно содержать минимум 2 символа', 'error');
+        return;
+    }
+    
+    if (newFullname.length > 40) {
+        showToast('ФИО не может превышать 40 символов', 'error');
+        return;
+    }
+    
+    fetch('/api/update_profile', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            user_id: userId,
+            field: 'full_name',
+            value: newFullname
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('fullnameValue').textContent = newFullname;
+            showToast('ФИО успешно обновлено', 'success');
+            cancelEdit();
+        } else {
+            showToast(data.error || 'Ошибка при обновлении', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        showToast('Ошибка при обновлении ФИО', 'error');
+    });
+}
+   </script>
 </body>
 </html>

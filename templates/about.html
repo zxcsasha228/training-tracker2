@@ -3,7 +3,7 @@
 <head>
     <title>О нас</title>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
@@ -28,13 +28,13 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            margin: 0;
-            padding: 0;
+            overflow-x: hidden;
         }
 
         .main-content {
             margin-left: 280px;
             padding: 40px 20px;
+            transition: margin-left 0.3s ease;
             min-height: 100vh;
         }
 
@@ -50,10 +50,8 @@
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 40px;
-           
+            overflow-x: hidden;
         }
-
-       
 
         .header {
             text-align: center;
@@ -107,6 +105,7 @@
             gap: 10px;
             padding-bottom: 10px;
             border-bottom: 2px solid rgba(0,0,0,0.05);
+            flex-wrap: wrap;
         }
 
         .info-section h2 i {
@@ -136,9 +135,8 @@
             border: 1px solid rgba(0,0,0,0.05);
         }
 
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.2);
+        .feature-card:active {
+            transform: scale(0.98);
         }
 
         .feature-icon {
@@ -198,22 +196,23 @@
         .tech-stack {
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 12px;
             justify-content: center;
             margin: 20px 0;
         }
 
         .tech-badge {
             background: white;
-            padding: 8px 20px;
+            padding: 8px 18px;
             border-radius: 30px;
             color: var(--dark);
             font-weight: 500;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             border: 1px solid rgba(0,0,0,0.05);
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
+            font-size: 0.9em;
         }
 
         .tech-badge i {
@@ -240,9 +239,8 @@
             transition: all 0.3s;
         }
 
-        .team-member:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.2);
+        .team-member:active {
+            transform: scale(0.98);
         }
 
         .member-avatar {
@@ -265,6 +263,7 @@
             font-weight: 600;
             color: var(--dark);
             margin-bottom: 5px;
+            word-break: break-word;
         }
 
         .member-role {
@@ -284,10 +283,143 @@
             color: var(--danger);
         }
 
+        /* ========================================
+           МОБИЛЬНАЯ АДАПТАЦИЯ
+           ======================================== */
+        
         @media (max-width: 768px) {
             .main-content {
-                margin-left: 0;
-                padding: 60px 20px 20px;
+                margin-left: 0 !important;
+                padding: 20px 16px 80px 16px;
+            }
+            
+            .container {
+                padding: 24px 18px;
+                border-radius: 20px;
+            }
+            
+            .logo-large {
+                width: 80px;
+                height: 80px;
+                margin-bottom: 20px;
+            }
+            
+            .logo-large i {
+                font-size: 2.5em;
+            }
+            
+            .header {
+                margin-bottom: 25px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .header p {
+                font-size: 0.9em;
+            }
+            
+            .info-section h2 {
+                font-size: 1.3em;
+            }
+            
+            .info-section p {
+                font-size: 0.9em;
+                line-height: 1.5;
+            }
+            
+            .features-grid {
+                gap: 15px;
+            }
+            
+            .feature-card {
+                padding: 18px;
+            }
+            
+            .feature-icon {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .feature-icon i {
+                font-size: 1.5em;
+            }
+            
+            .feature-card h3 {
+                font-size: 1.1em;
+            }
+            
+            .feature-card p {
+                font-size: 0.85em;
+            }
+            
+            .stats-section {
+                padding: 20px;
+                margin: 20px 0;
+            }
+            
+            .stat-item .stat-number {
+                font-size: 1.8em;
+            }
+            
+            .stat-item .stat-label {
+                font-size: 0.8em;
+            }
+            
+            .tech-badge {
+                padding: 6px 14px;
+                font-size: 0.8em;
+            }
+            
+            .team-grid {
+                gap: 15px;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+            
+            .team-member {
+                padding: 15px;
+            }
+            
+            .member-avatar {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .member-avatar i {
+                font-size: 1.5em;
+            }
+            
+            .member-name {
+                font-size: 0.9em;
+            }
+            
+            .member-role {
+                font-size: 0.8em;
+            }
+            
+            .footer {
+                margin-top: 30px;
+                padding-top: 20px;
+                font-size: 0.8em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 15px 12px 80px 12px;
+            }
+            
+            .container {
+                padding: 20px 14px;
+            }
+            
+            .header h1 {
+                font-size: 1.5em;
+            }
+            
+            .info-section h2 {
+                font-size: 1.2em;
             }
             
             .features-grid {
@@ -295,14 +427,44 @@
             }
             
             .stats-grid {
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tech-stack {
+                gap: 8px;
+            }
+            
+            .tech-badge {
+                padding: 5px 12px;
+                font-size: 0.75em;
+            }
+        }
+
+        /* Планшеты */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .main-content {
+                margin-left: 80px !important;
+                padding: 20px 24px;
+            }
+            
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .team-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
 </head>
 <body>
+    <input type="hidden" id="userId" value="{{ session['user_id'] }}">
     {% include 'sidebar.html' %}
-      <input type="hidden" id="userId" value="{{ session['user_id'] }}">
     
     <div class="main-content" id="mainContent">
         <div class="container">
@@ -326,13 +488,7 @@
             {% endfor %}
 
             <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-dumbbell"></i>
-                    </div>
-                    <h3>Тренировки</h3>
-                    <p>Создавайте и отслеживайте свои тренировки, добавляйте упражнения, фиксируйте подходы и веса</p>
-                </div>
+               
 
                 <div class="feature-card">
                     <div class="feature-icon">
@@ -348,14 +504,6 @@
                     </div>
                     <h3>Питание</h3>
                     <p>Следите за весом, рассчитывайте БЖУ для разных целей и контролируйте своё питание</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h3>Сообщество</h3>
-                    <p>Делитесь достижениями, соревнуйтесь с друзьями и получайте поддержку</p>
                 </div>
             </div>
 
@@ -390,7 +538,7 @@
             </div>
 
             <div class="team-section">
-                <h2 style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                <h2 style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
                     <i class="fas fa-users"></i> 
                     Наша команда
                 </h2>
@@ -421,9 +569,8 @@
         </div>
     </div>
 
-  
-
     <script>
+        // Состояние сайдбара
         document.addEventListener('DOMContentLoaded', function() {
             const mainContent = document.getElementById('mainContent');
             const savedState = localStorage.getItem('sidebar_collapsed');
@@ -432,6 +579,7 @@
             }
         });
     </script>
-{% include 'active_workout_banner.html' %}
+    
+    {% include 'active_workout_banner.html' %}
 </body>
 </html>

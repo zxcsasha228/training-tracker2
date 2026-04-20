@@ -472,11 +472,11 @@
                            id="exerciseName"
                            value="{{ exercise.name }}"
                            minlength="2"
-                           maxlength="20"
+                           maxlength="30"
                            required
                            autofocus>
                     <div class="char-counter" id="charCounter">
-                        <span id="charCount">{{ exercise.name|length }}</span>/20
+                        <span id="charCount">{{ exercise.name|length }}</span>/30
                     </div>
                 </div>
 
@@ -494,6 +494,21 @@
                         <option value="Ягодицы" {% if exercise.muscle_group == 'Ягодицы' %}selected{% endif %}>Ягодицы</option>
                     </select>
                 </div>
+                  <!-- Ссылка на видео -->
+                <div class="form-group">
+                    <label>
+                        <i class="fab fa-youtube"></i> Видео-инструкция
+                    </label>
+                    <input type="url" 
+                        name="video_url" 
+                        id="videoUrl"
+                        placeholder="https://www.youtube.com/watch?v=... или https://youtu.be/..."
+                        value="{{ exercise.video_url if exercise else '' }}">
+                    <div class="hint-text" style="font-size: 0.75em; color: var(--gray); margin-top: 5px;">
+                        <i class="fas fa-info-circle"></i> Вставьте ссылку на YouTube видео с правильным выполнением упражнения
+                    </div>
+                </div>
+
 
                 <div class="button-group">
                     <a href="{{ url_for('exercises_library') }}" class="btn btn-gray">
@@ -545,10 +560,10 @@
             const length = exerciseNameInput.value.length;
             charCountSpan.textContent = length;
             
-            if (length >= 18 && length < 20) {
+            if (length >= 18 && length < 30) {
                 charCounterDiv.classList.add('warning');
                 charCounterDiv.classList.remove('danger');
-            } else if (length >= 20) {
+            } else if (length >= 30) {
                 charCounterDiv.classList.add('danger');
                 charCounterDiv.classList.remove('warning');
             } else {
@@ -570,7 +585,7 @@
                 return false;
             }
             
-            if (value.length > 20) {
+            if (value.length > 30) {
                 exerciseNameInput.classList.add('invalid');
                 exerciseNameInput.classList.remove('valid');
                 return false;
@@ -582,10 +597,10 @@
         }
 
         function limitInput() {
-            if (exerciseNameInput.value.length > 20) {
-                exerciseNameInput.value = exerciseNameInput.value.slice(0, 20);
+            if (exerciseNameInput.value.length > 30) {
+                exerciseNameInput.value = exerciseNameInput.value.slice(0, 30);
                 updateCharCounter();
-                showToast('Максимум 20 символов', 'warning');
+                showToast('Максимум 30 символов', 'warning');
             }
         }
 
@@ -608,9 +623,9 @@
                 return false;
             }
             
-            if (value.length > 20) {
+            if (value.length > 30) {
                 e.preventDefault();
-                showToast('Название не может превышать 20 символов', 'error');
+                showToast('Название не может превышать 30 символов', 'error');
                 exerciseNameInput.classList.add('invalid');
                 exerciseNameInput.focus();
                 return false;
