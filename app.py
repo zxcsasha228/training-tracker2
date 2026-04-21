@@ -7,10 +7,18 @@ import time
 from datetime import datetime
 from werkzeug.utils import secure_filename
 import database
+from datetime import timedelta  # ← добавить импорт
 
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here-change-this'
+
+# === НАСТРОЙКИ СЕССИИ (СОХРАНЯЕМ ВХОД) ===
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=60)  # 60 дней
+app.config['SESSION_PERMANENT'] = False  # по умолчанию выключено
+app.config['SESSION_COOKIE_SECURE'] = False  # для HTTP
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 # Добавляем фильтр float для Jinja2
 @app.template_filter('float')
@@ -140,13 +148,19 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        remember = request.form.get('remember') == '1'  # ← добавляем
         
         user = database.check_user(username, password)
         if user:
             session['user_id'] = user['id']
             session['username'] = user['username']
             session['is_admin'] = user['is_admin']
-            
+
+            if remember:
+                session.permanent = True  # только если галочка стоит
+            else:
+                session.permanent = False
+
             if user['is_admin']:
                 return redirect(url_for('admin_panel'))
             else:
@@ -176,6 +190,8 @@ def register():
             session['username'] = username
             session['full_name'] = full_name
             session['is_admin'] = 0
+            session.permanent = True  # ← добавляем эту строку
+            
             return redirect(url_for('index'))
         else:
             return render_template('register.html', error='Пользователь с таким именем уже существует')

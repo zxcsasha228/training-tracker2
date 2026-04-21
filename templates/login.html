@@ -4,6 +4,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='mobile.css') }}">
     <title>Вход в систему</title>
     <meta charset="utf-8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <style>
         /* Современные переменные цветов */
@@ -390,6 +391,62 @@
             }
         }
 
+        /* Красивый чекбокс "Запомнить меня" */
+.remember-group {
+    margin: 15px 0;
+}
+
+.remember-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.remember-checkbox {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.remember-checkmark {
+    width: 20px;
+    height: 20px;
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 6px;
+    display: inline-block;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.remember-checkbox:checked + .remember-checkmark {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-color: var(--primary);
+}
+
+.remember-checkbox:checked + .remember-checkmark::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.remember-text {
+    color: var(--gray);
+    font-size: 0.9em;
+}
+
+.remember-label:hover .remember-checkmark {
+    border-color: var(--primary);
+}
+
         /* Очень маленькие экраны (до 380px) */
         @media (max-width: 380px) {
             .login-card {
@@ -403,6 +460,9 @@
             .test-accounts .account-item {
                 padding: 8px;
             }
+            .remember-text {
+        font-size: 0.8em;
+    }
         }
     </style>
     <!-- Font Awesome для иконок -->
@@ -422,37 +482,36 @@
         </div>
         {% endif %}
         
-        <form method="post" id="loginForm">
-            <div class="form-group input-icon">
-                <i class="fas fa-user"></i>
-                <input type="text" name="username" placeholder="Имя пользователя" required autofocus>
-            </div>
-            
-            <div class="form-group input-icon">
-                <i class="fas fa-lock"></i>
-                <input type="password" name="password" id="password" placeholder="Пароль" required>
-            </div>
-            
-            <button type="submit" class="login-btn" onclick="showLoading()">
-                <i class="fas fa-sign-in-alt"></i> Войти
-            </button>
-        </form>
-        
+        <form method="post">
+    <div class="form-group input-icon">
+        <i class="fas fa-user"></i>
+        <input type="text" name="username" placeholder="Имя пользователя" required autofocus>
+    </div>
+    
+    <div class="form-group input-icon">
+        <i class="fas fa-lock"></i>
+        <input type="password" name="password" id="password" placeholder="Пароль" required>
+    </div>
+    
+    <div class="form-group remember-group">
+    <label class="remember-label">
+        <input type="checkbox" name="remember" value="1" checked class="remember-checkbox">
+        <span class="remember-checkmark"></span>
+        <span class="remember-text">Запомнить меня</span>
+    </label>
+</div>
+    
+    <button type="submit" class="login-btn">
+        <i class="fas fa-sign-in-alt"></i> Войти
+    </button>
+</form>
+       
         <div class="register-link">
             Нет аккаунта? <a href="{{ url_for('register') }}">Создать аккаунт</a>
         </div>
+        
 
-        <div class="test-accounts">
-            <h3><i class="fas fa-flask"></i> Тестовые аккаунты</h3>
-            <div class="account-item" onclick="fillLogin('admin', 'admin123')">
-                <span class="account-role"><i class="fas fa-crown"></i> Админ</span>
-                <span class="account-creds">admin / admin123</span>
-            </div>
-            <div class="account-item" onclick="fillLogin('user1', 'user123')">
-                <span class="account-role"><i class="fas fa-user"></i> Пользователь</span>
-                <span class="account-creds">user1 / user123</span>
-            </div>
-        </div>
+       
     </div>
 
     <div class="loading" id="loading">
