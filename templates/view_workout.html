@@ -399,20 +399,31 @@
             opacity: 1;
         }
 
-        .exercise-image {
-            width: 100%;
-            height: 180px;
-            background: linear-gradient(135deg, #667eea20, #764ba220);
-            position: relative;
-            overflow: hidden;
-        }
+        /* Предотвращаем растягивание картинок до загрузки CSS */
+.exercise-image {
+    aspect-ratio: 16 / 9;  /* 16:9 = 180px высота при ширине 320px */
+    width: 100%;
+    position: relative;
+    background: #ffffff;
+    overflow: hidden;
+    border-radius: 12px;
+}
 
-        .exercise-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s;
-        }
+.exercise-image img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Для GIF — сохраняем пропорции */
+.exercise-image img[src$=".gif"] {
+    object-fit: contain;
+    background: transparent;
+}
 
         .exercise-card:hover .exercise-image img {
             transform: scale(1.1);
@@ -840,8 +851,14 @@
             
             .exercise-image {
                 height: 150px;
+                background: transparent;
             }
-            
+    
+            .exercise-image img {
+                    object-fit: contain;
+            }
+            }
+                        
             .exercise-content {
                 padding: 15px;
             }
@@ -1062,12 +1079,12 @@
                         <i class="fas fa-check"></i>
                     </div>
                     <div class="exercise-image">
-                        {% if ex.image %}
-                            <img src="/{{ ex.image }}" alt="{{ ex.name }}">
-                        {% else %}
-                            <i class="fas fa-dumbbell"></i>
-                        {% endif %}
-                    </div>
+    {% if ex.image %}
+        <img src="/{{ ex.image }}" alt="{{ ex.name }}" loading="lazy">
+    {% else %}
+        <i class="fas fa-dumbbell"></i>
+    {% endif %}
+</div>
                     <div class="exercise-content">
                         <div class="exercise-header">
                             <span class="exercise-name">{{ ex.name }}</span>
@@ -1374,6 +1391,25 @@
                 updateWorkoutStatus();
             }
         });
+         // Скрываем картинки до полной загрузки
+    document.addEventListener('DOMContentLoaded', function() {
+        const images = document.querySelectorAll('.exercise-image img');
+        images.forEach(img => {
+            // Сначала делаем их прозрачными
+            img.style.opacity = '0';
+            img.style.transition = 'opacity 0.2s';
+            
+            // Когда картинка загрузилась — показываем
+            img.onload = function() {
+                this.style.opacity = '1';
+            }
+            
+            // Если картинка уже загружена из кэша
+            if (img.complete) {
+                img.style.opacity = '1';
+            }
+        });
+    });
     </script>
 
     {% include 'active_workout_banner.html' %}

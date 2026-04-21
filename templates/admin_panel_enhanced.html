@@ -183,18 +183,22 @@
 
         .stat-content {
             flex: 1;
+            min-width: 0;  /* разрешает сжатие */
+            padding-right: 5px;  /* отступ от края */
         }
 
         .stat-content h3 {
             color: var(--gray);
-            font-size: 0.8em;
+            font-size: 0.7em;
             margin-bottom: 5px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            text-overflow: ellipsis;  /* ... если не влезает */
+             white-space: nowrap;  /* текст в одну строку */
         }
 
         .stat-number {
-            font-size: 1.8em;
+            font-size: 1.5em;
             font-weight: bold;
             color: var(--dark);
         }
@@ -587,51 +591,55 @@
                 </div>
             </div>
 
-            <!-- Статистика -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-users"></i></div>
-                    <div class="stat-content">
-                        <h3>Всего пользователей</h3>
-                        <div class="stat-number">{{ stats.total_users }}</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-crown"></i></div>
-                    <div class="stat-content">
-                        <h3>Администраторов</h3>
-                        <div class="stat-number">{{ stats.total_admins }}</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-dumbbell"></i></div>
-                    <div class="stat-content">
-                        <h3>Всего тренировок</h3>
-                        <div class="stat-number">{{ stats.total_workouts }}</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-book"></i></div>
-                    <div class="stat-content">
-                        <h3>Упражнений</h3>
-                        <div class="stat-number">{{ stats.total_exercises }}</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
-                    <div class="stat-content">
-                        <h3>Всего часов</h3>
-                        <div class="stat-number">{{ stats.total_hours }} <span class="stat-unit">ч</span></div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-                    <div class="stat-content">
-                        <h3>Активность сегодня</h3>
-                        <div class="stat-number">{{ stats.active_today }}</div>
-                    </div>
-                </div>
-            </div>
+           <div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-users"></i></div>
+        <div class="stat-content">
+            <h3>Пользователей</h3>
+            <div class="stat-number">{{ stats.total_users }}</div>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-crown"></i></div>
+        <div class="stat-content">
+            <h3>Админов</h3>
+            <div class="stat-number">{{ stats.total_admins }}</div>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-dumbbell"></i></div>
+        <div class="stat-content">
+            <h3>Тренировок</h3>
+            <div class="stat-number">{{ stats.total_workouts }}</div>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-book"></i></div>
+        <div class="stat-content">
+            <h3>Упражнений</h3>
+            <div class="stat-number">{{ stats.total_exercises }}</div>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+        <div class="stat-content">
+            <h3>Часов</h3>
+            <div class="stat-number">{{ stats.total_hours }} <span class="stat-unit">ч</span></div>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+        <div class="stat-content">
+            <h3>Активны</h3>
+            <div class="stat-number">{{ stats.active_today }}</div>
+        </div>
+    </div>
+</div>
 
             <!-- Графики -->
             <div class="charts-grid">
