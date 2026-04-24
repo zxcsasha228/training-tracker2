@@ -713,36 +713,37 @@ def save_completed_workout(user_id, workout_id, workout_name, duration, sets_dat
     try:
         with get_db() as conn:
             cursor = conn.cursor()
-            
             from datetime import datetime
             today = datetime.now().strftime('%Y-%m-%d')
+            
+            # Генерируем уникальный ID для тренировки, если передан старый
+            import random
+            import time
+            actual_workout_id = workout_id
+            if workout_id and workout_id < 10000:  # если ID маленький (из workout_sessions)
+                actual_workout_id = int(time.time() * 1000) + random.randint(1, 1000)
             
             # Сохраняем тренировку
             cursor.execute('''
                 INSERT INTO completed_workouts (user_id, workout_id, workout_name, date, duration)
                 VALUES (?, ?, ?, ?, ?)
-            ''', (user_id, workout_id, workout_name, today, duration))
+            ''', (user_id, actual_workout_id, workout_name, today, duration))
             
-            # Сохраняем каждый выполненный подход
+            # Сохраняем подходы с новым ID
             for set_data in sets_data:
-                # Проверяем, что упражнение существует в библиотеке
-                cursor.execute('SELECT id FROM exercises WHERE id = ?', (set_data['exercise_id'],))
-                if cursor.fetchone():
-                    cursor.execute('''
-                        INSERT INTO completed_sets 
-                        (user_id, workout_id, exercise_id, exercise_name, workout_date, weight, reps)
-                        VALUES (?, ?, ?, ?, ?, ?, ?)
-                    ''', (
-                        user_id,
-                        workout_id,
-                        set_data['exercise_id'],
-                        set_data['exercise_name'],
-                        today,
-                        set_data['weight'],
-                        set_data['reps']
-                    ))
-                else:
-                    print(f"Предупреждение: упражнение с ID {set_data['exercise_id']} не найдено, пропускаем")
+                cursor.execute('''
+                    INSERT INTO completed_sets 
+                    (user_id, workout_id, exercise_id, exercise_name, workout_date, weight, reps)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    user_id,
+                    actual_workout_id,
+                    set_data['exercise_id'],
+                    set_data['exercise_name'],
+                    today,
+                    set_data['weight'],
+                    set_data['reps']
+                ))
             
             return True
     except Exception as e:
@@ -825,39 +826,58 @@ def get_user_stats(user_id):
             'exercises': [],
             'workouts_count': 0
         }
-# Получить данные для графика упражнения
+    
 def get_exercise_progress(user_id, exercise_id):
+    """Получить данные для графика 1ПМ и истории"""
     try:
         with get_db() as conn:
             cursor = conn.cursor()
             
-            # Получаем все подходы этого упражнения
+            # Сначала проверим, есть ли данные
             cursor.execute('''
-                SELECT workout_date, weight, reps
-                FROM completed_sets 
+                SELECT COUNT(*) as count FROM completed_sets 
                 WHERE user_id = ? AND exercise_id = ?
-                ORDER BY completed_at
+            ''', (user_id, exercise_id))
+            count = cursor.fetchone()['count']
+            
+            if count == 0:
+                return []
+            
+            # Получаем все подходы
+            cursor.execute('''
+                SELECT 
+                    cs.workout_date,
+                    cs.weight,
+                    cs.reps,
+                    cs.exercise_name,
+                    (cs.weight * (1 + cs.reps / 30.0)) as one_rm
+                FROM completed_sets cs
+                WHERE cs.user_id = ? AND cs.exercise_id = ?
+                ORDER BY cs.workout_date ASC, cs.id ASC
             ''', (user_id, exercise_id))
             
+            rows = cursor.fetchall()
             results = []
-            for row in cursor.fetchall():
-                # Расчёт 1ПМ: если 1 повторение, то 1ПМ = вес
+            
+            for row in rows:
+                one_rm = row['weight'] * (1 + row['reps'] / 30)
                 if row['reps'] == 1:
                     one_rm = row['weight']
-                else:
-                    # Формула Эйпли для нескольких повторений
-                    one_rm = row['weight'] * (1 + row['reps'] / 30)
                 
                 results.append({
                     'workout_date': row['workout_date'],
                     'weight': row['weight'],
                     'reps': row['reps'],
+                    'exercise_name': row['exercise_name'],
                     'one_rm': round(one_rm, 1)
                 })
             
             return results
+            
     except Exception as e:
-        print(f"Ошибка при получении прогресса: {e}")
+        print(f"Ошибка в get_exercise_progress: {e}")
+        import traceback
+        traceback.print_exc()
         return []
 
 # Получить последние тренировки

@@ -1262,9 +1262,14 @@ def save_completed_workout():
     
     data = request.get_json()
     
+    # Генерируем уникальный ID для завершённой тренировки
+    import random
+    import time
+    new_workout_id = int(time.time() * 1000) + random.randint(1, 1000)
+    
     success = database.save_completed_workout(
         session['user_id'],
-        data['workout_id'],
+        new_workout_id,  # ← используем новый ID
         data['workout_name'],
         data['duration'],
         data['sets']
@@ -1277,18 +1282,66 @@ def exercise_progress(exercise_id):
     if 'user_id' not in session:
         return jsonify({'success': False, 'error': 'Не авторизован'}), 401
     
-    data = database.get_exercise_progress(session['user_id'], exercise_id)
-    
-    result = []
-    for row in data:
-        result.append({
-            'workout_date': row['workout_date'],
-            'one_rm': row['one_rm'],
-            'weight': row['weight'],
-            'reps': row['reps']
-        })
-    
-    return jsonify({'success': True, 'data': result})
+    try:
+        with database.get_db() as conn:
+            cursor = conn.cursor()
+            
+            # Убираем JOIN и получаем название тренировки отдельно
+            cursor.execute('''
+                SELECT 
+                    cs.workout_id,
+                    cs.workout_date,
+                    cs.weight,
+                    cs.reps,
+                    cs.exercise_name
+                FROM completed_sets cs
+                WHERE cs.user_id = ? AND cs.exercise_id = ?
+                ORDER BY cs.workout_id ASC, cs.id ASC
+            ''', (session['user_id'], exercise_id))
+            
+            rows = cursor.fetchall()
+            
+            # Получаем названия тренировок отдельно
+            workout_names = {}
+            cursor.execute('''
+                SELECT workout_id, workout_name 
+                FROM completed_workouts 
+                WHERE user_id = ?
+            ''', (session['user_id'],))
+            for row in cursor.fetchall():
+                workout_names[row['workout_id']] = row['workout_name']
+            
+            result = []
+            for row in rows:
+                if row['reps'] == 1:
+                    one_rm = row['weight']
+                else:
+                    one_rm = row['weight'] * (1 + row['reps'] / 30)
+                
+                result.append({
+                    'workout_id': row['workout_id'],
+                    'workout_date': row['workout_date'],
+                    'workout_name': workout_names.get(row['workout_id'], 'Тренировка'),
+                    'exercise_name': row['exercise_name'],  # ← ДОБАВЬ ЭТУ СТРОКУ
+                    'weight': row['weight'],
+                    'reps': row['reps'],
+                    'one_rm': round(one_rm, 1)
+                })
+            
+            # Убираем дубликаты на случай если они всё же есть
+            unique_result = []
+            seen = set()
+            for item in result:
+                key = f"{item['workout_id']}_{item['weight']}_{item['reps']}"
+                if key not in seen:
+                    seen.add(key)
+                    unique_result.append(item)
+            
+            return jsonify({'success': True, 'data': unique_result})
+            
+    except Exception as e:
+        print(f"Ошибка: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 #endregion
 #region ========== API ДЛЯ АДМИНКИ (ПИТАНИЕ) ==========
 

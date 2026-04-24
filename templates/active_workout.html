@@ -1204,81 +1204,87 @@
             saveTimer();
         });
 
-        function finishWorkout() {
-            if (confirm('Завершить тренировку?')) {
-                const setsData = collectWorkoutData();
-                
-                console.log('Данные для отправки на сервер:', setsData);
-                
-                fetch('/api/save_completed_workout', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        workout_id: workoutId,
-                        workout_name: "{{ workout.name }}",
-                        duration: seconds,
-                        sets: setsData
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        localStorage.removeItem(`workout_${userId}_${workoutId}_active`);
-                        localStorage.removeItem(`workout_${userId}_${workoutId}`);
-                        localStorage.removeItem(`workout_${userId}_${workoutId}_timer`);
-                        
-                        console.log('Тренировка завершена, данные очищены');
-                        
-                        window.location.href = '/stats';
-                    } else {
-                        alert('Ошибка при сохранении тренировки');
-                    }
-                })
-                .catch(error => {
-                    console.error('Ошибка:', error);
-                    alert('Ошибка при сохранении тренировки');
-                });
-            }
+      function finishWorkout() {
+    if (confirm('Завершить тренировку?')) {
+        const setsData = collectWorkoutData();
+        
+        console.log('Данные для отправки на сервер:', setsData);
+        
+        // Проверяем, есть ли данные
+        if (setsData.length === 0) {
+            alert('Нет выполненных подходов для сохранения');
+            return;
         }
+        
+        fetch('/api/save_completed_workout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                workout_id: workoutId,
+                workout_name: "{{ workout.name }}",
+                duration: seconds,
+                sets: setsData
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Очищаем localStorage
+                localStorage.removeItem(`workout_${userId}_${workoutId}_active`);
+                localStorage.removeItem(`workout_${userId}_${workoutId}`);
+                localStorage.removeItem(`workout_${userId}_${workoutId}_timer`);
+                
+                console.log('Тренировка завершена, данные очищены');
+                
+                // Перенаправляем на статистику
+                window.location.href = '/stats';
+            } else {
+                alert('Ошибка при сохранении тренировки: ' + (data.error || 'неизвестная ошибка'));
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            alert('Ошибка при сохранении тренировки');
+        });
+    }
+}
 
         function collectWorkoutData() {
-            const data = [];
+    const data = [];
+    const seen = new Set();  // для отслеживания дублей
+    
+    document.querySelectorAll('.exercise-card').forEach(card => {
+        const exerciseLibId = card.dataset.exerciseLibId;
+        const exerciseName = card.querySelector('.exercise-name').textContent;
+        
+        if (!exerciseLibId) return;
+        
+        card.querySelectorAll('.set-card').forEach(set => {
+            const weight = set.querySelector('.weight-input')?.value;
+            const reps = set.querySelector('.reps-input')?.value;
+            const completed = set.classList.contains('completed');
             
-            document.querySelectorAll('.exercise-card').forEach(card => {
-                const exerciseLibId = card.dataset.exerciseLibId;
-                const exerciseName = card.querySelector('.exercise-name').textContent;
-                
-                if (!exerciseLibId) return;
-                
-                card.querySelectorAll('.set-card').forEach(set => {
-                    let weight = set.querySelector('.weight-input')?.value;
-                    let reps = set.querySelector('.reps-input')?.value;
-                    const completed = set.classList.contains('completed');
-                    
-                    if (completed && weight && reps) {
-                        let weightNum = parseFloat(weight);
-                        let repsNum = parseInt(reps);
-                        
-                        // Финальная проверка перед отправкой
-                        if (!isNaN(weightNum) && !isNaN(repsNum) && weightNum > 0 && repsNum > 0) {
-                            weightNum = Math.min(MAX_WEIGHT, Math.max(MIN_WEIGHT, weightNum));
-                            repsNum = Math.min(MAX_REPS, Math.max(MIN_REPS, repsNum));
-                            
-                            data.push({
-                                exercise_id: parseInt(exerciseLibId),
-                                exercise_name: exerciseName,
-                                weight: weightNum,
-                                reps: repsNum
-                            });
-                        }
-                    }
-                });
-            });
-            
-            return data;
-        }
+            if (completed && parseFloat(weight) > 0) {
+                const key = `${exerciseLibId}_${weight}_${reps}`;
+                // Добавляем только если такого ключа ещё не было
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    data.push({
+                        exercise_id: parseInt(exerciseLibId),
+                        exercise_name: exerciseName,
+                        weight: parseFloat(weight),
+                        reps: parseInt(reps)
+                    });
+                }
+            }
+        });
+    });
+    
+    console.log('Уникальные подходы для отправки:', data);
+    return data;
+}
 
         function openAddExerciseModal() {
             saveWorkoutState();
