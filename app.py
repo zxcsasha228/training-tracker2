@@ -8,6 +8,7 @@ from datetime import datetime
 from werkzeug.utils import secure_filename
 import database
 from datetime import timedelta  # ← добавить импорт
+from flask import make_response # добавь этот импорт в начало файла
 
 
 app = Flask(__name__)
@@ -74,6 +75,14 @@ def serve_static(filename):
 @app.route('/uploads/<path:filename>')
 def serve_upload(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
+
+@app.route('/manifest.json')
+def serve_manifest():
+    return send_from_directory(STATIC_FOLDER, 'manifest.json', mimetype='application/manifest+json')
+
+@app.route('/sw.js')
+def serve_sw():
+    return send_from_directory(STATIC_FOLDER, 'sw.js', mimetype='application/javascript')
 
 
 # ========== ФУНКЦИЯ ВАЛИДАЦИИ ТРЕНИРОВКИ ==========
@@ -336,6 +345,7 @@ def view_workout(workout_id):
     
     exercises = database.get_workout_exercises(workout_id)
     all_exercises = database.get_all_exercises()
+    session.permanent = True
     return render_template('view_workout.html', 
                          workout=workout,
                          exercises=exercises,
@@ -358,6 +368,12 @@ def start_workout(workout_id):
                          exercises=exercises,
                          is_continuing=False,
                          is_admin=session.get('is_admin', 0))
+
+@app.route('/keep-alive', methods=['POST'])
+def keep_alive():
+    session.permanent = True
+    # Возвращаем пустой успешный ответ
+    return make_response('', 200)
 
 @app.route('/workout/<int:workout_id>/continue')
 def continue_workout(workout_id):

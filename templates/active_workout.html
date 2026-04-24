@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#6366f1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="/static/icons/icon-192x192.png">
     <title>{{ workout.name }} - Тренировка</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -1280,5 +1286,26 @@
             window.location.href = "{{ url_for('view_workout', workout_id=workout.id) }}";
         }
     </script>
+    <script>
+function keepAlive() {
+    fetch('/keep-alive', { 
+        method: 'POST',
+    }).catch(err => console.log('Keep-alive ping failed:', err));
+}
+setInterval(keepAlive, 5 * 60 * 1000); // 5 минут
+</script>
+
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/sw.js').then(function(reg) {
+        console.log('✅ Service Worker зарегистрирован!', reg.scope);
+      }).catch(function(err) {
+        console.log('❌ Ошибка регистрации SW:', err);
+      });
+    });
+  }
+</script>
 </body>
 </html>
