@@ -97,8 +97,12 @@
 /* На мобилках сайдбар скрыт по умолчанию */
 @media (max-width: 768px) {
     .sidebar {
-        left: -80px !important;
-        width: 80px;
+        left: -280px !important;
+        width: 280px;
+        height: 100vh;
+        top: 0;
+        position: fixed;
+        padding-bottom: 100px;  /* ← добавляем отступ снизу */
     }
     
     .sidebar.mobile-open {
@@ -366,11 +370,11 @@
    МОБИЛЬНЫЕ СТИЛИ
    ======================================== */
 
-/* Кнопка гамбургера (отдельно от сайдбара) */
+/* Кнопка гамбургера — ТОЛЬКО ДЛЯ МОБИЛОК */
 .mobile-menu-btn {
-    display: none;
+    display: none;  /* по умолчанию скрыта */
     position: fixed;
-    top: 15px;
+    top: 55px;
     left: 15px;
     z-index: 1001;
     width: 48px;
@@ -384,6 +388,18 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     align-items: center;
     justify-content: center;
+}
+
+/* Показываем кнопку ТОЛЬКО на мобилках */
+@media (max-width: 768px) {
+    .mobile-menu-btn {
+        display: flex;
+    }
+}
+
+/* Кнопка гамбургера - скрыта когда сайдбар открыт */
+.mobile-menu-btn.hidden {
+    display: none;
 }
 
 /* Затемнение */
@@ -421,8 +437,10 @@
         display: block;
     }
     
+    
     /* Основной контент - добавляем отступ сверху для гамбургера */
     .main-content {
+        min-height: 100%;
         padding-top: 70px !important;
         margin-left: 0 !important;
     }
@@ -472,53 +490,76 @@ button, a, .menu-item, .sidebar-toggle, .mobile-menu-btn, .profile-button, .logo
     }
 
     // Открытие мобильного сайдбара
-    function toggleMobileSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.querySelector('.sidebar-overlay');
-        
-        sidebar.classList.add('mobile-open');
-        overlay.classList.add('mobile-open');
-    }
+function toggleMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    const menuBtn = document.querySelector('.mobile-menu-btn');
+    
+    sidebar.classList.add('mobile-open');
+    overlay.classList.add('mobile-open');
+    menuBtn.classList.add('hidden');  // сразу скрываем
+    
+    document.body.style.overflow = 'hidden';
+}
 
-    // Закрытие мобильного сайдбара
-    function closeMobileSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.querySelector('.sidebar-overlay');
-        
-        sidebar.classList.remove('mobile-open');
-        overlay.classList.remove('mobile-open');
-    }
-
-    // Загрузка сохранённого состояния
-    document.addEventListener('DOMContentLoaded', function() {
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.querySelector('.main-content');
-        
-        // На десктопе загружаем состояние сворачивания
-        if (window.innerWidth > 768) {
-            const savedState = localStorage.getItem('sidebar_collapsed');
-            if (savedState === 'true') {
-                sidebar.classList.add('collapsed');
-                if (mainContent) {
-                    mainContent.classList.add('expanded');
-                }
-            }
+// Закрытие мобильного сайдбара с задержкой (после анимации)
+function closeMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    const menuBtn = document.querySelector('.mobile-menu-btn');
+    
+    sidebar.classList.remove('mobile-open');
+    overlay.classList.remove('mobile-open');
+    
+    // Бургер появляется через 300ms (после завершения анимации сайдбара)
+    setTimeout(() => {
+        // Проверяем, что сайдбар действительно закрыт
+        if (!sidebar.classList.contains('mobile-open')) {
+            menuBtn.classList.remove('hidden');
         }
-        
-        // Закрываем мобильное меню при клике на ссылку
-        document.querySelectorAll('.menu-item, .profile-button, .logout-button').forEach(item => {
-            item.addEventListener('click', function() {
-                if (window.innerWidth <= 768) {
-                    closeMobileSidebar();
+    }, 300);
+    
+    document.body.style.overflow = '';
+}
+
+// Закрываем сайдбар при переходе по ссылке (но бургер показываем с задержкой)
+document.querySelectorAll('.menu-item, .profile-button, .logout-button').forEach(item => {
+    item.addEventListener('click', function(e) {
+        if (window.innerWidth <= 768) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            
+            // Закрываем сайдбар
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('mobile-open');
+            document.body.style.overflow = '';
+            
+            // Бургер показываем через 300ms
+            setTimeout(() => {
+                if (!sidebar.classList.contains('mobile-open')) {
+                    menuBtn.classList.remove('hidden');
                 }
-            });
-        });
-        
-        // При изменении размера окна закрываем мобильное меню
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 768) {
-                closeMobileSidebar();
-            }
-        });
+            }, 300);
+            
+            // Даём время на анимацию перед переходом
+            setTimeout(() => {
+                // Переход уже произойдёт по href, ничего не делаем
+            }, 150);
+        }
     });
+});
+
+// При загрузке страницы проверяем состояние сайдбара
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+    const menuBtn = document.querySelector('.mobile-menu-btn');
+    
+    // Если сайдбар открыт при загрузке (редко) — скрываем бургер
+    if (sidebar.classList.contains('mobile-open')) {
+        menuBtn.classList.add('hidden');
+    } else {
+        menuBtn.classList.remove('hidden');
+    }
+});
 </script>

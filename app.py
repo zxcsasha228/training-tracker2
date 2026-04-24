@@ -84,6 +84,19 @@ def serve_manifest():
 def serve_sw():
     return send_from_directory(STATIC_FOLDER, 'sw.js', mimetype='application/javascript')
 
+@app.after_request
+def add_header(response):
+    # Для статики — кэш на 7 дней
+    if request.path.startswith('/static/'):
+        response.cache_control.max_age = 604800  # 7 дней
+    # Для HTML — без кэша
+    else:
+        response.cache_control.no_cache = True
+        response.cache_control.must_revalidate = True
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+    return response
 
 # ========== ФУНКЦИЯ ВАЛИДАЦИИ ТРЕНИРОВКИ ==========
 
@@ -99,22 +112,6 @@ def validate_workout_data(data):
     if not data.get('date'):
         errors.append('Дата тренировки обязательна')
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
