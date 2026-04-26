@@ -101,18 +101,18 @@ def add_header(response):
 
 
 
-@app.route('/api/generate_muscle_map')
-def generate_muscle_map():
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
+# @app.route('/api/generate_muscle_map')
+# def generate_muscle_map():
+#     if 'user_id' not in session:
+#         return jsonify({'success': False, 'error': 'Не авторизован'}), 401
     
-    try:
-        from muscle_map import create_muscle_heatmap
-        create_muscle_heatmap(session['user_id'])
-        return jsonify({'success': True, 'image_url': '/static/muscle_heatmap.png'})
-    except Exception as e:
-        print(f"Ошибка: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+#     try:
+#         from muscle_map import create_muscle_heatmap
+#         create_muscle_heatmap(session['user_id'])
+#         return jsonify({'success': True, 'image_url': '/static/muscle_heatmap.png'})
+#     except Exception as e:
+#         print(f"Ошибка: {e}")
+#         return jsonify({'success': False, 'error': str(e)}), 500
     
 
 

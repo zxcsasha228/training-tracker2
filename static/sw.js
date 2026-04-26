@@ -1,22 +1,40 @@
 // static/sw.js
-const CACHE_NAME = 'fittrack-v1';
-
-const urlsToCache = [
-  '/',
-  '/static/css/dark_theme.css',
-  '/static/mobile.css'
-];
+const CACHE_NAME = 'fittrack-v2';  // поменяй версию
 
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
-  );
+    console.log('Service Worker установлен');
+    self.skipWaiting();  // активируем сразу
+});
+
+self.addEventListener('activate', event => {
+    console.log('Service Worker активирован');
+    event.waitUntil(
+        caches.keys().then(keys => {
+            return Promise.all(
+                keys.filter(key => key !== CACHE_NAME)
+                    .map(key => caches.delete(key))
+            );
+        })
+    );
+    self.clients.claim();
 });
 
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => response || fetch(event.request))
-  );
+    // Пропускаем запросы к API
+    if (event.request.url.includes('/api/')) {
+        return;
+    }
+    
+    // Пропускаем запросы к загрузкам
+    if (event.request.url.includes('/uploads/')) {
+        return;
+    }
+    
+    // Для всего остального - сначала сеть, потом кэш
+    event.respondWith(
+        fetch(event.request)
+            .catch(() => {
+                return caches.match(event.request);
+            })
+    );
 });
