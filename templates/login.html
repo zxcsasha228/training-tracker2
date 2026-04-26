@@ -2,11 +2,11 @@
 <html>
 <head>
     <!-- PWA -->
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#6366f1">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="/static/icons/icon-192x192.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192x192.png">
     <link rel="stylesheet" href="{{ url_for('static', filename='mobile.css') }}">
     <title>Вход в систему</title>
     <meta charset="utf-8">
@@ -36,31 +36,37 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
             min-height: -webkit-fill-available;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
             position: relative;
-            overflow-x: hidden;
+            overflow: hidden;
         }
+
         html {
-    height: -webkit-fill-available;
-}
-
-        /* Анимированный фон с кругами */
-        body::before {
-            content: '';
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
-            animation: rotate 20s linear infinite;
+            height: -webkit-fill-available;
         }
 
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        /* ВИДЕО ФОН */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: -1;
         }
 
         /* Карточка входа */
@@ -364,7 +370,7 @@
             
             .form-group input {
                 padding: 12px 16px;
-                font-size: 16px; /* Предотвращает зум на iOS */
+                font-size: 16px;
             }
             
             .input-icon i {
@@ -402,60 +408,60 @@
         }
 
         /* Красивый чекбокс "Запомнить меня" */
-.remember-group {
-    margin: 15px 0;
-}
+        .remember-group {
+            margin: 15px 0;
+        }
 
-.remember-label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    user-select: none;
-}
+        .remember-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
 
-.remember-checkbox {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
+        .remember-checkbox {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
 
-.remember-checkmark {
-    width: 20px;
-    height: 20px;
-    background: white;
-    border: 2px solid #e5e7eb;
-    border-radius: 6px;
-    display: inline-block;
-    position: relative;
-    transition: all 0.2s;
-}
+        .remember-checkmark {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            display: inline-block;
+            position: relative;
+            transition: all 0.2s;
+        }
 
-.remember-checkbox:checked + .remember-checkmark {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    border-color: var(--primary);
-}
+        .remember-checkbox:checked + .remember-checkmark {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-color: var(--primary);
+        }
 
-.remember-checkbox:checked + .remember-checkmark::after {
-    content: '✓';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 12px;
-    font-weight: bold;
-}
+        .remember-checkbox:checked + .remember-checkmark::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
 
-.remember-text {
-    color: var(--gray);
-    font-size: 0.9em;
-}
+        .remember-text {
+            color: var(--gray);
+            font-size: 0.9em;
+        }
 
-.remember-label:hover .remember-checkmark {
-    border-color: var(--primary);
-}
+        .remember-label:hover .remember-checkmark {
+            border-color: var(--primary);
+        }
 
         /* Очень маленькие экраны (до 380px) */
         @media (max-width: 380px) {
@@ -471,14 +477,20 @@
                 padding: 8px;
             }
             .remember-text {
-        font-size: 0.8em;
-    }
+                font-size: 0.8em;
+            }
         }
     </style>
     <!-- Font Awesome для иконок -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <!-- ВИДЕО ФОН -->
+    <video class="video-background" autoplay loop muted playsinline>
+        <source src="{{ url_for('static', filename='videos/12.mp4') }}" type="video/mp4">
+    </video>
+    <div class="overlay"></div>
+
     <div class="login-card">
         <div class="header">
             <h1>FitTrack</h1>
@@ -493,35 +505,32 @@
         {% endif %}
         
         <form method="post">
-    <div class="form-group input-icon">
-        <i class="fas fa-user"></i>
-        <input type="text" name="username" placeholder="Имя пользователя" required autofocus>
-    </div>
-    
-    <div class="form-group input-icon">
-        <i class="fas fa-lock"></i>
-        <input type="password" name="password" id="password" placeholder="Пароль" required>
-    </div>
-    
-    <div class="form-group remember-group">
-    <label class="remember-label">
-        <input type="checkbox" name="remember" value="1" checked class="remember-checkbox">
-        <span class="remember-checkmark"></span>
-        <span class="remember-text">Запомнить меня</span>
-    </label>
-</div>
-    
-    <button type="submit" class="login-btn">
-        <i class="fas fa-sign-in-alt"></i> Войти
-    </button>
-</form>
+            <div class="form-group input-icon">
+                <i class="fas fa-user"></i>
+                <input type="text" name="username" placeholder="Имя пользователя" required autofocus>
+            </div>
+            
+            <div class="form-group input-icon">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" id="password" placeholder="Пароль" required>
+            </div>
+            
+            <div class="form-group remember-group">
+                <label class="remember-label">
+                    <input type="checkbox" name="remember" value="1" checked class="remember-checkbox">
+                    <span class="remember-checkmark"></span>
+                    <span class="remember-text">Запомнить меня</span>
+                </label>
+            </div>
+            
+            <button type="submit" class="login-btn">
+                <i class="fas fa-sign-in-alt"></i> Войти
+            </button>
+        </form>
        
         <div class="register-link">
             Нет аккаунта? <a href="{{ url_for('register') }}">Создать аккаунт</a>
         </div>
-        
-
-       
     </div>
 
     <div class="loading" id="loading">
@@ -547,17 +556,23 @@
             const loading = document.getElementById('loading');
             if (loading) loading.classList.remove('active');
         });
+
+        // Замедляем видео для эстетики
+        const video = document.querySelector('.video-background');
+        if (video) {
+            video.playbackRate = 0.8;
+        }
     </script>
     <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('/sw.js').then(function(reg) {
-        console.log('✅ Service Worker зарегистрирован!', reg.scope);
-      }).catch(function(err) {
-        console.log('❌ Ошибка регистрации SW:', err);
-      });
-    });
-  }
-</script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(function(reg) {
+                    console.log('✅ Service Worker зарегистрирован!', reg.scope);
+                }).catch(function(err) {
+                    console.log('❌ Ошибка регистрации SW:', err);
+                });
+            });
+        }
+    </script>
 </body>
 </html>

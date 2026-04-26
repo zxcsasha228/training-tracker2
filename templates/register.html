@@ -2,11 +2,11 @@
 <html>
 <head>
     <!-- PWA -->
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#6366f1">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="/static/icons/icon-192x192.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192x192.png">
     <title>Регистрация</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -32,28 +32,34 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
             position: relative;
-            overflow-x: hidden;
+            overflow: hidden;
         }
 
-        body::before {
-            content: '';
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
-            animation: rotate 20s linear infinite;
+        /* ВИДЕО ФОН */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
         }
 
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: -1;
         }
 
         .register-card {
@@ -449,6 +455,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <!-- ВИДЕО ФОН -->
+    <video class="video-background" autoplay loop muted playsinline>
+        <source src="{{ url_for('static', filename='videos/17.mp4') }}" type="video/mp4">
+    </video>
+    <div class="overlay"></div>
+
     <div class="register-card">
         <div class="header">
             <h1>Регистрация</h1>
@@ -528,6 +540,12 @@
     </div>
 
     <script>
+        // Замедляем видео для эстетики
+        const video = document.querySelector('.video-background');
+        if (video) {
+            video.playbackRate = 0.8;
+        }
+
         const usernameInput = document.getElementById('username');
         const fullnameInput = document.getElementById('full_name');
         const passwordInput = document.getElementById('password');
@@ -828,15 +846,15 @@
         });
     </script>
     <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('/sw.js').then(function(reg) {
-        console.log('✅ Service Worker зарегистрирован!', reg.scope);
-      }).catch(function(err) {
-        console.log('❌ Ошибка регистрации SW:', err);
-      });
-    });
-  }
-</script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(function(reg) {
+                    console.log('✅ Service Worker зарегистрирован!', reg.scope);
+                }).catch(function(err) {
+                    console.log('❌ Ошибка регистрации SW:', err);
+                });
+            });
+        }
+    </script>
 </body>
 </html>

@@ -698,6 +698,7 @@
                 padding: 20px 24px;
             }
         }
+     
     </style>
 </head>
 <body>
@@ -1210,11 +1211,8 @@
         
         console.log('Данные для отправки на сервер:', setsData);
         
-        // Проверяем, есть ли данные
-        if (setsData.length === 0) {
-            alert('Нет выполненных подходов для сохранения');
-            return;
-        }
+        // Убираем проверку на наличие подходов
+        // Даже если setsData пустой, всё равно завершаем тренировку
         
         fetch('/api/save_completed_workout', {
             method: 'POST',
@@ -1231,14 +1229,12 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Очищаем localStorage
                 localStorage.removeItem(`workout_${userId}_${workoutId}_active`);
                 localStorage.removeItem(`workout_${userId}_${workoutId}`);
                 localStorage.removeItem(`workout_${userId}_${workoutId}_timer`);
                 
                 console.log('Тренировка завершена, данные очищены');
                 
-                // Перенаправляем на статистику
                 window.location.href = '/stats';
             } else {
                 alert('Ошибка при сохранении тренировки: ' + (data.error || 'неизвестная ошибка'));
@@ -1251,9 +1247,10 @@
     }
 }
 
+
         function collectWorkoutData() {
     const data = [];
-    const seen = new Set();  // для отслеживания дублей
+    const seen = new Set();
     
     document.querySelectorAll('.exercise-card').forEach(card => {
         const exerciseLibId = card.dataset.exerciseLibId;
@@ -1266,24 +1263,29 @@
             const reps = set.querySelector('.reps-input')?.value;
             const completed = set.classList.contains('completed');
             
-            if (completed && parseFloat(weight) > 0) {
-                const key = `${exerciseLibId}_${weight}_${reps}`;
-                // Добавляем только если такого ключа ещё не было
-                if (!seen.has(key)) {
+            // Убираем проверку completed && weight > 0
+            // Добавляем даже невыполненные подходы? 
+            // Лучше всё равно добавляем только с weight > 0
+            if (weight && reps && parseFloat(weight) > 0) {
+                const weightNum = parseFloat(weight);
+                const repsNum = parseInt(reps);
+                const key = `${exerciseLibId}_${weightNum}_${repsNum}`;
+                
+                if (!isNaN(weightNum) && !isNaN(repsNum) && !seen.has(key)) {
                     seen.add(key);
                     data.push({
                         exercise_id: parseInt(exerciseLibId),
                         exercise_name: exerciseName,
-                        weight: parseFloat(weight),
-                        reps: parseInt(reps)
+                        weight: weightNum,
+                        reps: repsNum
                     });
                 }
             }
         });
     });
     
-    console.log('Уникальные подходы для отправки:', data);
-    return data;
+    console.log('Итоговые данные для отправки:', data);
+    return data;  // Всегда возвращает массив (может быть пустым)
 }
 
         function openAddExerciseModal() {
@@ -1291,16 +1293,7 @@
             saveTimer();
             window.location.href = "{{ url_for('view_workout', workout_id=workout.id) }}";
         }
-    </script>
-    <script>
-function keepAlive() {
-    fetch('/keep-alive', { 
-        method: 'POST',
-    }).catch(err => console.log('Keep-alive ping failed:', err));
-}
-setInterval(keepAlive, 5 * 60 * 1000); // 5 минут
 </script>
-
 
 <script>
   if ('serviceWorker' in navigator) {
@@ -1312,6 +1305,7 @@ setInterval(keepAlive, 5 * 60 * 1000); // 5 минут
       });
     });
   }
+
 </script>
 </body>
 </html>

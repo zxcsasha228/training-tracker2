@@ -2,11 +2,11 @@
 <html>
 <head>
     <!-- PWA -->
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#6366f1">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="/static/icons/icon-192x192.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192x192.png">
     <title>Админ-панель</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -46,6 +46,11 @@
 
         .main-content.expanded {
             margin-left: 80px;
+        }
+
+        /* Отступ снизу для баннера */
+        .main-content {
+            padding-bottom: 100px !important;
         }
 
         .container {
@@ -164,6 +169,7 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            overflow: hidden;
         }
 
         .stat-card:hover {
@@ -189,8 +195,7 @@
 
         .stat-content {
             flex: 1;
-            min-width: 0;  /* разрешает сжатие */
-            padding-right: 5px;  /* отступ от края */
+            min-width: 0;
         }
 
         .stat-content h3 {
@@ -199,8 +204,6 @@
             margin-bottom: 5px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            text-overflow: ellipsis;  /* ... если не влезает */
-             white-space: nowrap;  /* текст в одну строку */
         }
 
         .stat-number {
@@ -215,7 +218,6 @@
             margin-left: 3px;
         }
 
-        /* Графики */
         .charts-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -470,9 +472,6 @@
             margin-bottom: 15px;
         }
 
-        /* ========================================
-           МОБИЛЬНАЯ АДАПТАЦИЯ
-           ======================================== */
         @media (max-width: 768px) {
             .main-content {
                 margin-left: 0 !important;
@@ -597,55 +596,55 @@
                 </div>
             </div>
 
-           <div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-users"></i></div>
-        <div class="stat-content">
-            <h3>Пользователей</h3>
-            <div class="stat-number">{{ stats.total_users }}</div>
-        </div>
-    </div>
-    
-    <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-crown"></i></div>
-        <div class="stat-content">
-            <h3>Админов</h3>
-            <div class="stat-number">{{ stats.total_admins }}</div>
-        </div>
-    </div>
-    
-    <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-dumbbell"></i></div>
-        <div class="stat-content">
-            <h3>Тренировок</h3>
-            <div class="stat-number">{{ stats.total_workouts }}</div>
-        </div>
-    </div>
-    
-    <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-book"></i></div>
-        <div class="stat-content">
-            <h3>Упражнений</h3>
-            <div class="stat-number">{{ stats.total_exercises }}</div>
-        </div>
-    </div>
-    
-    <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-clock"></i></div>
-        <div class="stat-content">
-            <h3>Часов</h3>
-            <div class="stat-number">{{ stats.total_hours }} <span class="stat-unit">ч</span></div>
-        </div>
-    </div>
-    
-    <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-        <div class="stat-content">
-            <h3>Активны</h3>
-            <div class="stat-number">{{ stats.active_today }}</div>
-        </div>
-    </div>
-</div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-content">
+                        <h3>Пользователей</h3>
+                        <div class="stat-number">{{ stats.total_users }}</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-crown"></i></div>
+                    <div class="stat-content">
+                        <h3>Админов</h3>
+                        <div class="stat-number">{{ stats.total_admins }}</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-dumbbell"></i></div>
+                    <div class="stat-content">
+                        <h3>Тренировок</h3>
+                        <div class="stat-number">{{ stats.total_workouts }}</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-book"></i></div>
+                    <div class="stat-content">
+                        <h3>Упражнений</h3>
+                        <div class="stat-number">{{ stats.total_exercises }}</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    <div class="stat-content">
+                        <h3>Часов</h3>
+                        <div class="stat-number">{{ stats.total_hours }} <span class="stat-unit">ч</span></div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="stat-content">
+                        <h3>Активны</h3>
+                        <div class="stat-number">{{ stats.active_today }}</div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Графики -->
             <div class="charts-grid">
@@ -667,7 +666,7 @@
                 </div>
             </div>
 
-                 <!-- Поиск -->
+            <!-- Поиск -->
             <div class="search-section">
                 <div class="search-wrapper">
                     <input type="text" class="search-input" id="searchInput" 
@@ -748,26 +747,30 @@
                 </table>
             </div>
 
+            {% if users|length > 5 %}
+            <button class="show-all-btn" onclick="toggleAllUsers()" id="showAllBtn">
+                <i class="fas fa-chevron-down"></i> 
+                Показать всех пользователей ({{ users|length - 5 }} скрыто)
+            </button>
+            {% endif %}
+
+            <div id="noResults" style="display: none;">
+                <i class="fas fa-search"></i>
+                <h3>Ничего не найдено</h3>
+                <p>Попробуйте изменить поисковый запрос</p>
+            </div>
+        </div>
+    </div>
+
     <script>
         let showingAll = false;
 
         // Состояние сайдбара
-        
         const mainContent = document.getElementById('mainContent');
         const savedState = localStorage.getItem('sidebar_collapsed');
         if (savedState === 'true') {
             mainContent.classList.add('expanded');
         }
-        // Проверяем, нужно ли обновить статистику
-document.addEventListener('DOMContentLoaded', function() {
-    // ... существующий код ...
-    
-    // Проверяем, была ли обновлена статистика
-    if (sessionStorage.getItem('admin_stats_updated') === 'true') {
-        sessionStorage.removeItem('admin_stats_updated');
-        location.reload(); // Перезагружаем страницу для обновления статистики
-    }
-});
 
         // Графики
         const usersCtx = document.getElementById('usersChart').getContext('2d');
@@ -927,18 +930,5 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
     
     {% include 'active_workout_banner.html' %}
-
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('/sw.js').then(function(reg) {
-        console.log('✅ Service Worker зарегистрирован!', reg.scope);
-      }).catch(function(err) {
-        console.log('❌ Ошибка регистрации SW:', err);
-      });
-    });
-  }
-</script>
-
 </body>
 </html>

@@ -10,7 +10,7 @@ import database
 from datetime import timedelta  # ← добавить импорт
 from flask import make_response # добавь этот импорт в начало файла
 
-
+#region-----------------------Я НЕ ЗНАЮ КУДА ЭТО ЗАСУНУТЬ-------------------------------
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here-change-this'
 
@@ -98,6 +98,25 @@ def add_header(response):
         response.headers['Expires'] = '0'
     return response
 
+
+
+
+@app.route('/api/generate_muscle_map')
+def generate_muscle_map():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Не авторизован'}), 401
+    
+    try:
+        from muscle_map import create_muscle_heatmap
+        create_muscle_heatmap(session['user_id'])
+        return jsonify({'success': True, 'image_url': '/static/muscle_heatmap.png'})
+    except Exception as e:
+        print(f"Ошибка: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+    
+
+
+#endregion
 # ========== ФУНКЦИЯ ВАЛИДАЦИИ ТРЕНИРОВКИ ==========
 
 def validate_workout_data(data):
@@ -112,13 +131,6 @@ def validate_workout_data(data):
     if not data.get('date'):
         errors.append('Дата тренировки обязательна')
     
-
-
-
-
-
-
-
 
 #region ========== ОСНОВНЫЕ СТРАНИЦЫ ==========
 
@@ -154,23 +166,21 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        remember = request.form.get('remember') == '1'  # ← добавляем
+        remember = request.form.get('remember') == '1'
         
         user = database.check_user(username, password)
         if user:
             session['user_id'] = user['id']
             session['username'] = user['username']
             session['is_admin'] = user['is_admin']
-
+            
             if remember:
-                session.permanent = True  # только если галочка стоит
+                session.permanent = True
             else:
                 session.permanent = False
-
-            if user['is_admin']:
-                return redirect(url_for('admin_panel'))
-            else:
-                return redirect(url_for('index'))
+            
+            # Перенаправляем на страницу приветствия
+            return redirect(url_for('my_workouts'))
         else:
             return render_template('login.html', error='Неверное имя пользователя или пароль')
     
@@ -213,6 +223,7 @@ def logout():
 def my_workouts():
     if 'user_id' not in session:
         return redirect(url_for('login'))
+    
     
     workouts = database.get_user_workout_sessions(session['user_id'])
     

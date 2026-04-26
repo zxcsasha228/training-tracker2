@@ -252,120 +252,192 @@
         }
 
         /* Сетка тренировок */
-        .workouts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
-            margin-top: 30px;
-        }
+       /* Сетка тренировок */
+.workouts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+    margin-top: 30px;
+}
 
-        .workout-card {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            transition: all 0.3s;
-            border: 2px solid transparent;
-            cursor: pointer;
-            position: relative;
-        }
+/* КАРТОЧКА С ОБВОДКОЙ */
+.workout-card {
+    background: white;
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    position: relative;
+}
 
-        .workout-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.2);
-            border-color: var(--primary);
-        }
+/* Обводка при наведении */
+.workout-card:hover {
+    border-color: #6366f1;
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.12);
+    transform: translateY(-2px);
+}
 
-        .workout-card.selected {
-            border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.02);
-        }
+/* Выделенная карточка (выбранная) */
+.workout-card.selected {
+    border-color: #6366f1;
+    background: rgba(99, 102, 241, 0.02);
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.15);
+}
 
-        .workout-card .selection-checkbox {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 30px;
-            height: 30px;
-            background: white;
-            border: 2px solid var(--gray);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-            z-index: 10;
-        }
+/* Чекбокс выделения */
+.selection-checkbox {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 28px;
+    height: 28px;
+    background: white;
+    border: 2px solid #cbd5e1;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    cursor: pointer;
+    z-index: 10;
+}
 
-        .workout-card:hover .selection-checkbox {
-            border-color: var(--primary);
-        }
+.selection-checkbox i {
+    font-size: 13px;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
 
-        .workout-card.selected .selection-checkbox {
-            background: var(--primary);
-            border-color: var(--primary);
-            color: white;
-        }
+.workout-card.selected .selection-checkbox {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-color: #6366f1;
+}
 
-        .workout-card .selection-checkbox i {
-            font-size: 16px;
-            opacity: 0;
-            transition: all 0.3s;
-        }
+.workout-card.selected .selection-checkbox i {
+    opacity: 1;
+}
 
-        .workout-card.selected .selection-checkbox i {
-            opacity: 1;
-        }
+/* Название тренировки */
+.workout-name {
+    font-size: 1.25em;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 12px;
+    padding-right: 35px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 
-        .workout-name {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: var(--dark);
-            margin-bottom: 12px;
-            padding-right: 35px;
-        }
+.workout-name i {
+    color: #6366f1;
+    font-size: 1.1em;
+}
 
-        .workout-date {
-            color: var(--gray);
-            font-size: 1em;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+/* Дата */
+.workout-date {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8em;
+    color: #64748b;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eef2f6;
+}
 
-        .workout-date i {
-            color: var(--primary);
-        }
+.workout-date i {
+    color: #6366f1;
+}
 
-        .workout-stats {
-            display: flex;
-            gap: 20px;
-            color: var(--gray);
-            font-size: 0.95em;
-            margin-bottom: 15px;
-            padding-top: 10px;
-            border-top: 1px solid rgba(0,0,0,0.05);
-        }
+/* Статистика */
+.workout-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+}
 
-        .workout-stats span {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+.stat-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f1f5f9;
+    padding: 5px 12px;
+    border-radius: 30px;
+    font-size: 0.75em;
+    font-weight: 500;
+    color: #475569;
+}
 
-        .workout-stats i {
-            color: var(--primary);
-        }
+.stat-badge i {
+    color: #6366f1;
+    font-size: 0.8em;
+}
 
-        .workout-notes {
-            color: var(--gray);
-            font-size: 0.9em;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid rgba(0,0,0,0.05);
-            font-style: italic;
-        }
+/* Заметки */
+.workout-notes {
+    font-size: 0.75em;
+    color: #94a3b8;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.workout-notes i {
+    color: #6366f1;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+    .workouts-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .workout-card {
+        padding: 16px;
+    }
+    
+    .workout-name {
+        font-size: 1.1em;
+    }
+    
+    .selection-checkbox {
+        width: 24px;
+        height: 24px;
+        top: 12px;
+        right: 12px;
+    }
+    
+    .stat-badge {
+        padding: 4px 10px;
+        font-size: 0.7em;
+    }
+}
+
+.workout-card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    border: 2px solid #7558c4;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.workout-card:hover {
+    border-color: #6366f1;
+}
+
+.workout-card.selected {
+    border-color: #6366f1;
+    border-width: 2px;
+    background: #f8fafc;
+}
 
         /* ПРОСТОЕ ПУСТОЕ СОСТОЯНИЕ */
         .empty-state {
@@ -637,7 +709,7 @@
             {% endif %}
         </div>
     </div>
-
+     {% include 'active_workout_banner.html' %}
     
 
     <script>

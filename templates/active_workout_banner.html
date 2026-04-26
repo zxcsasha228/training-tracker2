@@ -22,17 +22,24 @@
     .active-workout-banner {
         position: fixed;
         bottom: 20px;
-        left: 300px;  /* Отступ под сайдбар (280px + 20px) */
+        left: 300px;
         right: 20px;
         z-index: 9999;
         display: none;
         pointer-events: none;
         transition: left 0.3s ease;
+        
     }
+    .active-workout-banner {
+    transition: opacity 0.2s ease;
+}
+    .active-workout-banner.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
 
-    /* Когда сайдбар свёрнут */
     body:has(.sidebar.collapsed) .active-workout-banner {
-        left: 100px;  /* Отступ под свёрнутый сайдбар (80px + 20px) */
+        left: 100px;
     }
 
     .banner-content {
@@ -116,217 +123,245 @@
 
     .banner-btn:hover {
         filter: brightness(1.1);
+        transform: translateY(-2px);
     }
 
     .banner-btn i {
         font-size: 0.9em;
     }
+    /* Компьютеры */
+@media (min-width: 769px) {
+    /* Отступ снизу для всех страниц, чтобы баннер не перекрывал контент */
+    .main-content {
+        padding-bottom: 100px !important;
+    }
+}
 
-    /* Адаптация для мобильных */
+    /* ========================================
+       МОБИЛЬНАЯ АДАПТАЦИЯ
+       ======================================== */
     @media (max-width: 768px) {
         .active-workout-banner {
-            left: 20px !important;  /* На мобильных сайдбар скрыт */
+            left: 20px !important;
+            right: 20px;
+            bottom: 15px;
         }
         
         .banner-content {
-            padding: 12px 15px;
+            padding: 10px 15px;
+        }
+        
+        .banner-icon {
+            width: 32px;
+            height: 32px;
+            font-size: 1em;
         }
         
         .banner-title {
-            font-size: 0.9em;
+            font-size: 0.8em;
         }
         
         .banner-timer {
-            font-size: 1.1em;
+            font-size: 1em;
         }
         
         .banner-btn {
-            padding: 8px 15px;
-            font-size: 0.9em;
+            padding: 6px 12px;
+            font-size: 0.8em;
+        }
+        
+        
+    }
+
+    /* Планшеты */
+    @media (min-width: 768px) and (max-width: 1024px) {
+        .active-workout-banner {
+            left: 100px;
+        }
+        body:has(.sidebar.collapsed) .active-workout-banner {
+            left: 100px;
         }
     }
+    @media (max-width: 768px) {
+    /* При открытой модалке скрываем баннер */
+    .modal.active {
+        z-index: 10000;
+    }
+    
+    .modal.active ~ .active-workout-banner,
+    body:has(.modal.active) .active-workout-banner {
+        display: none !important;
+        visibility: hidden;
+        opacity: 0;
+    }
+}
 </style>
 
 <script>
-    // Функция для проверки существования тренировки на сервере
-    async function checkWorkoutExists(workoutId) {
-        try {
-            const response = await fetch(`/api/check_workout/${workoutId}`);
-            const data = await response.json();
-            return data.exists;
-        } catch (error) {
-            console.error('Ошибка при проверке тренировки:', error);
-            return false;
-        }
+    function checkWorkoutExists(workoutId) {
+        return fetch(`/api/check_workout/${workoutId}`)
+            .then(response => response.json())
+            .then(data => data.exists)
+            .catch(() => false);
     }
 
-    // Функция для очистки данных удалённой тренировки
     async function cleanupDeletedWorkouts() {
-        // Ждём появления userId
-        await waitForUserId();
-        
         const userIdElement = document.getElementById('userId');
         const currentUserId = userIdElement ? userIdElement.value : null;
-        
         if (!currentUserId) return;
         
         const keysToRemove = [];
         
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
-            
             if (key && key.startsWith(`workout_${currentUserId}_`) && key.endsWith('_active')) {
                 const workoutId = key.replace(`workout_${currentUserId}_`, '').replace('_active', '');
                 const exists = await checkWorkoutExists(workoutId);
-                
                 if (!exists) {
-                    console.log(`Тренировка ${workoutId} удалена, очищаем данные`);
                     keysToRemove.push(`workout_${currentUserId}_${workoutId}_active`);
                     keysToRemove.push(`workout_${currentUserId}_${workoutId}`);
                     keysToRemove.push(`workout_${currentUserId}_${workoutId}_timer`);
                 }
             }
         }
-        
         keysToRemove.forEach(key => localStorage.removeItem(key));
     }
 
-    // Функция ожидания появления userId
     function waitForUserId() {
         return new Promise((resolve) => {
             if (document.getElementById('userId')) {
                 resolve();
                 return;
             }
-            
             const observer = new MutationObserver(() => {
                 if (document.getElementById('userId')) {
                     observer.disconnect();
                     resolve();
                 }
             });
-            
             observer.observe(document.body, { childList: true, subtree: true });
         });
     }
 
-    // Функция для обновления плашки с активной тренировкой
-    async function updateActiveWorkoutBanner() {
-        const banner = document.getElementById('activeWorkoutBanner');
-        if (!banner) return;
-        
-        // Не показываем баннер на странице активной тренировки
-        if (window.location.pathname.includes('/start') || 
-            window.location.pathname.includes('/continue')) {
-            banner.style.display = 'none';
-            return;
-        }
-        
-        // Ждём появления userId
-        await waitForUserId();
-        
-        const workoutName = document.getElementById('activeWorkoutName');
-        const workoutTimer = document.getElementById('activeWorkoutTimer');
-        const continueBtn = document.getElementById('continueWorkoutBtn');
-        
-        const userIdElement = document.getElementById('userId');
-        const currentUserId = userIdElement ? userIdElement.value : null;
-        
-        console.log('Проверка баннера:', { currentUserId });
-        
-        if (!currentUserId) {
-            console.log('Нет ID пользователя');
-            banner.style.display = 'none';
-            return;
-        }
-        
-        await cleanupDeletedWorkouts();
-        
-        let activeWorkoutId = null;
-        let activeWorkoutData = null;
-        
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            
-            if (key && key.startsWith(`workout_${currentUserId}_`) && key.endsWith('_active')) {
-                const isActive = localStorage.getItem(key) === 'true';
-                console.log('Найден ключ активности:', key, isActive);
-                
-                if (isActive) {
-                    activeWorkoutId = key.replace(`workout_${currentUserId}_`, '').replace('_active', '');
-                    
-                    const workoutData = localStorage.getItem(`workout_${currentUserId}_${activeWorkoutId}`);
-                    console.log('Данные тренировки:', workoutData);
-                    
-                    if (workoutData) {
-                        try {
-                            activeWorkoutData = JSON.parse(workoutData);
-                        } catch (e) {
-                            console.error('Ошибка парсинга данных:', e);
-                            localStorage.removeItem(key);
-                            activeWorkoutId = null;
-                        }
-                    } else {
-                        console.log('Нет данных тренировки, удаляем флаг');
+   async function updateActiveWorkoutBanner() {
+    const banner = document.getElementById('activeWorkoutBanner');
+    if (!banner) return;
+    
+    // ТОЛЬКО на странице активной тренировки скрываем баннер
+    if (window.location.pathname.includes('/start') || 
+        window.location.pathname.includes('/continue')) {
+        banner.style.display = 'none';
+        return;
+    }
+    
+    // Добавляем небольшую задержку для стабильности
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    await waitForUserId();
+    
+    const workoutName = document.getElementById('activeWorkoutName');
+    const workoutTimer = document.getElementById('activeWorkoutTimer');
+    const continueBtn = document.getElementById('continueWorkoutBtn');
+    
+    const userIdElement = document.getElementById('userId');
+    const currentUserId = userIdElement ? userIdElement.value : null;
+    
+    if (!currentUserId) {
+        banner.style.display = 'none';
+        return;
+    }
+    
+    // Не ждём cleanupDeletedWorkouts при быстрых переходах
+    // cleanupDeletedWorkouts().catch(console.error);
+    
+    let activeWorkoutId = null;
+    let activeWorkoutData = null;
+    
+    // Проверяем localStorage синхронно (быстрее)
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(`workout_${currentUserId}_`) && key.endsWith('_active')) {
+            const isActive = localStorage.getItem(key) === 'true';
+            if (isActive) {
+                activeWorkoutId = key.replace(`workout_${currentUserId}_`, '').replace('_active', '');
+                const workoutData = localStorage.getItem(`workout_${currentUserId}_${activeWorkoutId}`);
+                if (workoutData) {
+                    try {
+                        activeWorkoutData = JSON.parse(workoutData);
+                    } catch(e) {
                         localStorage.removeItem(key);
                         activeWorkoutId = null;
                     }
+                } else {
+                    localStorage.removeItem(key);
+                    activeWorkoutId = null;
                 }
-                break;
             }
-        }
-        
-        if (activeWorkoutId && activeWorkoutData) {
-            console.log('Показываем баннер для тренировки:', activeWorkoutId);
-            const timerData = localStorage.getItem(`workout_${currentUserId}_${activeWorkoutId}_timer`);
-            
-            workoutName.textContent = activeWorkoutData.name || 'Активная тренировка';
-            
-            if (timerData) {
-                const seconds = parseInt(timerData);
-                const mins = Math.floor(seconds / 60);
-                const secs = seconds % 60;
-                workoutTimer.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            } else {
-                workoutTimer.textContent = '00:00';
-            }
-            
-            continueBtn.href = `/workout/${activeWorkoutId}/continue`;
-            banner.style.display = 'block';
-        } else {
-            console.log('Нет активной тренировки, скрываем баннер');
-            banner.style.display = 'none';
+            break;
         }
     }
+    
+    if (activeWorkoutId && activeWorkoutData) {
+        const timerData = localStorage.getItem(`workout_${currentUserId}_${activeWorkoutId}_timer`);
+        workoutName.textContent = activeWorkoutData.name || 'Активная тренировка';
+        
+        if (timerData) {
+            const seconds = parseInt(timerData);
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            workoutTimer.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        } else {
+            workoutTimer.textContent = '00:00';
+        }
+        
+        continueBtn.href = `/workout/${activeWorkoutId}/continue`;
+        banner.style.display = 'block';
+    } else {
+        banner.style.display = 'none';
+    }
+}
 
-    // Следим за изменением сайдбара
     function observeSidebar() {
         const sidebar = document.getElementById('sidebar');
         if (sidebar) {
             const observer = new MutationObserver(() => {
                 const banner = document.getElementById('activeWorkoutBanner');
-                if (banner) {
-                    banner.style.transition = 'left 0.3s ease';
-                }
+                if (banner) banner.style.transition = 'left 0.3s ease';
             });
-            
             observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
         }
     }
 
-    // Обновляем баннер при загрузке страницы
     document.addEventListener('DOMContentLoaded', async () => {
         await waitForUserId();
         updateActiveWorkoutBanner();
         observeSidebar();
     });
 
-    // Обновляем баннер каждые 2 секунды
-    setInterval(updateActiveWorkoutBanner, 2000);
-
-    // Обновляем при возврате на страницу
+    setInterval(updateActiveWorkoutBanner, 1000);
     window.addEventListener('pageshow', updateActiveWorkoutBanner);
-
-    // Обновляем при фокусе на вкладке
     window.addEventListener('focus', updateActiveWorkoutBanner);
+    // Принудительная проверка при загрузке страницы (без задержки)
+document.addEventListener('DOMContentLoaded', () => {
+    // Сразу проверяем
+    setTimeout(() => {
+        updateActiveWorkoutBanner();
+    }, 100);
+});
+
+// Дополнительная проверка через 1 секунду после загрузки
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        updateActiveWorkoutBanner();
+    }, 500);
+});
+
+// При переходах по ссылкам в SPA-стиле (если используешь)
+document.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+        setTimeout(() => {
+            updateActiveWorkoutBanner();
+        }, 150);
+    });
+});
 </script>

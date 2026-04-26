@@ -11,12 +11,13 @@
         --primary: #6366f1;
         --primary-dark: #4f46e5;
         --secondary: #8b5cf6;
-        --success: #10b981;
+        --success: hsl(160, 84%, 39%);
         --danger: #ef4444;
         --warning: #f59e0b;
         --dark: #1f2937;
         --light: #f9fafb;
         --gray: #9ca3af;
+        --aaa: #ffe600;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -158,11 +159,12 @@
 
     /* График */
     .chart-container {
-        background: white;
+        background: rgb(216, 213, 213);
         border-radius: 20px;
         padding: 25px;
         margin-bottom: 30px;
         box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        border: 1px solid #000000;
     }
 
     .chart-title {
@@ -177,13 +179,13 @@
     }
 
     .best-record {
-        background: linear-gradient(135deg, var(--success), #059669);
-        color: white;
+        background : transparent;
+        color: hsl(160, 84%, 39%);
         padding: 8px 16px;
         border-radius: 30px;
         font-size: 0.9em;
     }
-    .best-record i { margin-right: 5px; }
+    .best-record i { margin-right: 10px; }
     .chart-wrapper { height: 400px; position: relative; }
 
        /* История подходов */
@@ -216,15 +218,15 @@
     }
 
     .history-item {
-        background: #ffffff;
+        background: #dad8d8;
         border-radius: 14px;
         padding: 12px 14px;
-        border: 1px solid #eef2f6;
+        border: 1px solid #0f0909;
         transition: all 0.2s;
     }
 
     .history-item:hover {
-        border-color: #cbd5e1;
+        border-color: #342685;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
     }
 
@@ -234,7 +236,7 @@
         align-items: center;
         margin-bottom: 10px;
         padding-bottom: 6px;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid #0080ff;
         flex-wrap: wrap;
         gap: 6px;
     }
@@ -246,7 +248,7 @@
     }
     
     .history-date { 
-        color: #94a3b8; 
+        color: #000000; 
         font-size: 0.7em;
     }
     
@@ -261,15 +263,15 @@
         justify-content: space-between;
         align-items: center;
         padding: 6px 8px;
-        background: #ffffff;
+        background: #c7c3c3;
         border-radius: 8px;
         flex-wrap: wrap;
         gap: 8px;
     }
 
     .history-set-best { 
-        background: #f0fdf4; 
-        border-left: 2px solid var(--success);
+        background: #c7c3c3;
+        
         border-radius: 8px;
     }
 
@@ -281,8 +283,8 @@
     }
 
     .history-exercise-name {
-        color: #64748b;
-        font-size: 0.75em;
+        color: #000000;
+        font-size: 0.8em;
         font-weight: 500;
         background: transparent;
         padding: 2px 0;
@@ -297,12 +299,12 @@
     
     .history-set-weight { 
         font-weight: 600; 
-        color: #1e293b; 
+        color: #000000; 
         font-size: 0.9em;
     }
     
     .history-set-reps { 
-        color: #94a3b8; 
+        color: #000000; 
         font-size: 0.8em;
     }
 
@@ -340,6 +342,27 @@
     @media (min-width: 768px) and (max-width: 1024px) {
         .main-content { margin-left: 80px !important; padding: 20px 24px; }
     }
+.muscle-map-wrapper {
+    background: linear-gradient(145deg, #1e293b, #0f172a);
+    border-radius: 40px;
+    padding: 20px;
+    box-shadow: 0 25px 40px rgba(0,0,0,0.2);
+}
+
+#muscleHeatmap {
+    filter: drop-shadow(0 8px 15px rgba(0,0,0,0.3));
+}
+
+.muscle-zone {
+    transition: all 0.2s ease;
+    opacity: 0.9;
+}
+
+.muscle-zone:hover {
+    opacity: 1;
+    filter: brightness(1.05) drop-shadow(0 0 6px currentColor);
+    stroke-width: 3;
+}
 </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dark_theme.css') }}">
@@ -552,7 +575,26 @@
             emptyData.style.display = 'block';
         });
 }
+// Загрузка карты мышц
+function loadMuscleMap() {
+    fetch('/api/generate_muscle_map')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const img = document.getElementById('muscleMapImage');
+                if (img) {
+                    img.src = data.image_url + '?t=' + new Date().getTime();
+                }
+            }
+        })
+        .catch(error => console.error('Ошибка загрузки карты мышц:', error));
+}
 
+// Вызываем при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    // ... существующий код ...
+    loadMuscleMap();
+});
     function renderChart(data) {
     const ctx = document.getElementById('progressChart').getContext('2d');
     
@@ -566,6 +608,11 @@
     const oneRms = data.map(item => item.bestOneRm);
     const bestValue = Math.max(...oneRms);
     const maxValue = Math.max(...oneRms, 10);
+    
+    // Рассчитываем максимальное значение для оси Y: +20 кг и округление вверх до 20
+    let yMax = maxValue + 20;
+    // Округляем вверх до ближайшего кратного 20
+    yMax = Math.ceil(yMax / 20) * 20;
     
     const backgroundColors = oneRms.map(value => 
         value === bestValue ? 'rgba(16, 185, 129, 0.8)' : 'rgba(99, 102, 241, 0.7)'
@@ -593,9 +640,7 @@
             responsive: true,
             maintainAspectRatio: false,
             layout: {
-                padding: {
-                    top: 25  // ← ОТСТУП СВЕРХУ, ЧТОБЫ ЦИФРЫ НЕ ОБРЕЗАЛИСЬ
-                }
+                padding: { top: 25 }
             },
             plugins: {
                 legend: { display: false },
@@ -626,10 +671,13 @@
             scales: {
                 y: {
                     beginAtZero: true,
-                    max: maxValue * 1.1,  // ← ДОБАВЛЯЕМ 10% СВЕРХУ
+                    max: yMax,  // ← новое максимальное значение
                     grid: { color: '#e5e7eb' },
                     title: { display: true, text: '1ПМ (кг)' },
-                    ticks: { callback: function(v) { return v + ' кг'; }, stepSize: 20 }
+                    ticks: { 
+                        callback: function(v) { return v + ' кг'; }, 
+                        stepSize: 10  // шаг 10 кг для более частых делений
+                    }
                 },
                 x: {
                     grid: { display: false },
