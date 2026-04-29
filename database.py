@@ -501,7 +501,24 @@ def get_user_workout_sessions(user_id):
     except Exception as e:
         print(f"Ошибка при получении тренировок: {e}")
         return []
-
+    
+def get_last_set_params(user_id, exercise_id):
+    """Получить последние использованные вес и повторения для упражнения"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT weight, reps FROM completed_sets 
+                WHERE user_id = ? AND exercise_id = ?
+                ORDER BY completed_at DESC LIMIT 1
+            ''', (user_id, exercise_id))
+            row = cursor.fetchone()
+            if row:
+                return {'weight': row['weight'], 'reps': row['reps']}
+            return None
+    except Exception as e:
+        print(f"Ошибка: {e}")
+        return None
 # Получить конкретную тренировку
 def get_workout_session(workout_id, user_id):
     try:
@@ -716,40 +733,66 @@ def save_completed_workout(user_id, workout_id, workout_name, duration, sets_dat
             from datetime import datetime
             today = datetime.now().strftime('%Y-%m-%d')
             
-            # Генерируем уникальный ID для тренировки, если передан старый
-            import random
-            import time
-            actual_workout_id = workout_id
-            if workout_id and workout_id < 10000:  # если ID маленький (из workout_sessions)
-                actual_workout_id = int(time.time() * 1000) + random.randint(1, 1000)
-            
             # Сохраняем тренировку
             cursor.execute('''
                 INSERT INTO completed_workouts (user_id, workout_id, workout_name, date, duration)
                 VALUES (?, ?, ?, ?, ?)
-            ''', (user_id, actual_workout_id, workout_name, today, duration))
+            ''', (user_id, workout_id, workout_name, today, duration))
             
-            # Сохраняем подходы с новым ID
+            records = []
+            
+            # Сохраняем подходы и проверяем рекорды
             for set_data in sets_data:
+                # Сохраняем подход
                 cursor.execute('''
                     INSERT INTO completed_sets 
                     (user_id, workout_id, exercise_id, exercise_name, workout_date, weight, reps)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                 ''', (
                     user_id,
-                    actual_workout_id,
+                    workout_id,
                     set_data['exercise_id'],
                     set_data['exercise_name'],
                     today,
                     set_data['weight'],
                     set_data['reps']
                 ))
+                
+                # Проверяем рекорд
+                one_rm = set_data['weight'] * (1 + set_data['reps'] / 30)
+                
+                # Ищем лучший 1ПМ для этого упражнения
+                cursor.execute('''
+                    SELECT MAX(weight * (1 + CAST(reps AS FLOAT) / 30)) as best_one_rm
+                    FROM completed_sets
+                    WHERE user_id = ? AND exercise_id = ?
+                ''', (user_id, set_data['exercise_id']))
+                
+                result = cursor.fetchone()
+                best_one_rm = result['best_one_rm'] if result and result['best_one_rm'] else 0
+                
+                # Определяем, является ли этот подход рекордным
+                is_record = False
+                if best_one_rm == 0:
+                    is_record = True
+                else:
+                    is_record = round(one_rm, 2) >= round(best_one_rm, 2)
+                
+                if is_record:
+                    records.append({
+                        'exercise_name': set_data['exercise_name'],
+                        'weight': set_data['weight'],
+                        'reps': set_data['reps'],
+                        'one_rm': round(one_rm, 1)
+                    })
             
-            return True
+            conn.commit()
+            return {'success': True, 'records': records}
     except Exception as e:
         print(f"Ошибка при сохранении тренировки: {e}")
-        return False
-
+        import traceback
+        traceback.print_exc()
+        return {'success': False, 'error': str(e), 'records': []} 
 # Получить статистику пользователя
 def get_user_stats(user_id):
     """Получить расширенную статистику пользователя"""

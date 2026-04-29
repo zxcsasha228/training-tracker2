@@ -82,7 +82,12 @@ def serve_manifest():
 
 @app.route('/sw.js')
 def serve_sw():
-    return send_from_directory(STATIC_FOLDER, 'sw.js', mimetype='application/javascript')
+    response = make_response(send_from_directory(STATIC_FOLDER, 'sw.js', mimetype='application/javascript'))
+    # Важно: Service Worker должен кэшироваться не более чем на 24 часа
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 @app.after_request
 def add_header(response):
@@ -1015,6 +1020,7 @@ def update_row(table_name, row_id):
 #endregion
 #region========== API ДЛЯ УПРАВЛЕНИЯ УПРАЖНЕНИЯМИ ТРЕНИРОВКИ ==========
 
+
 @app.route('/api/workout_exercises/<int:workout_id>')
 def get_workout_exercises_api(workout_id):
     if 'user_id' not in session or not session.get('is_admin'):
@@ -1112,6 +1118,9 @@ def delete_multiple_exercises(workout_id):
         database.delete_workout_exercise(exercise_id)
     
     return redirect(url_for('view_workout', workout_id=workout_id))
+
+
+
 #endregion
 #region========== API ДЛЯ БЖУ ==========
 
@@ -1266,28 +1275,89 @@ def check_bju_updates():
 #endregion
 #region ========== API ДЛЯ СТАТИСТИКИ ==========
 
+    
+@app.route('/api/last_set/<int:user_id>/<int:exercise_id>')
+def get_last_set(user_id, exercise_id):
+    if 'user_id' not in session:
+        return jsonify({'success': False}), 401
+    
+    if user_id != session['user_id'] and not session.get('is_admin'):
+        return jsonify({'success': False}), 403
+    
+    try:
+        with database.get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT weight, reps FROM completed_sets 
+                WHERE user_id = ? AND exercise_id = ?
+                ORDER BY completed_at DESC LIMIT 1
+            ''', (user_id, exercise_id))
+            row = cursor.fetchone()
+            if row:
+                return jsonify({'success': True, 'weight': row['weight'], 'reps': row['reps']})
+            return jsonify({'success': False})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/last_sets/<int:user_id>/<int:exercise_id>')
+def get_last_sets(user_id, exercise_id):
+    if 'user_id' not in session:
+        return jsonify({'success': False}), 401
+    
+    if user_id != session['user_id'] and not session.get('is_admin'):
+        return jsonify({'success': False}), 403
+    
+    try:
+        with database.get_db() as conn:
+            cursor = conn.cursor()
+            
+            # Находим последнюю тренировку с этим упражнением
+            cursor.execute('''
+                SELECT DISTINCT workout_id FROM completed_sets 
+                WHERE user_id = ? AND exercise_id = ?
+                ORDER BY completed_at DESC LIMIT 1
+            ''', (user_id, exercise_id))
+            last_workout = cursor.fetchone()
+            
+            if not last_workout:
+                return jsonify({'success': True, 'sets': []})
+            
+            workout_id = last_workout['workout_id']
+            
+            # Берём подходы ТОЛЬКО из последней тренировки
+            cursor.execute('''
+                SELECT weight, reps FROM completed_sets 
+                WHERE user_id = ? AND exercise_id = ? AND workout_id = ?
+                ORDER BY id ASC
+            ''', (user_id, exercise_id, workout_id))
+            
+            rows = cursor.fetchall()
+            sets = [{'weight': row['weight'], 'reps': row['reps']} for row in rows]
+            
+            return jsonify({'success': True, 'sets': sets})
+    except Exception as e:
+        print(f"Ошибка в get_last_sets: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+    
+
 @app.route('/api/save_completed_workout', methods=['POST'])
 def save_completed_workout():
     if 'user_id' not in session:
         return jsonify({'success': False, 'error': 'Не авторизован'}), 401
     
     data = request.get_json()
+    print(f"📦 Получены данные для сохранения: {data}")
     
-    # Генерируем уникальный ID для завершённой тренировки
-    import random
-    import time
-    new_workout_id = int(time.time() * 1000) + random.randint(1, 1000)
-    
-    success = database.save_completed_workout(
+    result = database.save_completed_workout(
         session['user_id'],
-        new_workout_id,  # ← используем новый ID
+        data['workout_id'],
         data['workout_name'],
         data['duration'],
         data['sets']
     )
     
-    return jsonify({'success': success})
-
+    return jsonify(result)
 @app.route('/api/exercise_progress/<int:exercise_id>')
 def exercise_progress(exercise_id):
     if 'user_id' not in session:

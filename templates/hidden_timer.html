@@ -1,0 +1,83 @@
+<!-- hidden_timer.html - Невидимый таймер для активной тренировки -->
+<div id="hiddenTimer" style="display: none !important; visibility: hidden; opacity: 0; position: absolute; pointer-events: none;"></div>
+
+<script>
+    // Невидимый таймер - работает как баннер, но не отображается
+    (function() {
+        const userId = document.getElementById('userId')?.value;
+        const workoutId = document.getElementById('workoutId')?.value;
+        
+        if (!userId || !workoutId) return;
+        
+        let seconds = 0;
+        let timerInterval = null;
+        const timerKey = `workout_${userId}_${workoutId}_timer`;
+        
+        function formatTime(secs) {
+            const mins = Math.floor(secs / 60);
+            const rem = secs % 60;
+            return `${mins.toString().padStart(2, '0')}:${rem.toString().padStart(2, '0')}`;
+        }
+        
+        function saveAndDispatch() {
+            localStorage.setItem(timerKey, seconds.toString());
+            // Диспатчим событие для обновления видимого таймера
+            window.dispatchEvent(new CustomEvent('timerTick', { detail: { seconds: seconds, time: formatTime(seconds) } }));
+        }
+        
+        function loadTimer() {
+            const saved = localStorage.getItem(timerKey);
+            if (saved !== null) {
+                seconds = parseInt(saved);
+            } else {
+                seconds = 0;
+            }
+            saveAndDispatch();
+            return seconds;
+        }
+        
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            loadTimer();
+            timerInterval = setInterval(() => {
+                seconds++;
+                saveAndDispatch();
+            }, 1000);
+            console.log('🕐 Невидимый таймер запущен, начальное время:', seconds);
+        }
+        
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+        
+        // Синхронизация с баннером (если есть)
+        function syncWithGlobalBanner() {
+            const globalTime = localStorage.getItem(timerKey);
+            if (globalTime !== null) {
+                const newSeconds = parseInt(globalTime);
+                if (newSeconds > seconds) {
+                    seconds = newSeconds;
+                    saveAndDispatch();
+                }
+            }
+        }
+        
+        // Слушаем события возврата на страницу
+        window.addEventListener('focus', () => syncWithGlobalBanner());
+        window.addEventListener('pageshow', () => syncWithGlobalBanner());
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                syncWithGlobalBanner();
+            }
+        });
+        
+        // Запускаем невидимый таймер
+        startTimer();
+        
+        // Останавливаем при уходе со страницы
+        window.addEventListener('beforeunload', () => stopTimer());
+    })();
+</script>

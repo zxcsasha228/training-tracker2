@@ -691,7 +691,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 }
 
-   function renderHistory(data) {
+ function renderHistory(data) {
     const historyList = document.getElementById('historyList');
     
     if (!data || data.length === 0) {
@@ -705,10 +705,13 @@ document.addEventListener('DOMContentLoaded', function() {
         return `${parseInt(day)} ${months[parseInt(month)-1]} ${year}`;
     }
     
+    // Переворачиваем массив, чтобы новые были сверху
+    const reversedData = [...data].reverse();
+    
     let html = '';
     
-    for (let i = 0; i < data.length; i++) {
-        const workout = data[i];
+    for (let i = 0; i < reversedData.length; i++) {
+        const workout = reversedData[i];
         const sortedSets = [...workout.allSets].sort((a, b) => b.oneRm - a.oneRm);
         const bestOneRm = sortedSets[0]?.oneRm || 0;
         
