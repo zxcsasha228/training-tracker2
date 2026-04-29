@@ -763,6 +763,81 @@
         font-size: 1.6em;
     }
 }
+/* ========== МОБИЛЬНЫЕ ИСПРАВЛЕНИЯ ========== */
+@media (max-width: 768px) {
+    /* Поля ввода на мобилке */
+    .set-inputs {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        width: 100%;
+        order: 2;
+    }
+    
+    .input-field {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .input-field input {
+        font-size: 1em;
+        padding: 8px 4px;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+    
+    /* Drag-and-drop на мобилке - отключаем для touchscreen */
+    .exercise-card {
+        cursor: default;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Кнопки управления */
+    .delete-set-btn, .complete-btn {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+    }
+    
+    .set-number {
+        min-width: 35px;
+        font-size: 0.9em;
+    }
+    
+    /* Увеличиваем зону касания */
+    button, .complete-btn, .delete-set-btn, .add-set-btn {
+        min-height: 44px;
+    }
+}
+
+/* Ошибка ввода - красная подсветка */
+.input-field-error {
+    animation: shake 0.3s ease;
+}
+
+.input-field-error input {
+    color: var(--danger) !important;
+    text-decoration: underline;
+    text-decoration-color: var(--danger);
+    text-decoration-thickness: 2px;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    75% { transform: translateX(3px); }
+}
+
+/* Только цифры - обычный вид */
+.input-field input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+.input-field input[type="number"]::-webkit-inner-spin-button,
+.input-field input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
     
 </style>
 </head>
@@ -841,6 +916,98 @@
 
         let exerciseHistory = {};
 
+
+        // ========================================
+// МОБИЛЬНЫЙ DRAG-AND-DROP (через сенсоры)
+// ========================================
+let touchStartY = 0;
+let touchStartX = 0;
+let isDraggingMobile = false;
+
+function initMobileDragAndDrop() {
+    const cards = document.querySelectorAll('.exercise-card');
+    
+    cards.forEach(card => {
+        // Отключаем стандартный drag для мобильных
+        card.setAttribute('draggable', 'false');
+        
+        card.addEventListener('touchstart', handleTouchStart, { passive: false });
+        card.addEventListener('touchmove', handleTouchMove, { passive: false });
+        card.addEventListener('touchend', handleTouchEnd);
+        
+        // Для десктопа оставляем drag
+        if (window.innerWidth > 768) {
+            card.setAttribute('draggable', 'true');
+        }
+    });
+}
+
+let draggedCardMobile = null;
+
+function handleTouchStart(e) {
+    if (window.innerWidth > 768) return;
+    
+    const card = e.target.closest('.exercise-card');
+    if (!card) return;
+    
+    e.preventDefault();
+    touchStartY = e.touches[0].clientY;
+    touchStartX = e.touches[0].clientX;
+    draggedCardMobile = card;
+    card.classList.add('dragging');
+    isDraggingMobile = true;
+}
+
+function handleTouchMove(e) {
+    if (!isDraggingMobile || !draggedCardMobile) return;
+    e.preventDefault();
+    
+    const currentY = e.touches[0].clientY;
+    const diffY = currentY - touchStartY;
+    
+    // Сдвигаем карточку
+    draggedCardMobile.style.transform = `translateY(${diffY}px)`;
+    draggedCardMobile.style.transition = 'none';
+    
+    // Поиск карточки для вставки
+    const cards = [...document.querySelectorAll('.exercise-card')];
+    const currentIndex = cards.indexOf(draggedCardMobile);
+    let targetIndex = -1;
+    
+    cards.forEach((card, idx) => {
+        if (card !== draggedCardMobile) {
+            const rect = card.getBoundingClientRect();
+            const center = rect.top + rect.height / 2;
+            if (currentY > center && idx > currentIndex) {
+                targetIndex = idx;
+            } else if (currentY < center && idx < currentIndex) {
+                targetIndex = idx;
+            }
+        }
+    });
+    
+    if (targetIndex !== -1 && targetIndex !== currentIndex) {
+        const container = document.getElementById('exercisesContainer');
+        if (targetIndex > currentIndex) {
+            container.insertBefore(draggedCardMobile, cards[targetIndex + 1]);
+        } else {
+            container.insertBefore(draggedCardMobile, cards[targetIndex]);
+        }
+        saveExercisesOrder();
+    }
+}
+
+function handleTouchEnd(e) {
+    if (!isDraggingMobile || !draggedCardMobile) return;
+    e.preventDefault();
+    
+    draggedCardMobile.style.transform = '';
+    draggedCardMobile.style.transition = '';
+    draggedCardMobile.classList.remove('dragging');
+    draggedCardMobile = null;
+    isDraggingMobile = false;
+    saveExercisesOrder();
+}
         // ========================================
         // DRAG-AND-DROP ФУНКЦИИ
         // ========================================
@@ -996,21 +1163,50 @@
         }, 2000);
 
         // ========================================
-        // ВАЛИДАЦИЯ
-        // ========================================
-        
-        // ========================================
-// ВАЛИДАЦИЯ С АВТОСНЯТИЕМ ВЫПОЛНЕНИЯ
+// ВАЛИДАЦИЯ ТОЛЬКО ЦИФРЫ С КРАСНОЙ ПОДСВЕТКОЙ
 // ========================================
+function showInputError(input) {
+    const field = input.closest('.input-field');
+    field.classList.add('input-field-error');
+    input.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+    
+    setTimeout(() => {
+        field.classList.remove('input-field-error');
+        input.style.backgroundColor = '';
+    }, 1000);
+}
+
 function validateWeightInput(input) {
-    let val = parseFloat(input.value);
-    if (isNaN(val) || input.value === '') {
+    let val = input.value.trim();
+    
+    // Пустое поле
+    if (val === '') {
         input.value = '';
         return;
     }
-    if (val < MIN_WEIGHT) { input.value = MIN_WEIGHT; return; }
-    if (val > MAX_WEIGHT) { input.value = MAX_WEIGHT; return; }
-    input.value = Math.round(val * 2) / 2;
+    
+    // Проверка на число (с точкой)
+    let numVal = parseFloat(val.replace(',', '.'));
+    if (isNaN(numVal)) {
+        showInputError(input);
+        input.value = '';
+        return;
+    }
+    
+    // Проверка диапазона
+    if (numVal < MIN_WEIGHT) {
+        showInputError(input);
+        input.value = MIN_WEIGHT;
+        numVal = MIN_WEIGHT;
+    }
+    if (numVal > MAX_WEIGHT) {
+        showInputError(input);
+        input.value = MAX_WEIGHT;
+        numVal = MAX_WEIGHT;
+    }
+    
+    // Форматируем
+    input.value = Math.round(numVal * 2) / 2;
     
     // Если меняем вес в выполненном подходе - снимаем отметку
     const setCard = input.closest('.set-card');
@@ -1022,18 +1218,39 @@ function validateWeightInput(input) {
         const exId = setCard.closest('.exercise-card').dataset.exerciseId;
         updateStats(exId);
         saveState();
-        console.log('🔄 Вес изменён, отметка "выполнено" снята');
     }
 }
 
 function validateRepsInput(input) {
-    let val = parseInt(input.value);
-    if (isNaN(val) || input.value === '') {
+    let val = input.value.trim();
+    
+    // Пустое поле
+    if (val === '') {
         input.value = '';
         return;
     }
-    if (val < MIN_REPS) { input.value = MIN_REPS; return; }
-    if (val > MAX_REPS) { input.value = MAX_REPS; return; }
+    
+    // Проверка на целое число
+    let numVal = parseInt(val);
+    if (isNaN(numVal) || !Number.isInteger(numVal) || val.includes('.') || val.includes(',')) {
+        showInputError(input);
+        input.value = '';
+        return;
+    }
+    
+    // Проверка диапазона
+    if (numVal < MIN_REPS) {
+        showInputError(input);
+        input.value = MIN_REPS;
+        numVal = MIN_REPS;
+    }
+    if (numVal > MAX_REPS) {
+        showInputError(input);
+        input.value = MAX_REPS;
+        numVal = MAX_REPS;
+    }
+    
+    input.value = numVal;
     
     // Если меняем повторения в выполненном подходе - снимаем отметку
     const setCard = input.closest('.set-card');
@@ -1045,45 +1262,49 @@ function validateRepsInput(input) {
         const exId = setCard.closest('.exercise-card').dataset.exerciseId;
         updateStats(exId);
         saveState();
-        console.log('🔄 Повторения изменены, отметка "выполнено" снята');
     }
 }
 
-        function setupListeners(setDiv) {
+function setupListeners(setDiv) {
     const w = setDiv.querySelector('.weight-input');
     const r = setDiv.querySelector('.reps-input');
     
     if (w) {
         w.addEventListener('blur', function() { validateWeightInput(this); saveState(); });
-        // Добавляем input событие для мгновенного снятия отметки
+        // Блокируем ввод не-цифр
+        w.addEventListener('keypress', function(e) {
+            const char = String.fromCharCode(e.which);
+            if (!/[0-9.]/.test(char)) {
+                e.preventDefault();
+            }
+            // Блокируем две точки
+            if (char === '.' && this.value.includes('.')) {
+                e.preventDefault();
+            }
+        });
         w.addEventListener('input', function() {
-            const setCard = this.closest('.set-card');
-            if (setCard && setCard.classList.contains('completed')) {
-                setCard.classList.remove('completed');
-                const completeBtn = setCard.querySelector('.complete-btn');
-                if (completeBtn) completeBtn.classList.remove('completed');
-                const exId = setCard.closest('.exercise-card').dataset.exerciseId;
-                updateStats(exId);
-                saveState();
-                console.log('🔄 Вес изменён (input), отметка снята');
+            // Мгновенная очистка от букв
+            this.value = this.value.replace(/[^0-9.]/g, '');
+            // Только одна точка
+            const parts = this.value.split('.');
+            if (parts.length > 2) {
+                this.value = parts[0] + '.' + parts.slice(1).join('');
             }
         });
     }
     
     if (r) {
         r.addEventListener('blur', function() { validateRepsInput(this); saveState(); });
-        // Добавляем input событие для мгновенного снятия отметки
-        r.addEventListener('input', function() {
-            const setCard = this.closest('.set-card');
-            if (setCard && setCard.classList.contains('completed')) {
-                setCard.classList.remove('completed');
-                const completeBtn = setCard.querySelector('.complete-btn');
-                if (completeBtn) completeBtn.classList.remove('completed');
-                const exId = setCard.closest('.exercise-card').dataset.exerciseId;
-                updateStats(exId);
-                saveState();
-                console.log('🔄 Повторения изменены (input), отметка снята');
+        // Блокируем ввод не-цифр
+        r.addEventListener('keypress', function(e) {
+            const char = String.fromCharCode(e.which);
+            if (!/[0-9]/.test(char)) {
+                e.preventDefault();
             }
+        });
+        r.addEventListener('input', function() {
+            // Мгновенная очистка от букв и точки
+            this.value = this.value.replace(/[^0-9]/g, '');
         });
     }
 }
@@ -1137,8 +1358,14 @@ function validateRepsInput(input) {
                 <button class="delete-set-btn" onclick="deleteSet(this)"><i class="fas fa-trash"></i></button>
                 <div class="set-number">#${setNumber}</div>
                 <div class="set-inputs">
-                    <div class="input-field"><input type="number" value="${weight}" step="0.5" min="${MIN_WEIGHT}" max="${MAX_WEIGHT}" class="weight-input" placeholder="кг"></div>
-                    <div class="input-field"><input type="number" value="${reps}" min="${MIN_REPS}" max="${MAX_REPS}" class="reps-input" placeholder="раз"></div>
+                    <div class="input-field">
+    <input type="number" value="${weight}" step="0.5" min="${MIN_WEIGHT}" max="${MAX_WEIGHT}" 
+           class="weight-input" placeholder="кг" inputmode="decimal" pattern="[0-9]*[.]?[0-9]*">
+</div>
+<div class="input-field">
+    <input type="number" value="${reps}" min="${MIN_REPS}" max="${MAX_REPS}" 
+           class="reps-input" placeholder="раз" inputmode="numeric" pattern="[0-9]*">
+</div>
                 </div>
                 <button class="complete-btn ${isCompleted ? 'completed' : ''}" onclick="toggleComplete(this)"><i class="fas fa-check"></i></button>
             `;
@@ -1436,6 +1663,23 @@ function goToStats() {
             console.log('📄 DOM загружен');
             console.log('🔄 isContinuing =', isContinuing);
             
+            // Инициализируем Drag-and-Drop (десктоп)
+if (window.innerWidth > 768) {
+    initDragAndDrop();
+} else {
+    initMobileDragAndDrop();
+}
+
+// При изменении ориентации экрана
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) {
+        // На десктопе
+        initDragAndDrop();
+    } else {
+        // На мобилке
+        initMobileDragAndDrop();
+    }
+});
             if (isContinuing) {
                 console.log('📌 Продолжение тренировки');
                 await loadState();
